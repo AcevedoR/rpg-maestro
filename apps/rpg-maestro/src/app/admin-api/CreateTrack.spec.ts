@@ -17,13 +17,17 @@ beforeAll(() => {
 });
 describe("CreateTrack API", () => {
   it("should return the created track", async () => {
-
-    console.log('create')
     const res = await createTrack({
       url: `http://localhost:${port}/public/light-switch-sound-198508.mp3`,
     });
+    expect(res.name).toEqual(
+      `light-switch-sound-198508`
+    );
     expect(res.source.origin_url).toEqual(
       `http://localhost:${port}/public/light-switch-sound-198508.mp3`
+    );
+    expect(res.source.origin_name).toEqual(
+      `light-switch-sound-198508`
     );
   });
 
