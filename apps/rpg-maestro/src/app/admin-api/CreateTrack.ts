@@ -11,6 +11,11 @@ export async function createTrack(
   const fileName = getFileName(trackCreation.url);
   await checkFileIfActuallyUsable(trackCreation.url);
 
+  // TODO get length
+  // https://stackoverflow.com/questions/72043194/how-to-fetch-time-duration-of-an-audio-file-from-database-using-nodejs
+  // https://stackoverflow.com/questions/50503460/get-duration-of-remote-mp3-file-without-full-download
+  //
+
   return {
     id: uuid(),
     created_at: now,
