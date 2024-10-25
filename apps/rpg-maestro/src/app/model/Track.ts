@@ -7,7 +7,7 @@ export class Track {
   source: TrackSource;
 
   name: string;
-  length: number;
+  duration: number;
   tags: string[];
   url: string;
 
