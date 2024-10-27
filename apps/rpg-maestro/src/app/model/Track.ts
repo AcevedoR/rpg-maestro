@@ -1,4 +1,4 @@
-import { TrackSource } from './TrackSource';
+import { TrackSource } from "./TrackSource";
 
 export class Track {
   id: string;
@@ -10,6 +10,4 @@ export class Track {
   duration: number;
   tags: string[];
   url: string;
-
-
 }

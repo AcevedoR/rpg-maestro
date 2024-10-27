@@ -2,8 +2,8 @@ import { TrackCreation } from "../model/TrackCreation";
 import { Track } from "../model/Track";
 import { v4 as uuid } from "uuid";
 import path from "path";
-import { Database } from '../infrastructure/Database';
-import { getTrackDuration } from './audio/AudioHelper';
+import { Database } from "./Database";
+import { getTrackDuration } from "./audio/AudioHelper";
 
 export class CreateTrack {
   database: Database;
@@ -41,8 +41,6 @@ export class CreateTrack {
 
     return track;
   }
-
-
 }
 
 async function checkFileIfActuallyUsable(url: string) {
