@@ -1,13 +1,29 @@
-import { Controller, Get } from '@nestjs/common';
-
-import { AppService } from './app.service';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { TrackCreation } from "./model/TrackCreation";
+import { TrackService } from "./admin-api/TrackService";
+import { Database } from "./admin-api/Database";
+import { ManageCurrentlyPlayingTracks } from './admin-api/ManageCurrentlyPlayingTracks';
+import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
+import { Track } from './model/Track';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  private readonly database: Database;
+  private readonly trackService: TrackService;
+  private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
-  @Get()
-  getData() {
-    return this.appService.getData();
+  constructor() {
+    this.database = new InMemoryDatabase();
+    this.trackService = new TrackService(this.database);
+    this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
+  }
+
+  @Post("/admin/tracks")
+  postTrack(@Body() trackCreation: TrackCreation): Promise<Track> {
+    return this.trackService.createTrack(trackCreation);
+  }
+  @Get("/admin/tracks")
+  getAllTracks():Promise<Track[]>{
+    return this.trackService.getAll();
   }
 }

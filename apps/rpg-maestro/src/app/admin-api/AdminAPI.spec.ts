@@ -1,11 +1,11 @@
 import express, { Express } from "express";
 import * as path from "node:path";
 import http from "http";
-import { CreateTrack } from "./CreateTrack";
+import { TrackService } from "./TrackService";
 import { InMemoryDatabase } from "../infrastructure/InMemoryDatabase";
 import { ManageCurrentlyPlayingTracks } from "./ManageCurrentlyPlayingTracks";
 
-let createTrack: CreateTrack;
+let createTrack: TrackService;
 let manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 const database = new InMemoryDatabase();
 
@@ -16,7 +16,7 @@ const port = 3003;
 const CURRENT_DATE = Date.now();
 
 beforeAll(() => {
-  createTrack = new CreateTrack(database);
+  createTrack = new TrackService(database);
   manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(database);
 
   app.use("/public", express.static(path.join(__dirname, "../../assets")));

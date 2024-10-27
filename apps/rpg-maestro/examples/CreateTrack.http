@@ -1,0 +1,6 @@
+###
+POST localhost:3000/admin/tracks
+Content-Type: application/json
+
+{ "url" : "http://localhost:3000/public/light-switch-sound-198508.mp3", "name": "my-track" }
+###

@@ -36,4 +36,7 @@ export class InMemoryDatabase implements Database {
     }
     return Promise.resolve(track);
   }
+  getAllTracks(): Promise<Track[]> {
+    return Promise.resolve(this.tracksDatabase);
+  }
 }

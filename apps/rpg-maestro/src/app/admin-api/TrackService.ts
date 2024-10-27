@@ -5,7 +5,7 @@ import path from "path";
 import { Database } from "./Database";
 import { getTrackDuration } from "./audio/AudioHelper";
 
-export class CreateTrack {
+export class TrackService {
   database: Database;
 
   constructor(database: Database) {
@@ -41,19 +41,36 @@ export class CreateTrack {
 
     return track;
   }
+
+  async getAll(): Promise<Track[]> {
+    return this.database.getAllTracks();
+  }
 }
 
 async function checkFileIfActuallyUsable(url: string) {
-  const response = await fetch(url);
-  if (!response.ok || response.status != 200) {
-    const shortError = `httpStatus: ${response.status}, statusText: ${response.statusText}`;
-    console.log(
-      `checkFileIfActuallyUsable failed with error: ${shortError}`,
-      response
-    );
-    throw new Error(
-      `Cannot create track, file not reachable, fetch error: ${shortError}, full error: ${await response.text()}`
-    );
+  try {
+    const response = await fetch(url);
+    if (!response.ok || response.status != 200) {
+      const shortError = `httpStatus: ${response.status}, statusText: ${response.statusText}`;
+      console.log(
+        `checkFileIfActuallyUsable failed with error: ${shortError}`,
+        response
+      );
+      throw new Error(
+        `Cannot create track, file not reachable, fetch error: ${shortError}, full error: ${await response.text()}`
+      );
+    }
+  } catch (error) {
+    if (error instanceof TypeError) {
+      console.debug(error);
+      if (error.message && error.message === "fetch failed") {
+        throw new Error(`Fetch network error: ${error}`);
+      } else {
+        throw new Error(`Fetch unhandled error: ${error}`);
+      }
+    } else {
+      throw error;
+    }
   }
 }
 

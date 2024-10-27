@@ -8,4 +8,6 @@ export interface Database {
   upsertCurrentTrack: (playingTrack: PlayingTrack) => Promise<void>;
 
   getTrack(trackId: string): Promise<Track>;
+
+  getAllTracks(): Promise<Track[]>;
 }
