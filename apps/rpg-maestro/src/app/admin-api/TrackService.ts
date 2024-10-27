@@ -45,6 +45,10 @@ export class TrackService {
   async getAll(): Promise<Track[]> {
     return this.database.getAllTracks();
   }
+
+  get(id: string) :Promise<Track>{
+    return this.database.getTrack(id);
+  }
 }
 
 async function checkFileIfActuallyUsable(url: string) {
