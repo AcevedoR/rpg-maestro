@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { TrackCreation } from "./model/TrackCreation";
 import { TrackService } from "./admin-api/TrackService";
 import { Database } from "./admin-api/Database";
-import { ManageCurrentlyPlayingTracks } from './admin-api/ManageCurrentlyPlayingTracks';
+import { ManageCurrentlyPlayingTracks, TrackToPlay } from './admin-api/ManageCurrentlyPlayingTracks';
 import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
 import { Track } from './model/Track';
+import { PlayingTrack } from './model/PlayingTrack';
 
 @Controller()
 export class AppController {
@@ -27,8 +28,17 @@ export class AppController {
     return this.trackService.getAll();
   }
 
+  @Put("/admin/sessions/current/tracks")
+  changeCurrentTrack(@Body() trackToPlay: TrackToPlay):Promise<void>{
+    return this.manageCurrentlyPlayingTracks.changeCurrentTrack(trackToPlay);
+  }
+
   @Get('/tracks/:id')
   getTrack(@Param('id') id: string):Promise<Track>{
     return this.trackService.get(id);
+  }
+  @Get('/sessions/current/tracks')
+  getCurrentTrack():Promise<PlayingTrack>{
+    return this.trackService.getCurrentlyPlaying();
   }
 }

@@ -4,6 +4,7 @@ import { v4 as uuid } from "uuid";
 import path from "path";
 import { Database } from "./Database";
 import { getTrackDuration } from "./audio/AudioHelper";
+import { PlayingTrack } from "../model/PlayingTrack";
 
 export class TrackService {
   database: Database;
@@ -46,8 +47,12 @@ export class TrackService {
     return this.database.getAllTracks();
   }
 
-  get(id: string) :Promise<Track>{
+  get(id: string): Promise<Track> {
     return this.database.getTrack(id);
+  }
+
+  getCurrentlyPlaying(): Promise<PlayingTrack> {
+    return this.database.getCurrentSession().then((s) => s.currentTrack);
   }
 }
 

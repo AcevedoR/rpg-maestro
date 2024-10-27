@@ -16,6 +16,10 @@ export class ManageCurrentlyPlayingTracks {
   }
 
   async changeCurrentTrack(trackToPlay: TrackToPlay) {
+    if(!trackToPlay || !trackToPlay.trackId){
+      throw new Error("when changeCurrentTrack, trackId is required");
+    }
+
     const track = await this.database.getTrack(trackToPlay.trackId);
     await this.database.upsertCurrentTrack(
       new PlayingTrack(

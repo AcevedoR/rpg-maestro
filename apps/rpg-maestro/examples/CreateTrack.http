@@ -2,10 +2,30 @@
 POST localhost:3000/admin/tracks
 Content-Type: application/json
 
-{ "url" : "http://localhost:3000/public/light-switch-sound-198508.mp3", "name": "my-track" }
-> {% client.global.set("last_created_track_id", response.body.id); %}
+{
+  "url": "http://localhost:3000/public/light-switch-sound-198508.mp3",
+  "name": "my-track"
+}
+> {%
+  client.global.set("last_created_track_id", response.body.id);
+%}
+
 ###
 
 ### Get one
 GET localhost:3000/tracks/{{last_created_track_id}}
+
+###
+
+### Set created track to current playing
+PUT localhost:3000/admin/sessions/current/tracks
+Content-Type: application/json
+
+{
+  "trackId": "{{last_created_track_id}}"
+}
+###
+
+### get playing track
+GET localhost:3000/sessions/current/tracks
 ###
