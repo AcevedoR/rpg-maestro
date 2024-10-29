@@ -25,7 +25,10 @@ export class InMemoryDatabase implements Database {
   upsertCurrentTrack(playingTrack: PlayingTrack): Promise<void> {
     if (!this.sessionDatabase) {
       this.sessionDatabase = { currentTrack: playingTrack };
+    }else{
+      this.sessionDatabase.currentTrack = playingTrack;
     }
+
     return Promise.resolve();
   }
 

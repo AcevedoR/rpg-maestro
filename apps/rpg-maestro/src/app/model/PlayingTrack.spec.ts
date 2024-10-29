@@ -11,6 +11,7 @@ describe("PlayingTrack getCurrentPlayTime()", () => {
     const pausedTrack = new PlayingTrack(
       "id1",
       "name1",
+      "url",
       120000,
       true,
       Number.MIN_VALUE,
@@ -22,6 +23,7 @@ describe("PlayingTrack getCurrentPlayTime()", () => {
     const playingTrack = new PlayingTrack(
       "id1",
       "name1",
+      "url",
       120000,
       false,
       Number.MAX_VALUE,
@@ -36,6 +38,7 @@ describe("PlayingTrack getCurrentPlayTime()", () => {
     const playingTrack = new PlayingTrack(
       "id1",
       "name1",
+      "url",
       120000,
       false,
       playTimestamp15sAgo,
@@ -50,6 +53,7 @@ describe("PlayingTrack getCurrentPlayTime()", () => {
     const playingTrack = new PlayingTrack(
       "id1",
       "name1",
+      "url",
       120000,
       false,
       playTimestamp15sAgo,
@@ -65,6 +69,7 @@ describe("PlayingTrack getCurrentPlayTime()", () => {
     const playingTrack = new PlayingTrack(
       "id1",
       "name1",
+      "url",
       duration,
       false,
       playTimestamp,

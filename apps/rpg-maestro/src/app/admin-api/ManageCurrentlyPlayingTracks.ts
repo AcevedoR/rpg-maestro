@@ -25,6 +25,7 @@ export class ManageCurrentlyPlayingTracks {
       new PlayingTrack(
         track.id,
         track.name,
+        track.url,
         track.duration,
         false,
         Date.now(),
