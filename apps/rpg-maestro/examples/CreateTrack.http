@@ -22,7 +22,8 @@ PUT localhost:3000/admin/sessions/current/tracks
 Content-Type: application/json
 
 {
-  "trackId": "{{last_created_track_id}}"
+  "trackId": "{{last_created_track_id}}",
+  "paused": false
 }
 ###
 

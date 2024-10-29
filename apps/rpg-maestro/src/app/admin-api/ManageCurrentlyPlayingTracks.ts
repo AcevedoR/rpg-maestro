@@ -27,7 +27,7 @@ export class ManageCurrentlyPlayingTracks {
         track.name,
         track.url,
         track.duration,
-        false,
+        trackToPlay?.paused ?? false,
         Date.now(),
         0
       )
