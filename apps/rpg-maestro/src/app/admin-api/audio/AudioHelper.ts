@@ -1,7 +1,4 @@
 import ffmpeg from "fluent-ffmpeg";
-import { path as ffprobePath } from "@ffprobe-installer/ffprobe";
-
-ffmpeg.setFfprobePath(ffprobePath);
 
 export async function getTrackDuration(url: URL): Promise<number> {
   return new Promise((resolve, reject) => {

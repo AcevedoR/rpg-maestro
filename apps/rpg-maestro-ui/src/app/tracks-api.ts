@@ -1,10 +1,12 @@
 import { PlayingTrack } from './PlayingTrack';
 import { displayError } from './error-utils';
+const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
+console.log('using api: ' + rpgmaestroapiurl);
 
 export const getCurrentTrack = async (): Promise<PlayingTrack | null> => {
   try {
     const response = await fetch(
-      'http://localhost:3000/sessions/current/tracks'
+      rpgmaestroapiurl + '/sessions/current/tracks'
     );
     if (response.ok) {
       const res = await response.json() as PlayingTrack;
