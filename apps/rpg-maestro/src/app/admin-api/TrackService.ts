@@ -35,7 +35,7 @@ export class TrackService {
       name: fileName,
       url: trackCreation.url,
       duration: duration,
-      tags: trackCreation.tags,
+      tags: trackCreation.tags ?? [],
     };
 
     await this.database.save(track);
