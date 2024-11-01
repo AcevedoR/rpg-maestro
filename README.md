@@ -1,6 +1,8 @@
 # RpgMaestro
 # TODO
-fix   "duration": 50717.210999999996
+- mongodb
+- load an entire dir, endpoint
+- fix   "duration": 50717.210999999996
 
 ## RPG-maestro server
 ### manual deploy

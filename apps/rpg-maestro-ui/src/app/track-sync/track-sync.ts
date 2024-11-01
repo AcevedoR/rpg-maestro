@@ -1,5 +1,5 @@
 import { getCurrentTrack } from '../tracks-api';
-import { PlayingTrack } from '../PlayingTrack';
+import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export const resyncCurrentTrackIfNeeded = async (
   currentTrackPlayTime: number | null,

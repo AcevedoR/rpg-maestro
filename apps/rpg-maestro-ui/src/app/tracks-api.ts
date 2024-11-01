@@ -1,6 +1,5 @@
-import { PlayingTrack } from './PlayingTrack';
 import { displayError } from './error-utils';
-import { Track } from './Track';
+import { PlayingTrack, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
 console.log('using api: ' + rpgmaestroapiurl);

@@ -1,8 +1,7 @@
 import { Database } from "../admin-api/Database";
-import { Track } from "../model/Track";
 import { SessionDatabase } from "./SessionDatabase";
 import { Session } from "../model/Session";
-import { PlayingTrack } from "../model/PlayingTrack";
+import { PlayingTrack, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export class InMemoryDatabase implements Database {
   tracksDatabase: Track[] = [];

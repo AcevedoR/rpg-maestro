@@ -1,6 +1,5 @@
-import { Track } from "../model/Track";
 import { Session } from "../model/Session";
-import { PlayingTrack } from "../model/PlayingTrack";
+import { PlayingTrack, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export interface Database {
   save: (track: Track) => Promise<void>;

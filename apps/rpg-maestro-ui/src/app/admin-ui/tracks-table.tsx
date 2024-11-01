@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
-import { Track } from '../Track';
 import { durationInMsToString } from '../utils/time';
+import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 const columns: GridColDef[] = [
   { field: 'id', width: 130 },

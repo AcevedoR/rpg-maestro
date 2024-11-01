@@ -14,7 +14,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@rpg-maestro/rpg-maestro-api-contract": ["libs/rpg-maestro-api-contract/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

@@ -2,8 +2,8 @@ import {
   isCurrentTrackOutOfDate,
   isCurrentTrackTooMuchDesynchronizedFromServer,
 } from './track-sync';
-import { PlayingTrack } from '../PlayingTrack';
 import { afterAll, describe } from 'vitest';
+import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
 
 const NOW = new Date(1730000015000);
 

@@ -1,0 +1,19 @@
+{
+  "name": "rpg-maestro-api-contract",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/rpg-maestro-api-contract/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/rpg-maestro-api-contract",
+        "main": "libs/rpg-maestro-api-contract/src/index.ts",
+        "tsConfig": "libs/rpg-maestro-api-contract/tsconfig.lib.json",
+        "assets": ["libs/rpg-maestro-api-contract/*.md"]
+      }
+    }
+  }
+}

@@ -1,10 +1,10 @@
 import AudioPlayer from 'react-h5-audio-player';
 import { ToastContainer } from 'react-toastify';
 import { useEffect, useRef, useState } from 'react';
-import { PlayingTrack } from '../PlayingTrack';
 import H5AudioPlayer from 'react-h5-audio-player';
 import { resyncCurrentTrackIfNeeded } from '../track-sync/track-sync';
 import { displayError } from '../error-utils';
+import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export function ClientsUi(){
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);

@@ -1,8 +1,8 @@
 import { TracksTable } from './tracks-table';
 import React, { useEffect, useState } from 'react';
-import { Track } from '../Track';
 import { getAllTracks } from '../tracks-api';
 import { Link } from 'react-router-dom';
+import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export function AdminUi() {
   const [allTracks, setAllTracks] = useState<Track[]|undefined>(undefined);

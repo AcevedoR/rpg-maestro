@@ -1,5 +1,5 @@
 import { Database } from "./Database";
-import { PlayingTrack } from "../model/PlayingTrack";
+import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export interface TrackToPlay {
   trackId: string;

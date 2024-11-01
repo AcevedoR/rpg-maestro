@@ -1,10 +1,8 @@
-import { TrackCreation } from "../model/TrackCreation";
-import { Track } from "../model/Track";
 import { v4 as uuid } from "uuid";
 import path from "path";
 import { Database } from "./Database";
 import { getTrackDuration } from "./audio/AudioHelper";
-import { PlayingTrack } from "../model/PlayingTrack";
+import { PlayingTrack, Track, TrackCreation } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export class TrackService {
   database: Database;
