@@ -9,6 +9,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { resyncCurrentTrackIfNeeded } from './track-sync/track-sync';
 import H5AudioPlayer from 'react-h5-audio-player';
+import { displayError } from './error-utils';
 
 const StyledApp = styled.div`
   // Your style here
@@ -39,7 +40,17 @@ export function App() {
             audioPlayer.current.audio.current.pause();
           } else {
             // playing
-            await audioPlayer.current.audio.current.play();
+            try{
+              await audioPlayer.current.audio.current.play();
+            }catch (error){
+              if (error instanceof DOMException && error.name === "NotAllowedError") {
+                console.error(`Play failed: User interaction with the document is required first. Original error: ${error}`);
+                displayError('This is your first time using the app, please accept autoplay by hitting play :)');
+              } else {
+                console.error("An unexpected error occurred:", error);
+              }
+
+            }
           }
         } else {
           console.warn('audio player not available yet');
