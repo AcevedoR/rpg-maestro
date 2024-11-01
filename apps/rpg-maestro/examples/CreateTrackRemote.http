@@ -1,9 +1,9 @@
 ###
-POST 10.243.230.63/rpg-maestro/admin/tracks
+POST https://fourgate.cloud/rpg-maestro/admin/tracks
 Content-Type: application/json
 
 {
-  "url": "http://10.243.230.63/public/musics/relaxing-celtic-music-forest-sanctum.mp3"
+  "url": "https://fourgate.cloud/public/musics/relaxing-celtic-music-forest-sanctum.mp3"
 }
 > {%
   client.global.set("last_created_track_id", response.body.id);
@@ -12,12 +12,12 @@ Content-Type: application/json
 ###10.243.230.63
 
 ### Get one
-GET 10.243.230.63/rpg-maestro/tracks/{{last_created_track_id}}
+GET https://fourgate.cloud/rpg-maestro/tracks/{{last_created_track_id}}
 
 ###
 
 ### Set created track to current playing
-PUT 10.243.230.63/rpg-maestro/admin/sessions/current/tracks
+PUT https://fourgate.cloud/rpg-maestro/admin/sessions/current/tracks
 Content-Type: application/json
 
 {
@@ -27,5 +27,5 @@ Content-Type: application/json
 ###
 
 ### get playing track
-GET 10.243.230.63/rpg-maestro/sessions/current/tracks
+GET https://fourgate.cloud/rpg-maestro/sessions/current/tracks
 ###
