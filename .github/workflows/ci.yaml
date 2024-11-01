@@ -26,7 +26,7 @@ jobs:
 #        id: setup-ffmpeg
 #        with:
 #          ffmpeg-version: release
-      - run: apt-get install ffmpeg -y
+      - run: sudo apt-get install ffmpeg -y
 
       - run: npm ci
 
