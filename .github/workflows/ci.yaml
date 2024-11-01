@@ -22,14 +22,11 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - uses: FedericoCarboni/setup-ffmpeg@v3
-        id: setup-ffmpeg
-        with:
-          ffmpeg-version: release
-      # This line enables distribution
-      # The "--stop-agents-after" is optional, but allows idle agents to shut down once the "e2e-ci" targets have been requested
-      # - run: npx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci"
-      - run: npm ci
+#      - uses: FedericoCarboni/setup-ffmpeg@v3
+#        id: setup-ffmpeg
+#        with:
+#          ffmpeg-version: release
+      - run: apt-get install ffmpeg -y
 
       - run: npm ci
 
