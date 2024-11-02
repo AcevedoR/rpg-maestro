@@ -57,6 +57,10 @@
     }
   ],
   "targetDefaults": {
+    "e2e": {
+      "cache": true,
+      "dependsOn": ["build"]
+    },
     "e2e-ci--**/*": {
       "dependsOn": ["^build"]
     },
