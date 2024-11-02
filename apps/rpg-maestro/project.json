@@ -8,7 +8,9 @@
     "dev": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "rpg-maestro:build",
         "runBuildTargetDependencies": false
@@ -25,7 +27,9 @@
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "rpg-maestro:build",
         "runBuildTargetDependencies": false
@@ -37,6 +41,11 @@
         "production": {
           "buildTarget": "rpg-maestro:build:production"
         }
+      }
+    },
+    "rpg-maestro:preview:e2e-tests": {
+      "configurations": {
+        "e2e-tests": {}
       }
     }
   }

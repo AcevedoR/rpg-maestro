@@ -5,5 +5,20 @@
   "projectType": "application",
   "tags": [],
   "// targets": "to see all targets run: nx show project rpg-maestro-ui --web",
-  "targets": {}
+  "targets": {
+    "init-e2e-setup": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "PORT=8099 npx nx run rpg-maestro:dev --configuration=e2e-tests",
+          "npx nx run rpg-maestro-ui:preview --configuration=e2e-tests"
+        ]
+      }
+    },
+    "build":{
+      "configurations": {
+        "e2e-tests": {}
+      }
+    }
+  }
 }

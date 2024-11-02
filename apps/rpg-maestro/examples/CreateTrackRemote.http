@@ -9,12 +9,9 @@ Content-Type: application/json
   client.global.set("last_created_track_id", response.body.id);
 %}
 
-###10.243.230.63
-
+###
 ### Get one
 GET https://fourgate.cloud/rpg-maestro/tracks/{{last_created_track_id}}
-
-###
 
 ### Set created track to current playing
 PUT https://fourgate.cloud/rpg-maestro/admin/sessions/current/tracks

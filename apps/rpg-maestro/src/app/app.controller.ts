@@ -3,7 +3,7 @@ import { TrackService } from "./admin-api/TrackService";
 import { Database } from "./admin-api/Database";
 import { ManageCurrentlyPlayingTracks, TrackToPlay } from './admin-api/ManageCurrentlyPlayingTracks';
 import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
-import { PlayingTrack, Track, TrackCreation } from '@rpg-maestro/rpg-maestro-api-contract';
+import { PlayingTrack, Track, TrackCreation, TracksFromDirectoryCreation } from '@rpg-maestro/rpg-maestro-api-contract';
 
 @Controller()
 export class AppController {
@@ -17,10 +17,17 @@ export class AppController {
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
   }
 
+  @Post("/admin/tracks/directory")
+  createAllTracksFromDirectory(@Body() tracksFromDirectoryCreation: TracksFromDirectoryCreation): Promise<void> {
+    console.log(tracksFromDirectoryCreation)
+    return this.trackService.createAllTracksFromDirectory(tracksFromDirectoryCreation);
+  }
+
   @Post("/admin/tracks")
   postTrack(@Body() trackCreation: TrackCreation): Promise<Track> {
     return this.trackService.createTrack(trackCreation);
   }
+
   @Get("/admin/tracks")
   getAllTracks():Promise<Track[]>{
     return this.trackService.getAll();

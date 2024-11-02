@@ -1,8 +1,9 @@
-import { v4 as uuid } from "uuid";
-import path from "path";
-import { Database } from "./Database";
-import { getTrackDuration } from "./audio/AudioHelper";
-import { PlayingTrack, Track, TrackCreation } from '@rpg-maestro/rpg-maestro-api-contract';
+import { v4 as uuid } from 'uuid';
+import path from 'path';
+import { Database } from './Database';
+import { getTrackDuration } from './audio/AudioHelper';
+import { PlayingTrack, Track, TrackCreation, TracksFromDirectoryCreation } from '@rpg-maestro/rpg-maestro-api-contract';
+import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/FetchCaddyDirectory';
 
 export class TrackService {
   database: Database;
@@ -25,7 +26,7 @@ export class TrackService {
       updated_at: now,
 
       source: {
-        origin_media: "same-server",
+        origin_media: 'same-server',
         origin_url: trackCreation.url,
         origin_name: fileName,
       },
@@ -45,12 +46,21 @@ export class TrackService {
     return this.database.getAllTracks();
   }
 
-  get(id: string): Promise<Track> {
+  async get(id: string): Promise<Track> {
     return this.database.getTrack(id);
   }
 
-  getCurrentlyPlaying(): Promise<PlayingTrack> {
-    return this.database.getCurrentSession().then((s) => s.currentTrack);
+  async getCurrentlyPlaying(): Promise<PlayingTrack> {
+    const s = await this.database.getCurrentSession();
+    return s.currentTrack;
+  }
+
+  async createAllTracksFromDirectory(tracksFromDirectoryCreation: TracksFromDirectoryCreation): Promise<void> {
+    await Promise.all(
+      (
+        await getAllFilesFromCaddyFileServerDirectory(tracksFromDirectoryCreation.directoryUrl)
+      ).map((x) => this.createTrack(x))
+    );
   }
 }
 
@@ -59,10 +69,7 @@ async function checkFileIfActuallyUsable(url: string) {
     const response = await fetch(url);
     if (!response.ok || response.status != 200) {
       const shortError = `httpStatus: ${response.status}, statusText: ${response.statusText}`;
-      console.log(
-        `checkFileIfActuallyUsable failed with error: ${shortError}`,
-        response
-      );
+      console.log(`checkFileIfActuallyUsable failed with error: ${shortError}`, response);
       throw new Error(
         `Cannot create track, file not reachable, fetch error: ${shortError}, full error: ${await response.text()}`
       );
@@ -70,7 +77,7 @@ async function checkFileIfActuallyUsable(url: string) {
   } catch (error) {
     if (error instanceof TypeError) {
       console.debug(error);
-      if (error.message && error.message === "fetch failed") {
+      if (error.message && error.message === 'fetch failed') {
         throw new Error(`Fetch network error: ${error}`);
       } else {
         throw new Error(`Fetch unhandled error: ${error}`);

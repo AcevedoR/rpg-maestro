@@ -11,10 +11,23 @@ Content-Type: application/json
 %}
 
 ###
+### create from directory
+POST localhost:3000/admin/tracks/directory
+Accept: application/json
+Content-Type: application/json
+
+{
+  "directoryUrl": "https://fourgate.cloud/public/musics"
+}
+###
 
 ### Get one
 GET localhost:3000/tracks/{{last_created_track_id}}
 
+###
+###
+### Get all
+GET localhost:3000/admin/tracks
 ###
 
 ### Set created track to current playing

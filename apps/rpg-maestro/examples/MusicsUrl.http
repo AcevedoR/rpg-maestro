@@ -1,0 +1,5 @@
+###
+GET https://fourgate.cloud/public/musics
+Accept: application/json
+###
+
