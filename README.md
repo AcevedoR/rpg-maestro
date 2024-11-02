@@ -1,6 +1,7 @@
 # RpgMaestro
 # TODO
-- load an entire dir, endpoint
+- make it demoable
+- run init curl after each restart
 - mongodb
 - fix track name encoding
 - fix "duration": 50717.210999999996

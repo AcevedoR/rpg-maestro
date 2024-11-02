@@ -12,7 +12,6 @@ interface CaddyFileserverFile {
 
 export async function getAllFilesFromCaddyFileServerDirectory(url: string): Promise<TrackCreation[]> {
   try {
-    console.log("before fetch" +url)//FIXME
     const response = await fetch(url, {
       headers: {
         Accept: 'application/json',

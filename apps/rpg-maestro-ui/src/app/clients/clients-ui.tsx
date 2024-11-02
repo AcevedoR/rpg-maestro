@@ -60,12 +60,17 @@ export function ClientsUi(){
   return <>
     <div>
       <h1>RPG-Maestro player UI</h1>
+
+      <div>
+        <h3>{currentTrack?.name}</h3>
       <AudioPlayer
         src={currentTrack?.url}
         ref={audioPlayer}
         loop={true}
 
       />
+      </div>
+
       <ToastContainer limit={5}
       />
     </div>

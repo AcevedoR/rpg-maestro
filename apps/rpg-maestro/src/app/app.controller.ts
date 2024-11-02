@@ -1,9 +1,10 @@
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { TrackService } from "./admin-api/TrackService";
 import { Database } from "./admin-api/Database";
-import { ManageCurrentlyPlayingTracks, TrackToPlay } from './admin-api/ManageCurrentlyPlayingTracks';
+import { ManageCurrentlyPlayingTracks } from './admin-api/ManageCurrentlyPlayingTracks';
 import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
 import { PlayingTrack, Track, TrackCreation, TracksFromDirectoryCreation } from '@rpg-maestro/rpg-maestro-api-contract';
+import { TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
 
 @Controller()
 export class AppController {

@@ -3,7 +3,7 @@ POST localhost:3000/admin/tracks
 Content-Type: application/json
 
 {
-  "url": "http://192.168.1.14:8089/Emotional Music - Veiled.mp3",
+  "url": "https://fourgate.cloud/public/musics/Emotional Music - Veiled.mp3",
   "name": "my-track"
 }
 > {%

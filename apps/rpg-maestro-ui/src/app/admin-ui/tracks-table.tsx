@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 import { durationInMsToString } from '../utils/time';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
@@ -34,11 +34,22 @@ const rows: Track[] = [
 
 const paginationModel = { page: 0, pageSize: 5 };
 
-export interface TracksTableProps{
-  tracks: Track[]
+export interface TracksTableProps {
+  tracks: Track[];
+  onSetTrackToPlay: (trackId: string) => Promise<void>;
 }
+
 export function TracksTable(props: TracksTableProps) {
-  const {tracks} = props;
+  const { tracks, onSetTrackToPlay } = props;
+  const onRowSelection = (rowSelection: GridRowSelectionModel) => {
+    if (rowSelection.length > 1) {
+      throw new Error('multiple tracks selection is not handled');
+    }
+    if (rowSelection.length === 1) {
+      onSetTrackToPlay(String(rowSelection[0]));
+    }
+  };
+
   return (
     <Paper sx={{ height: 400, width: '100%' }}>
       <DataGrid
@@ -47,6 +58,7 @@ export function TracksTable(props: TracksTableProps) {
         initialState={{ pagination: { paginationModel } }}
         pageSizeOptions={[5, 10]}
         sx={{ border: 0 }}
+        onRowSelectionModelChange={onRowSelection}
       />
     </Paper>
   );

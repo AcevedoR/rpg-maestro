@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { getAllTracks } from '../tracks-api';
 import { Link } from 'react-router-dom';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { setTrackToPlay } from './admin-api';
+import { ToastContainer } from 'react-toastify';
 
 export function AdminUi() {
   const [allTracks, setAllTracks] = useState<Track[]|undefined>(undefined);
@@ -13,6 +15,10 @@ export function AdminUi() {
     }
   })
 
+  const requestSetTrackToPlay = async (trackId: string)=> {
+    await setTrackToPlay({ trackId });
+  }
+  
   return (
     <div>
       <div>
@@ -22,8 +28,9 @@ export function AdminUi() {
         <Link to="/">see what your players are seeing</Link>
       </div>
       <div>
-        <TracksTable tracks={allTracks ?? []}/>
+        <TracksTable tracks={allTracks ?? []} onSetTrackToPlay={requestSetTrackToPlay}/>
       </div>
+      <ToastContainer limit={5}/>
     </div>
   );
 }
