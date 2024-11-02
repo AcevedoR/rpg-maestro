@@ -20,7 +20,6 @@ Content-Type: application/json
   "directoryUrl": "https://fourgate.cloud/public/musics"
 }
 ###
-
 ### Get one
 GET localhost:3000/tracks/{{last_created_track_id}}
 

@@ -10,9 +10,23 @@ Content-Type: application/json
 %}
 
 ###
+
+### create from directory
+POST https://fourgate.cloud/rpg-maestro/admin/tracks/directory
+Content-Type: application/json
+
+{
+  "directoryUrl": "https://fourgate.cloud/public/musics"
+}
+
+###
+
 ### Get one
 GET https://fourgate.cloud/rpg-maestro/tracks/{{last_created_track_id}}
-
+###
+### Get all
+GET https://fourgate.cloud/rpg-maestro/admin/tracks
+###
 ### Set created track to current playing
 PUT https://fourgate.cloud/rpg-maestro/admin/sessions/current/tracks
 Content-Type: application/json
@@ -21,8 +35,10 @@ Content-Type: application/json
   "trackId": "{{last_created_track_id}}",
   "paused": false
 }
+
 ###
 
 ### get playing track
 GET https://fourgate.cloud/rpg-maestro/sessions/current/tracks
+
 ###

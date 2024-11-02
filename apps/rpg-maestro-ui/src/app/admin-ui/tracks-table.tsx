@@ -32,7 +32,7 @@ const rows: Track[] = [
   },
 ];
 
-const paginationModel = { page: 0, pageSize: 5 };
+const paginationModel = { page: 0, pageSize: 10 };
 
 export interface TracksTableProps {
   tracks: Track[];
@@ -51,12 +51,12 @@ export function TracksTable(props: TracksTableProps) {
   };
 
   return (
-    <Paper sx={{ height: 400, width: '100%' }}>
+    <Paper sx={{ height: 650, width: '100%' }}>
       <DataGrid
         rows={tracks}
         columns={columns}
         initialState={{ pagination: { paginationModel } }}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[10, 25, 50]}
         sx={{ border: 0 }}
         onRowSelectionModelChange={onRowSelection}
       />

@@ -91,5 +91,5 @@ async function checkFileIfActuallyUsable(url: string) {
 function getFileName(fileUrl: URL) {
   const fileFullName = fileUrl.pathname;
   const extension = path.extname(fileFullName);
-  return path.basename(fileFullName, extension);
+  return decodeURI(path.basename(fileFullName, extension));
 }
