@@ -34,19 +34,17 @@ export function TracksTable(props: TracksTableProps) {
     }
   };
 
-  const initialFilterState: { value: GridFilterModel } | undefined = trackIdToFilterOn
+  const filterModel: GridFilterModel = trackIdToFilterOn
     ? {
-        value: {
-          items: [
-            {
-              field: 'id',
-              operator: 'contains',
-              value: trackIdToFilterOn,
-            },
-          ],
-        },
+        items: [
+          {
+            field: 'id',
+            operator: 'contains',
+            value: trackIdToFilterOn,
+          },
+        ],
       }
-    : undefined;
+    : { items: [] };
 
   return (
     <Paper sx={{ height: 650, width: '100%' }}>
@@ -57,7 +55,7 @@ export function TracksTable(props: TracksTableProps) {
         pageSizeOptions={[10, 25, 50]}
         sx={{ border: 0 }}
         onRowSelectionModelChange={onRowSelection}
-        filterModel={initialFilterState?.value}
+        filterModel={filterModel}
       />
     </Paper>
   );
