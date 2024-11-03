@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DataGrid, GridColDef, GridFilterModel, GridRowSelectionModel } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
-import { durationInMsToString } from '../utils/time';
+import { durationInMsToString } from '../../utils/time';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 const columns: GridColDef[] = [

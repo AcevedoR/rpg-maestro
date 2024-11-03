@@ -26,7 +26,7 @@ export default function SearchSpecificTrack(props: SearchBarProps) {
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Search input"
+            label="Search specific track"
             slotProps={{
               input: {
                 ...params.InputProps,

@@ -1,11 +1,12 @@
-import { TracksTable } from './tracks-table';
+import { TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useState } from 'react';
 import { getAllTracks } from '../tracks-api';
 import { Link } from 'react-router-dom';
-import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { Tag, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { setTrackToPlay } from './admin-api';
 import { ToastContainer } from 'react-toastify';
-import SearchSpecificTrack from './SearchSpecificTrack';
+import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
+import SearchTags from './tracks-table/SearchTags';
 
 export function AdminUi() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
@@ -21,8 +22,11 @@ export function AdminUi() {
     await setTrackToPlay({ trackId });
   };
 
-  const onTrackSearchChange = (track: Track|null) => {
+  const onTrackSearchChange = (track: Track | null) => {
     setTrackToFilterOn(track);
+  };
+  const onTrackSearchByTagChange = (tags: Tag[] | null) => {
+    console.log(tags);
   };
 
   return (
@@ -32,10 +36,18 @@ export function AdminUi() {
         <p>As the Maestro, control what current track is playing for the session</p>
         <p>WIP under construction</p>
         <Link to="/">see what your players are seeing</Link>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {/* TODO implement tags search <SearchTags tracks={allTracks ?? []} onTrackSearchByTagChange={onTrackSearchByTagChange} />*/}
+        {/*<div style={{marginLeft: 20, marginRight: 20}}>or</div>*/}
         <SearchSpecificTrack tracks={allTracks ?? []} onTrackSearchChange={onTrackSearchChange} />
       </div>
       <div>
-        <TracksTable tracks={allTracks ?? []} onSetTrackToPlay={requestSetTrackToPlay} trackIdToFilterOn={trackToFilterOn?.id}/>
+        <TracksTable
+          tracks={allTracks ?? []}
+          onSetTrackToPlay={requestSetTrackToPlay}
+          trackIdToFilterOn={trackToFilterOn?.id}
+        />
       </div>
       <ToastContainer limit={5} />
     </div>

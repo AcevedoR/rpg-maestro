@@ -4,3 +4,4 @@ export * from './lib/Track';
 export * from './lib/TrackCreation';
 export * from './lib/TracksFromDirectoryCreation';
 export * from './lib/TrackToPlay';
+export * from './lib/Tag';
