@@ -1,8 +1,6 @@
 # RpgMaestro
 # TODO
 - run init curl after each restart
-- mongodb
-- fix track name encoding
 - fix "duration": 50717.210999999996
 
 ## run tests

@@ -43,6 +43,11 @@
         }
       }
     },
+    "rpg-maestro:build": {
+      "configurations": {
+        "production": {}
+      }
+    },
     "rpg-maestro:preview:e2e-tests": {
       "configurations": {
         "e2e-tests": {}

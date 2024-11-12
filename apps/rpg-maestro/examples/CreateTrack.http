@@ -3,7 +3,7 @@ POST localhost:3000/admin/tracks
 Content-Type: application/json
 
 {
-  "url": "https://fourgate.cloud/public/musics/Emotional Music - Veiled.mp3",
+  "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
   "name": "my-track"
 }
 > {%
