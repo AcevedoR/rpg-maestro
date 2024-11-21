@@ -6,15 +6,12 @@ import Button from '@mui/material/Button';
 import { createTrack } from '../admin-api';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
-function getInputUrl(
-  setInputUrl: (value: ((prevState: string | undefined) => string | undefined) | string | undefined) => void,
-  x: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-) {
-  console.log(x.target.value);
-  setInputUrl(x.target.value);
+export interface CreateTrackFormProps {
+  consumeFileUploadedEvent: () => string | null;
 }
 
-export function CreateTrackForm() {
+export function CreateTrackForm(props: CreateTrackFormProps) {
+  const { consumeFileUploadedEvent } = props;
   const [inputUrl, setInputUrl] = useState<string | undefined>(undefined);
   const [inputUrlError, setInputUrlError] = useState<string | null>(null);
   const [inputName, setInputName] = useState<string | undefined>(undefined);
@@ -27,7 +24,12 @@ export function CreateTrackForm() {
     } else {
       setInputUrlError(null);
     }
-  }, [inputUrl]);
+    const consumeFileUploadedEventBody = consumeFileUploadedEvent();
+    if (consumeFileUploadedEventBody) {
+      console.log('received event: ' + consumeFileUploadedEventBody);
+      setInputUrl(consumeFileUploadedEventBody);
+    }
+  }, [inputUrl, consumeFileUploadedEvent]);
 
   const isThereAnErrorInTheForm = () => {
     return !!inputUrlError;
@@ -55,7 +57,7 @@ export function CreateTrackForm() {
           <TextField
             label="URL"
             value={inputUrl ?? ''}
-            onChange={(x) => getInputUrl(setInputUrl, x)}
+            onChange={(x) => setInputUrl(x.target.value)}
             error={!!inputUrlError}
             helperText={inputUrlError}
           />

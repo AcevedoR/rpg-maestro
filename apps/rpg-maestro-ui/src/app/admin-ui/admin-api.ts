@@ -18,7 +18,7 @@ export const setTrackToPlay = async (trackToPlay: TrackToPlay): Promise<void> =>
     }
   } catch (error) {
     console.error(error);
-    displayError(`Fetch error: ${error}`);
+    displayError(`Fetch error: ${JSON.stringify(error)}`);
   }
 };
 
@@ -38,7 +38,7 @@ export const createTrack = async (trackCreation: TrackCreation): Promise<Track> 
     return (await response.json()) as Track;
   } catch (error) {
     console.error(error);
-    displayError(`Fetch error: ${error}`);
+    displayError(`Fetch error: ${JSON.stringify(error)}`);
     return Promise.reject();
   }
 };
