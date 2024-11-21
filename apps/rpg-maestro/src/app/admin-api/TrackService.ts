@@ -31,7 +31,7 @@ export class TrackService {
         origin_name: fileName,
       },
 
-      name: fileName,
+      name: trackCreation.name ?? fileName,
       url: trackCreation.url,
       duration: duration,
       tags: trackCreation.tags ?? [],

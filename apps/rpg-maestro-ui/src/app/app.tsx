@@ -5,7 +5,7 @@ import 'react-h5-audio-player/lib/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { MaestroSoundboard } from './admin-ui/maestro-soundboard';
 import { ClientsUi } from './clients/clients-ui';
-import { TracksManagement } from './admin-ui/tracks-management';
+import { TracksManagement } from './admin-ui/tracks-management/tracks-management';
 
 const StyledApp = styled.div`
   // Your style here
