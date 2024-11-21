@@ -3,8 +3,9 @@ import styled from 'styled-components';
 import { Route, Routes } from 'react-router-dom';
 import 'react-h5-audio-player/lib/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { AdminUi } from './admin-ui/admin-ui';
+import { MaestroSoundboard } from './admin-ui/maestro-soundboard';
 import { ClientsUi } from './clients/clients-ui';
+import { TracksManagement } from './admin-ui/tracks-management';
 
 const StyledApp = styled.div`
   // Your style here
@@ -21,7 +22,8 @@ export function App() {
       <br />
       <Routes>
         <Route path="/" element={<ClientsUi />} />
-        <Route path="/admin" element={<AdminUi />} />
+        <Route path="/admin" element={<MaestroSoundboard />} />
+        <Route path="/admin/manage" element={<TracksManagement />} />
       </Routes>
       {/* END: routes */}
     </StyledApp>

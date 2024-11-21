@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { TrackService } from './admin-api/TrackService';
 import { Database } from './admin-api/Database';
 import { ManageCurrentlyPlayingTracks } from './admin-api/ManageCurrentlyPlayingTracks';
@@ -12,6 +12,10 @@ import {
 import { FirestoreDatabase } from './infrastructure/FirestoreDatabase';
 import * as process from 'node:process';
 import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
+import 'multer';
+import { FileUploadService } from './infrastructure/fileUpload/FileUploadService';
 
 @Controller()
 export class AppController {
@@ -19,7 +23,8 @@ export class AppController {
   private readonly trackService: TrackService;
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
-  constructor() {
+  constructor(private readonly fileUploadService: FileUploadService){
+    this.fileUploadService =fileUploadService;
     const databaseImpl: string | undefined = process.env.DATABASE;
     if (databaseImpl === 'firestore') {
       console.log('using firestore as database');
@@ -48,6 +53,12 @@ export class AppController {
   @Get('/admin/tracks')
   getAllTracks(): Promise<Track[]> {
     return this.trackService.getAll();
+  }
+
+  @Post('/admin/tracks/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadTrack(@UploadedFile() file: Express.Multer.File) {
+    return this.fileUploadService.handleFileUpload(file);
   }
 
   @Put('/admin/sessions/current/tracks')

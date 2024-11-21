@@ -1,6 +1,7 @@
 # RpgMaestro
 # TODO
-- run init curl after each restart
+- upload:
+  - propose to customize it with tags and name (before or after upload ?)
 - fix "duration": 50717.210999999996
 
 ## run tests

@@ -6,9 +6,10 @@ import { Tag, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { setTrackToPlay } from './admin-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
-import SearchTags from './tracks-table/SearchTags';
+import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
+import { LyricsTwoTone, Visibility } from '@mui/icons-material';
 
-export function AdminUi() {
+export function MaestroSoundboard() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
   const [trackToFilterOn, setTrackToFilterOn] = useState<Track | null>(null);
 
@@ -31,11 +32,14 @@ export function AdminUi() {
 
   return (
     <div>
-      <div>
-        <h1>Admin UI</h1>
-        <p>As the Maestro, control what current track is playing for the session</p>
-        <p>WIP under construction</p>
-        <Link to="/">see what your players are seeing</Link>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ marginTop: 0 }}>Admin UI</h1>
+          <p>As the Maestro, control what current track is playing for the session</p>
+          <p>WIP under construction</p>
+        </div>
+        <TextLinkWithIconWrapper link="/" text={'see what your players are seeing'} materialUiIcon={Visibility} />
+        <TextLinkWithIconWrapper link="/admin/manage" text={'Manage your tracks'} materialUiIcon={LyricsTwoTone} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         {/* TODO implement tags search <SearchTags tracks={allTracks ?? []} onTrackSearchByTagChange={onTrackSearchByTagChange} />*/}
