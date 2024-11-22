@@ -1,19 +1,11 @@
 import * as React from 'react';
-import { DataGrid, GridColDef, GridFilterModel, GridRowSelectionModel } from '@mui/x-data-grid';
+import { useState } from 'react';
+import { DataGrid, GridActionsCellItem, GridColDef, GridFilterModel, GridRowSelectionModel } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
+import EditIcon from '@mui/icons-material/Edit';
 import { durationInMsToString } from '../../utils/time';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
-
-const columns: GridColDef[] = [
-  { field: 'id', width: 130 },
-  { field: 'name', width: 700 },
-  {
-    field: 'duration',
-    type: 'number',
-    width: 130,
-    valueGetter: (value, row) => durationInMsToString(value),
-  },
-];
+import { EditTrackSideForm } from './edit-track-side-form';
 
 const paginationModel = { page: 0, pageSize: 10 };
 
@@ -25,6 +17,44 @@ export interface TracksTableProps {
 
 export function TracksTable(props: TracksTableProps) {
   const { tracks, onSetTrackToPlay, trackIdToFilterOn } = props;
+  const [selectedTrackToEdit, setSelectedTrackToEdit] = useState<Track | null>(null);
+
+  const onClickEditButton = (id: string, row: any) => {
+    setSelectedTrackToEdit(row as Track);
+    console.log(row);
+  };
+  const onEditTrackSideFormClose = () => {
+    setSelectedTrackToEdit(null);
+  };
+  const columns: GridColDef[] = [
+    { field: 'id', width: 130 },
+    { field: 'name', minWidth: 600 },
+    {
+      field: 'duration',
+      type: 'number',
+      width: 80,
+      valueGetter: (value, row) => durationInMsToString(value),
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: 'actions',
+      width: 100,
+      cellClassName: 'actions',
+      getActions: ({ id, row }) => {
+        return [
+          <GridActionsCellItem
+            icon={<EditIcon />}
+            label="Edit"
+            className="textPrimary"
+            onClick={() => onClickEditButton(id.toString(), row)}
+            color="inherit"
+          />,
+        ];
+      },
+    },
+  ];
+
   const onRowSelection = (rowSelection: GridRowSelectionModel) => {
     if (rowSelection.length > 1) {
       throw new Error('multiple tracks selection is not handled');
@@ -57,6 +87,15 @@ export function TracksTable(props: TracksTableProps) {
         onRowSelectionModelChange={onRowSelection}
         filterModel={filterModel}
       />
+      {selectedTrackToEdit ? (
+        <EditTrackSideForm
+          trackToEdit={selectedTrackToEdit}
+          open={false}
+          onClose={onEditTrackSideFormClose}
+        ></EditTrackSideForm>
+      ) : (
+        <></>
+      )}
     </Paper>
   );
 }

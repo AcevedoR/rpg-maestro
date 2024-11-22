@@ -29,6 +29,8 @@ export default defineConfig({
     url: 'http://localhost:4300',
     reuseExistingServer: !process.env.CI,
     cwd: workspaceRoot,
+    stderr: 'pipe',
+    stdout: 'pipe',
   },
   projects: [
     {

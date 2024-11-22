@@ -1,0 +1,30 @@
+.container {
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  bottom: 0;
+  box-shadow: -7px 0 15px rgba(0, 0, 0, 0.3);
+  border-left: 1px solid #bbb;
+  background-color: white;
+  transition: right ease-in-out 0.5s;
+}
+
+.closeIcon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 998;
+}
+
+.overlay.hidden {
+  display: none;
+}

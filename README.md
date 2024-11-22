@@ -1,5 +1,6 @@
 # RpgMaestro
 # TODO
+- edit: name and tags
 - upload:
   - propose to customize it with tags and name (before or after upload ?)
 - fix "duration": 50717.210999999996
@@ -7,6 +8,10 @@
 ## run tests
 ```
 npx nx affected -t lint test e2e build --no-cloud
+```
+## run e2e tests
+```
+npx nx e2e rpg-maestro-ui-e2e --ui --no-cloud
 ```
 
 ## dev run

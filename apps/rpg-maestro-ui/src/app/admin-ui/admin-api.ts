@@ -28,6 +28,7 @@ export const createTrack = async (trackCreation: TrackCreation): Promise<Track> 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(trackCreation),
     });
