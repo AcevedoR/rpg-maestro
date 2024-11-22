@@ -7,7 +7,7 @@ import {
   Track,
   TrackCreation,
   TracksFromDirectoryCreation,
-  TrackToPlay,
+  TrackToPlay, TrackUpdate
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { FirestoreDatabase } from './infrastructure/FirestoreDatabase';
 import * as process from 'node:process';
@@ -48,6 +48,11 @@ export class AppController {
   @Post('/admin/tracks')
   postTrack(@Body() trackCreation: TrackCreation): Promise<Track> {
     return this.trackService.createTrack(trackCreation);
+  }
+
+  @Put('/admin/tracks/:id')
+  updateTrack(@Param('id') id: string, @Body() trackUpdate: TrackUpdate): Promise<Track> {
+    return this.trackService.updateTrack(id, trackUpdate);
   }
 
   @Get('/admin/tracks')

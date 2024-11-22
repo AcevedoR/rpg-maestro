@@ -7,8 +7,9 @@ export class InMemoryDatabase implements Database {
   tracksDatabase: Track[] = [];
   sessionDatabase?: SessionDatabase;
 
-  save(track: Track): Promise<void> {
-    this.tracksDatabase.push(track);
+  async save(track: Track): Promise<void> {
+    this.tracksDatabase = this.tracksDatabase.filter(item => item.id !== track.id);// remove before update
+    this.tracksDatabase.push({...track});
     return Promise.resolve(undefined);
   }
 
@@ -36,7 +37,7 @@ export class InMemoryDatabase implements Database {
     if (!track) {
       throw new Error(`track not found for id: ${trackId}`);
     }
-    return Promise.resolve(track);
+    return Promise.resolve({...track});
   }
   getAllTracks(): Promise<Track[]> {
     return Promise.resolve(this.tracksDatabase);

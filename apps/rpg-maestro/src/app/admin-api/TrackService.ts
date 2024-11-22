@@ -2,7 +2,13 @@ import { v4 as uuid } from 'uuid';
 import path from 'path';
 import { Database } from './Database';
 import { getTrackDuration } from './audio/AudioHelper';
-import { PlayingTrack, Track, TrackCreation, TracksFromDirectoryCreation } from '@rpg-maestro/rpg-maestro-api-contract';
+import {
+  PlayingTrack,
+  Track,
+  TrackCreation,
+  TracksFromDirectoryCreation,
+  TrackUpdate
+} from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/FetchCaddyDirectory';
 
 export class TrackService {
@@ -40,6 +46,18 @@ export class TrackService {
     await this.database.save(track);
 
     return track;
+  }
+
+  async updateTrack(id: string, trackUpdate: TrackUpdate): Promise<Track> {
+    const existing = await this.database.getTrack(id);
+
+    existing.name = trackUpdate.name;
+    existing.tags = trackUpdate.tags;
+    existing.updated_at = Date.now();
+
+    await this.database.save(existing);
+
+    return existing;
   }
 
   async getAll(): Promise<Track[]> {

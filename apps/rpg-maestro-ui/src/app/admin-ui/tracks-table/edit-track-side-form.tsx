@@ -5,15 +5,17 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { updateTrack } from '../admin-api';
 
 export interface EditTrackSideFormProps {
   open: boolean;
   onClose: () => unknown;
   trackToEdit: Track;
+  onTrackUpdated: () => unknown;
 }
 
 export function EditTrackSideForm(props: EditTrackSideFormProps) {
-  const { open, onClose, trackToEdit } = props;
+  const { open, onClose, trackToEdit, onTrackUpdated } = props;
   const [inputUrl, setInputUrl] = useState<string | undefined>(trackToEdit.url);
   const [inputUrlError, setInputUrlError] = useState<string | null>(null);
   const [inputName, setInputName] = useState<string | undefined>(trackToEdit.name);
@@ -37,19 +39,20 @@ export function EditTrackSideForm(props: EditTrackSideFormProps) {
       throw Error('inputUrl should be present');
     }
     setIsWaitingForTrackEdition(true);
-    // updateTrack({ // TODO
-    //   url: inputUrl,
-    //   name: inputName,
-    //   tags: inputTags ?? [],
-    // }).then((track: Track) => {
-    //   console.log(`track created: ${JSON.stringify(track)}`);
-    //   setIsCreatingTrack(false);
-    // });
+    updateTrack(trackToEdit.id, {
+      name: inputName,
+      tags: inputTags ?? [],
+    }).then((track: Track) => {
+      console.log(`track updated: ${JSON.stringify(track)}`);
+      setIsWaitingForTrackEdition(false);
+      onTrackUpdated();
+
+    });
   };
   return (
     <div>
       <Drawer open={open} width={600} onClose={onClose}>
-        <div style={{display: 'flex', flexDirection:'column', gap: '10px', padding: '20px'}}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '20px' }}>
           <h3>Update track: {trackToEdit.id}</h3>
           <TextField
             label="URL"

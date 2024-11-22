@@ -12,20 +12,25 @@ const paginationModel = { page: 0, pageSize: 10 };
 export interface TracksTableProps {
   tracks: Track[];
   onSetTrackToPlay: (trackId: string) => Promise<void>;
+  onRefreshRequested: () => unknown;
   trackIdToFilterOn?: string;
 }
 
 export function TracksTable(props: TracksTableProps) {
-  const { tracks, onSetTrackToPlay, trackIdToFilterOn } = props;
+  const { tracks, onSetTrackToPlay, trackIdToFilterOn, onRefreshRequested } = props;
   const [selectedTrackToEdit, setSelectedTrackToEdit] = useState<Track | null>(null);
 
   const onClickEditButton = (id: string, row: any) => {
     setSelectedTrackToEdit(row as Track);
-    console.log(row);
   };
   const onEditTrackSideFormClose = () => {
     setSelectedTrackToEdit(null);
+    onRefreshRequested();
   };
+  const onTrackUpdated = () =>{
+    setSelectedTrackToEdit(null);
+    onRefreshRequested();
+  }
   const columns: GridColDef[] = [
     { field: 'id', width: 130 },
     { field: 'name', minWidth: 600 },
@@ -35,6 +40,7 @@ export function TracksTable(props: TracksTableProps) {
       width: 80,
       valueGetter: (value, row) => durationInMsToString(value),
     },
+    { field: 'tags' },
     {
       field: 'actions',
       type: 'actions',
@@ -90,8 +96,9 @@ export function TracksTable(props: TracksTableProps) {
       {selectedTrackToEdit ? (
         <EditTrackSideForm
           trackToEdit={selectedTrackToEdit}
-          open={false}
+          open={true}
           onClose={onEditTrackSideFormClose}
+          onTrackUpdated={onTrackUpdated}
         ></EditTrackSideForm>
       ) : (
         <></>

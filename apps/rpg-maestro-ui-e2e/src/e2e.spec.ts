@@ -48,7 +48,6 @@ test('a Maestro can load (via API) and play a current track for its players', as
 });
 
 test('a Maestro can add a new track located on a remote server', async ({ page }) => {
-
   await test.step('go to Tracks management and add a track', async () => {
     await goToTracksManagement(page);
     await page.getByLabel('URL').fill('http://localhost:8099/public/light-switch-sound-198508.mp3');

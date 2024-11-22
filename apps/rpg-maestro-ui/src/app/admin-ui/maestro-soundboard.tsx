@@ -14,9 +14,13 @@ export function MaestroSoundboard() {
 
   useEffect(() => {
     if (allTracks === undefined) {
-      getAllTracks().then((x) => setAllTracks(x));
+      refreshTracks();
     }
   });
+
+  const refreshTracks = () => {
+    getAllTracks().then((x) => setAllTracks(x));
+  }
 
   const requestSetTrackToPlay = async (trackId: string) => {
     await setTrackToPlay({ trackId });
@@ -50,6 +54,7 @@ export function MaestroSoundboard() {
           tracks={allTracks ?? []}
           onSetTrackToPlay={requestSetTrackToPlay}
           trackIdToFilterOn={trackToFilterOn?.id}
+          onRefreshRequested={refreshTracks}
         />
       </div>
       <ToastContainer limit={5} />
