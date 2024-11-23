@@ -2,7 +2,7 @@ import * as React from 'react';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Autocomplete from '@mui/material/Autocomplete';
-import { Track, Tag } from '@rpg-maestro/rpg-maestro-api-contract';
+import { Tag, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export interface SearchBarProps {
   tracks: Track[];
@@ -15,8 +15,7 @@ export default function SearchTags(props: SearchBarProps) {
     onTrackSearchByTagChange(newValue);
   };
 
-  console.log(tracks);
-  const tags: Tag[] = [...new Set(tracks.flatMap(x=>x.tags))];
+  const tags: Tag[] = [...new Set(tracks.flatMap((x) => x.tags))];
 
   return (
     <Stack spacing={2} sx={{ width: 300 }}>
@@ -40,16 +39,4 @@ export default function SearchTags(props: SearchBarProps) {
       />
     </Stack>
   );
-}
-
-function deduplicateArray(arr: Track[]): Track[] {
-  const map = new Map<string, Track>();
-
-  arr.forEach((item) => {
-    if (!map.has(item.name)) {
-      map.set(item.name, item);
-    }
-  });
-
-  return Array.from(map.values());
 }

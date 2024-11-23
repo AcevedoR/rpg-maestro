@@ -1,4 +1,4 @@
-import { TracksTable } from './tracks-table/tracks-table';
+import { TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useState } from 'react';
 import { getAllTracks } from '../tracks-api';
 import { Tag, Track } from '@rpg-maestro/rpg-maestro-api-contract';
@@ -7,10 +7,11 @@ import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
 import { LyricsTwoTone, Visibility } from '@mui/icons-material';
+import SearchTags from './tracks-table/SearchTags';
 
 export function MaestroSoundboard() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
-  const [trackToFilterOn, setTrackToFilterOn] = useState<Track | null>(null);
+  const [trackFilters, setTrackFilters] = useState<TrackFilters>({});
 
   useEffect(() => {
     if (allTracks === undefined) {
@@ -20,17 +21,23 @@ export function MaestroSoundboard() {
 
   const refreshTracks = () => {
     getAllTracks().then((x) => setAllTracks(x));
-  }
+  };
 
   const requestSetTrackToPlay = async (trackId: string) => {
     await setTrackToPlay({ trackId });
   };
 
   const onTrackSearchChange = (track: Track | null) => {
-    setTrackToFilterOn(track);
+    setTrackFilters({
+      ...trackFilters,
+      trackIdToFilterOn: track?.id,
+    });
   };
   const onTrackSearchByTagChange = (tags: Tag[] | null) => {
-    console.log(tags);
+    setTrackFilters({
+      ...trackFilters,
+      tagsToFilterOn: tags ?? undefined,
+    });
   };
 
   return (
@@ -45,15 +52,15 @@ export function MaestroSoundboard() {
         <TextLinkWithIconWrapper link="/admin/manage" text={'Manage your tracks'} materialUiIcon={LyricsTwoTone} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        {/* TODO implement tags search <SearchTags tracks={allTracks ?? []} onTrackSearchByTagChange={onTrackSearchByTagChange} />*/}
-        {/*<div style={{marginLeft: 20, marginRight: 20}}>or</div>*/}
+        <SearchTags tracks={allTracks ?? []} onTrackSearchByTagChange={onTrackSearchByTagChange} />
+        <div style={{ marginLeft: 20, marginRight: 20 }}>or</div>
         <SearchSpecificTrack tracks={allTracks ?? []} onTrackSearchChange={onTrackSearchChange} />
       </div>
       <div>
         <TracksTable
           tracks={allTracks ?? []}
           onSetTrackToPlay={requestSetTrackToPlay}
-          trackIdToFilterOn={trackToFilterOn?.id}
+          filters={trackFilters}
           onRefreshRequested={refreshTracks}
         />
       </div>

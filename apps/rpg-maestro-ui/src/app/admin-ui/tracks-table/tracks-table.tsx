@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { DataGrid, GridActionsCellItem, GridColDef, GridFilterModel, GridRowSelectionModel } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 import EditIcon from '@mui/icons-material/Edit';
 import { durationInMsToString } from '../../utils/time';
@@ -9,15 +9,20 @@ import { EditTrackSideForm } from './edit-track-side-form';
 
 const paginationModel = { page: 0, pageSize: 10 };
 
+export interface TrackFilters {
+  trackIdToFilterOn?: string;
+  tagsToFilterOn?: string[];
+}
+
 export interface TracksTableProps {
   tracks: Track[];
   onSetTrackToPlay: (trackId: string) => Promise<void>;
   onRefreshRequested: () => unknown;
-  trackIdToFilterOn?: string;
+  filters: TrackFilters;
 }
 
 export function TracksTable(props: TracksTableProps) {
-  const { tracks, onSetTrackToPlay, trackIdToFilterOn, onRefreshRequested } = props;
+  const { tracks, onSetTrackToPlay, filters, onRefreshRequested } = props;
   const [selectedTrackToEdit, setSelectedTrackToEdit] = useState<Track | null>(null);
 
   const onClickEditButton = (id: string, row: any) => {
@@ -27,10 +32,10 @@ export function TracksTable(props: TracksTableProps) {
     setSelectedTrackToEdit(null);
     onRefreshRequested();
   };
-  const onTrackUpdated = () =>{
+  const onTrackUpdated = () => {
     setSelectedTrackToEdit(null);
     onRefreshRequested();
-  }
+  };
   const columns: GridColDef[] = [
     { field: 'id', width: 130 },
     { field: 'name', minWidth: 600 },
@@ -70,28 +75,15 @@ export function TracksTable(props: TracksTableProps) {
     }
   };
 
-  const filterModel: GridFilterModel = trackIdToFilterOn
-    ? {
-        items: [
-          {
-            field: 'id',
-            operator: 'contains',
-            value: trackIdToFilterOn,
-          },
-        ],
-      }
-    : { items: [] };
-
   return (
     <Paper sx={{ height: 650, width: '100%' }}>
       <DataGrid
-        rows={tracks}
+        rows={filter(tracks, filters)}
         columns={columns}
         initialState={{ pagination: { paginationModel } }}
         pageSizeOptions={[10, 25, 50]}
         sx={{ border: 0 }}
         onRowSelectionModelChange={onRowSelection}
-        filterModel={filterModel}
       />
       {selectedTrackToEdit ? (
         <EditTrackSideForm
@@ -105,4 +97,18 @@ export function TracksTable(props: TracksTableProps) {
       )}
     </Paper>
   );
+}
+
+function filter(tracks: Track[], filters: TrackFilters): Track[] {
+  let filteredTracks = [...tracks];
+  if (filters.trackIdToFilterOn) {
+    const foundTrack = filteredTracks.find((x) => x.id === filters.trackIdToFilterOn);
+    return foundTrack ? [foundTrack] : [];
+  }
+  if (filters.tagsToFilterOn) {
+    filteredTracks = filteredTracks.filter((x) =>
+      filters.tagsToFilterOn?.every((requiredTag) => x.tags.includes(requiredTag))
+    );
+  }
+  return filteredTracks;
 }
