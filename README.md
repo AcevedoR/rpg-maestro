@@ -1,9 +1,8 @@
 # RpgMaestro
 # TODO
-- edit: name and tags
-- upload:
-  - propose to customize it with tags and name (before or after upload ?)
-- fix "duration": 50717.210999999996
+- soundboard
+- quick tags
+- fix some tracks have unhandled "durations", example: 50717.210999999996 (this will probably negatively impact calculus and sync)
 
 ## run tests
 ```
