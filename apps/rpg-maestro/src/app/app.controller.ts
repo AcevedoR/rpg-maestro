@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { TrackService } from './admin-api/TrackService';
 import { Database } from './admin-api/Database';
 import { ManageCurrentlyPlayingTracks } from './admin-api/ManageCurrentlyPlayingTracks';
@@ -7,15 +7,20 @@ import {
   Track,
   TrackCreation,
   TracksFromDirectoryCreation,
-  TrackToPlay, TrackUpdate
+  TrackToPlay,
+  TrackUpdate,
 } from '@rpg-maestro/rpg-maestro-api-contract';
-import { FirestoreDatabase } from './infrastructure/FirestoreDatabase';
+import { DEFAULT_CURRENT_SESSION_ID, FirestoreDatabase } from './infrastructure/FirestoreDatabase';
 import * as process from 'node:process';
 import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import 'multer';
 import { FileUploadService } from './infrastructure/fileUpload/FileUploadService';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache, Milliseconds } from 'cache-manager';
+
+const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
 @Controller()
 export class AppController {
@@ -23,8 +28,11 @@ export class AppController {
   private readonly trackService: TrackService;
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
-  constructor(private readonly fileUploadService: FileUploadService){
-    this.fileUploadService =fileUploadService;
+  constructor(
+    private readonly fileUploadService: FileUploadService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {
+    this.fileUploadService = fileUploadService;
     const databaseImpl: string | undefined = process.env.DATABASE;
     if (databaseImpl === 'firestore') {
       console.log('using firestore as database');
@@ -67,8 +75,10 @@ export class AppController {
   }
 
   @Put('/admin/sessions/current/tracks')
-  changeCurrentTrack(@Body() trackToPlay: TrackToPlay): Promise<void> {
-    return this.manageCurrentlyPlayingTracks.changeCurrentTrack(trackToPlay);
+  async changeCurrentTrack(@Body() trackToPlay: TrackToPlay): Promise<PlayingTrack> {
+    const playingTrack = await this.manageCurrentlyPlayingTracks.changeCurrentTrack(trackToPlay);
+    await this.cacheManager.set(DEFAULT_CURRENT_SESSION_ID, playingTrack, ONE_DAY_TTL);
+    return playingTrack;
   }
 
   @Get('/tracks/:id')
@@ -77,7 +87,15 @@ export class AppController {
   }
 
   @Get('/sessions/current/tracks')
-  getCurrentTrack(): Promise<PlayingTrack> {
-    return this.trackService.getCurrentlyPlaying();
+  async getCurrentTrack(): Promise<PlayingTrack> {
+    // TODO fix this hack forbidding having more than one instance
+    // this was done to avoid reaching Firestore quotas
+    const cachedValue = (await this.cacheManager.get(DEFAULT_CURRENT_SESSION_ID)) as PlayingTrack;
+    if (cachedValue) {
+      return Promise.resolve(cachedValue);
+    }
+    const dbValue = await this.trackService.getCurrentlyPlaying();
+    await this.cacheManager.set(DEFAULT_CURRENT_SESSION_ID, dbValue, ONE_DAY_TTL);
+    return dbValue;
   }
 }

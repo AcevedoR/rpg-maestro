@@ -9,15 +9,16 @@ export class ManageCurrentlyPlayingTracks {
     this.database = database;
   }
 
-  async changeCurrentTrack(trackToPlay: TrackToPlay) {
+  async changeCurrentTrack(trackToPlay: TrackToPlay): Promise<PlayingTrack> {
     if (!trackToPlay || !trackToPlay.trackId) {
       throw new Error('when changeCurrentTrack, trackId is required');
     }
 
     const track = await this.database.getTrack(trackToPlay.trackId);
+    const playingTrack = new PlayingTrack(track.id, track.name, track.url, track.duration, trackToPlay?.paused ?? false, Date.now(), 0);
     await this.database.upsertCurrentTrack(
-      new PlayingTrack(track.id, track.name, track.url, track.duration, trackToPlay?.paused ?? false, Date.now(), 0)
+      playingTrack
     );
-    return Promise.resolve();
+    return Promise.resolve(playingTrack);
   }
 }

@@ -7,7 +7,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { firestore } from 'firebase-admin';
 import Firestore = firestore.Firestore;
 
-const DEFAULT_CURRENT_SESSION_ID = 'default-current-session';
+export const DEFAULT_CURRENT_SESSION_ID = 'default-current-session';
 
 interface GCPServiceAccountJson {
   project_id: string | undefined;

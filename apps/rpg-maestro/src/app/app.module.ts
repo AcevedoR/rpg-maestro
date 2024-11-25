@@ -7,6 +7,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { FileUploadService } from './infrastructure/fileUpload/FileUploadService';
 import * as process from 'node:process';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import * as process from 'node:process';
         },
       }),
     }),
-  ],
+    CacheModule.register(),
+],
   controllers: [AppController],
   providers: [FileUploadService],
 })
