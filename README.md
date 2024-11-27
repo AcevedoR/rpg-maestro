@@ -1,5 +1,5 @@
 # RpgMaestro
-# TODO
+## TODO
 - soundboard
 - quick tags
 - fix some tracks have unhandled "durations", example: 50717.210999999996 (this will probably negatively impact calculus and sync)

@@ -13,7 +13,7 @@ const StyledApp = styled.div`
 
 export function App() {
   return (
-    <StyledApp>
+    <StyledApp style={{fontFamily: '"Roboto", "Helvetica", "Arial", "sans-serif"'}}>
       {/* START: routes */}
       {/* These routes and navigation have been generated for you */}
       {/* Feel free to move and update them to fit your needs */}

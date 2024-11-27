@@ -13,7 +13,7 @@ export function TextLinkWithIconWrapper(props: TextLinkWithIconProps) {
   const icon = React.createElement(materialUiIcon, { sx: { fontSize: 100 } });
   return (
     <Link
-      style={{ display: 'flex', textDecoration: 'none', color: '#5f1285', height: '100px', width: '170px'}}
+      style={{ fontSize: '14px', display: 'flex', textDecoration: 'none', color: '#5f1285', height: '100px', width: '170px'}}
       to={link}
     >
       <div style={{ display: 'flex', alignItems: 'center', border: '1px solid' }}>
