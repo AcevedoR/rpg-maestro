@@ -1,8 +1,26 @@
 # RpgMaestro
 ## TODO
+- Youtube to mp3
+  - make a script that do conversion on my server and put it in correct directory
+  - upload on fourgate.cloud.private by default
+  - for now, add them to default session via API
+  - auto create the track in RPG maestro shared db <- this is not possible yet, might want to think about that.. like a catalogue ?
+- demo env vs my personal use !
+  - a quick hack could be to have a real demo env.. with no users feat for now 
+  - this will be done by implementing Maestro User auth feature
+    - there could be 2 two of users: Maestro and AdminMaestro
+      - a Maestro can only use existing tracks
+      - an AdminMaestro can upload tracks, and already have free TrackCatalogs loaded
+    - reminder: set a random Current song for every new sessions !
+  - I need to think about Maestros enrollment
+  - then they have their own Admin userspace, and can share a public Session link (one maestro = one session)
+    - no need to secure the session links for now
 - soundboard
 - quick tags
 - fix some tracks have unhandled "durations", example: 50717.210999999996 (this will probably negatively impact calculus and sync)
+- add a local Redis (or equivalent) !
+- create a CI/CD
+    - handle multienv (prod vs preprod-rpg-maestro.fourgate.cloud)
 
 ## run tests
 ```
