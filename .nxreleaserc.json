@@ -1,0 +1,17 @@
+{
+  "changelog": false,
+  "git": false,
+  "npm": false,
+  "github": false,
+  "repositoryUrl": "https://github.com/AcevedoR/rpg-maestro",
+  "branches": [
+    "main"
+  ],
+  "plugins": [
+    [
+      "@semantic-release/exec", {
+      "verifyReleaseCmd": "echo \"${nextRelease.version}\" && echo \"${nextRelease.version}\" > $NX_WORKSPACE_ROOT/apps/$NX_TASK_TARGET_PROJECT/app_version.txt"
+    }
+    ]
+  ]
+}

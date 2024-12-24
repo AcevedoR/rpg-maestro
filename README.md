@@ -21,6 +21,7 @@
 - add a local Redis (or equivalent) !
 - create a CI/CD
     - handle multienv (prod vs preprod-rpg-maestro.fourgate.cloud)
+- replace docker-build and deploy tasks by a custom executor
 
 ## run tests
 ```

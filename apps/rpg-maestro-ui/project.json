@@ -19,6 +19,27 @@
       "configurations": {
         "e2e-tests": {}
       }
+    },
+    "semantic-release": {
+      "executor": "@theunderscorer/nx-semantic-release:semantic-release"
+    },
+    "docker-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "([ -e ./apps/rpg-maestro-ui/app_version.txt ] && docker build . -f ./apps/rpg-maestro-ui/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/rpg-maestro-ui/app_version.txt) --platform linux/amd64) || echo 'no new version, skipping task'"
+      },
+      "dependsOn": [
+        "build", "semantic-release"
+      ]
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "([ -e ./apps/rpg-maestro-ui/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/rpg-maestro-ui/app_version.txt)) || echo 'no new version, skipping task'"
+      },
+      "dependsOn": [
+        "docker-build"
+      ]
     }
   }
 }

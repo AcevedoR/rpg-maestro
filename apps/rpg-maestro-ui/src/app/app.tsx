@@ -8,7 +8,7 @@ import { ClientsUi } from './clients/clients-ui';
 import { TracksManagement } from './admin-ui/tracks-management/tracks-management';
 
 const StyledApp = styled.div`
-  // Your style here
+  //  Your style here 
 `;
 
 export function App() {
