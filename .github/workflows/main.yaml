@@ -13,11 +13,15 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.RPG_MAESTRO_CI_PAT }}
+      GITHUB_TOKEN: ${{ secrets.RPG_MAESTRO_CI_PAT }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: configure git
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
       - uses: actions/setup-node@v3
         with:
           node-version: 20
