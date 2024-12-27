@@ -7,13 +7,13 @@ on:
 # Needed for nx-set-shas when run on the main branch
 permissions:
   actions: read
-  contents: read
+  contents: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.RPG_MAESTRO_CI_PAT }}
+#    env:
+#      GITHUB_TOKEN: ${{ secrets.RPG_MAESTRO_CI_PAT }}
     steps:
       - uses: actions/checkout@v4
         with:
