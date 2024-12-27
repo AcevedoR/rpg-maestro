@@ -62,7 +62,7 @@
         "command": "docker build . -f apps/$NX_TASK_TARGET_PROJECT/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./app_version) --platform linux/amd64"
       },
       "dependsOn": [
-        "build"
+        "build", "semantic-release"
       ]
     },
     "deploy": {
@@ -71,7 +71,7 @@
         "command": "docker push acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./app_version)"
       },
       "dependsOn": [
-        "semantic-release", "docker-build"
+        "docker-build"
       ]
     }
   }
