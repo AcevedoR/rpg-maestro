@@ -59,7 +59,7 @@
     "docker-build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "([ -e ./apps/rpg-maestro/app_version.txt ] && docker build . -f ./apps/rpg-maestro/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/rpg-maestro/app_version.txt) --platform linux/amd64) || echo 'no new version, skipping task'"
+        "command": "([ -e ./apps/rpg-maestro/app_version.txt ] && docker build . -f ./apps/rpg-maestro/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/rpg-maestro/app_version.txt) -t acevedor/$NX_TASK_TARGET_PROJECT:latest --platform linux/amd64) || echo 'no new version, skipping task'"
       },
       "dependsOn": [
         "build", "semantic-release"
@@ -68,7 +68,7 @@
     "deploy": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "([ -e ./apps/rpg-maestro/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/rpg-maestro/app_version.txt)) || echo 'no new version, skipping task'"
+        "command": "([ -e ./apps/rpg-maestro/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT --all-tags || echo 'no new version, skipping task'"
       },
       "dependsOn": [
         "docker-build"
