@@ -10,8 +10,8 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "PORT=8099 npx nx run rpg-maestro:dev --configuration=e2e-tests",
-          "npx nx run rpg-maestro-ui:preview --configuration=e2e-tests"
+          "PORT=8099 npx nx run rpg-maestro:dev --configuration=e2e-tests --no-cloud",
+          "npx nx run rpg-maestro-ui:preview --configuration=e2e-tests --no-cloud"
         ]
       }
     },

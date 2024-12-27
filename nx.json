@@ -59,10 +59,13 @@
   "targetDefaults": {
     "e2e": {
       "cache": true,
-      "dependsOn": ["build"]
+      "dependsOn": ["test"]
     },
     "e2e-ci--**/*": {
       "dependsOn": ["^build"]
+    },
+    "semantic-release": {
+      "dependsOn": ["test", "e2e"]
     },
     "@nx/vite:build": {
       "cache": true,
