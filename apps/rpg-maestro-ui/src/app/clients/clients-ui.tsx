@@ -1,21 +1,25 @@
 import AudioPlayer from 'react-h5-audio-player';
+import H5AudioPlayer from 'react-h5-audio-player';
 import { ToastContainer } from 'react-toastify';
 import { useEffect, useRef, useState } from 'react';
-import H5AudioPlayer from 'react-h5-audio-player';
 import { resyncCurrentTrackIfNeeded } from '../track-sync/track-sync';
 import { displayError } from '../error-utils';
 import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
+import GithubSourceCodeLink from '../ui-components/github-source-code-link/github-source-code-link';
 
-export function ClientsUi(){
+export function ClientsUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const audioPlayer = useRef<H5AudioPlayer>();
 
   useEffect(() => {
     async function resyncCurrentTrackOnUi() {
-      const newerServerTrack = await resyncCurrentTrackIfNeeded(audioPlayer.current?.audio?.current?.currentTime ?? null, currentTrack);
-      if(newerServerTrack){
-        console.log("synchronizing track")
+      const newerServerTrack = await resyncCurrentTrackIfNeeded(
+        audioPlayer.current?.audio?.current?.currentTime ?? null,
+        currentTrack
+      );
+      if (newerServerTrack) {
+        console.log('synchronizing track');
         setCurrentTrack(newerServerTrack);
         if (!newerServerTrack) {
           throw new Error('Current track is not defined');
@@ -31,16 +35,17 @@ export function ClientsUi(){
             audioPlayer.current.audio.current.pause();
           } else {
             // playing
-            try{
+            try {
               await audioPlayer.current.audio.current.play();
-            }catch (error){
-              if (error instanceof DOMException && error.name === "NotAllowedError") {
-                console.error(`Play failed: User interaction with the document is required first. Original error: ${error}`);
+            } catch (error) {
+              if (error instanceof DOMException && error.name === 'NotAllowedError') {
+                console.error(
+                  `Play failed: User interaction with the document is required first. Original error: ${error}`
+                );
                 displayError('This is your first time using the app, please accept autoplay by hitting play :)');
               } else {
-                console.error("An unexpected error occurred:", error);
+                console.error('An unexpected error occurred:', error);
               }
-
             }
           }
         } else {
@@ -57,22 +62,19 @@ export function ClientsUi(){
     return () => clearInterval(id);
   }, [currentTrack]);
 
-  return <>
-    <div>
-      <h1>RPG-Maestro player UI</h1>
-
+  return (
+    <>
       <div>
-        <h3>{currentTrack?.name}</h3>
-      <AudioPlayer
-        src={currentTrack?.url}
-        ref={audioPlayer}
-        loop={true}
-
-      />
+        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', rowGap: '10vh' }}>
+          <h1>RPG-Maestro player UI</h1>
+          <div>
+            <h3>{currentTrack?.name}</h3>
+            <AudioPlayer src={currentTrack?.url} ref={audioPlayer} loop={true} />
+          </div>
+          <GithubSourceCodeLink />
+        </div>
+        <ToastContainer limit={5} />
       </div>
-
-      <ToastContainer limit={5}
-      />
-    </div>
-  </>
+    </>
+  );
 }
