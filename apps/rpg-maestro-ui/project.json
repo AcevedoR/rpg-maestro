@@ -35,7 +35,7 @@
     "deploy": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "([ -e ./apps/rpg-maestro-ui/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT --all-tags || echo 'no new version, skipping task'"
+        "command": "([ -e ./apps/rpg-maestro-ui/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT --all-tags) || echo 'no new version, skipping task'"
       },
       "dependsOn": [
         "docker-build"
