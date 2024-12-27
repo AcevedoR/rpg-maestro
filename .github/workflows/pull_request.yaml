@@ -26,6 +26,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
       - uses: nrwl/nx-set-shas@v4
 
       - run: npx nx affected -t lint build test e2e --no-cloud
