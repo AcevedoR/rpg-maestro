@@ -52,6 +52,7 @@
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "@testing-library/react": "15.0.6",
+    "@theunderscorer/nx-semantic-release": "^2.12.0",
     "@types/jest": "^29.5.12",
     "@types/multer": "^1.4.12",
     "@types/node": "~18.16.9",

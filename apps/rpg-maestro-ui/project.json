@@ -19,6 +19,27 @@
       "configurations": {
         "e2e-tests": {}
       }
+    },
+    "semantic-release": {
+      "executor": "@theunderscorer/nx-semantic-release:semantic-release"
+    },
+    "docker-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker build . -f apps/$NX_TASK_TARGET_PROJECT/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./app_version) --platform linux/amd64"
+      },
+      "dependsOn": [
+        "build"
+      ]
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker push acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./app_version)"
+      },
+      "dependsOn": [
+        "semantic-release", "docker-build"
+      ]
     }
   }
 }
