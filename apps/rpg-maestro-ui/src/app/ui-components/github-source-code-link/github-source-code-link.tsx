@@ -10,7 +10,7 @@ const GitHubLink = () => {
         rel="noopener noreferrer"
         className="github-link"
       >
-        {/* Inline SVG for GitHub Logo */}
+        {/* Inline SVG for GitHub Logo  */}
         <svg
           className="github-logo"
           viewBox="0 0 16 16"
