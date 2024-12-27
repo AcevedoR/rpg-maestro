@@ -12,6 +12,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.RPG_MAESTRO_CI_PAT }}
     steps:
       - uses: actions/checkout@v4
         with:
