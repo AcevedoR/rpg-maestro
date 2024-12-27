@@ -86,7 +86,7 @@ export class AppController {
     return this.trackService.get(id);
   }
 
-  @Get  ('/sessions/current/tracks')
+  @Get   ('/sessions/current/tracks')
   async getCurrentTrack(): Promise<PlayingTrack> {
     // TODO fix this hack forbidding having more than one instance
     // this was done to avoid reaching Firestore quotas
