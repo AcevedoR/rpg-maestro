@@ -1,0 +1,76 @@
+{
+  "name": "audio-file-uploader",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/audio-file-uploader/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "dev": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "buildTarget": "audio-file-uploader:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "audio-file-uploader:build:development"
+        },
+        "production": {
+          "buildTarget": "audio-file-uploader:build:production"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "audio-file-uploader:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "audio-file-uploader:build:development"
+        },
+        "production": {
+          "buildTarget": "audio-file-uploader:build:production"
+        }
+      }
+    },
+    "audio-file-uploader:build": {
+      "configurations": {
+        "production": {}
+      }
+    },
+    "audio-file-uploader:preview:e2e-tests": {
+      "configurations": {
+        "e2e-tests": {}
+      }
+    },
+    "semantic-release": {
+      "executor": "@theunderscorer/nx-semantic-release:semantic-release"
+    },
+    "docker-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "([ -e ./apps/audio-file-uploader/app_version.txt ] && docker build . -f ./apps/audio-file-uploader/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/audio-file-uploader/app_version.txt) -t acevedor/$NX_TASK_TARGET_PROJECT:latest --platform linux/amd64) || echo 'no new version, skipping task'"
+      },
+      "dependsOn": [
+        "build", "semantic-release"
+      ]
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "([ -e ./apps/audio-file-uploader/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT --all-tags) || echo 'no new version, skipping task'"
+      },
+      "dependsOn": [
+        "docker-build"
+      ]
+    }
+  }
+}
