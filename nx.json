@@ -57,6 +57,9 @@
     }
   ],
   "targetDefaults": {
+    "test": {
+      "dependsOn": ["lint"]
+    },
     "e2e": {
       "cache": true,
       "dependsOn": ["test"]
