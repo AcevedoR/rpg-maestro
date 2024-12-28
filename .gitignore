@@ -3,6 +3,8 @@
 .nx/cache
 .nx
 
+uploads
+
 .idea/
 ### Node ###
 # Logs

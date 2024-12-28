@@ -9,7 +9,8 @@ async function bootstrap() {
   app.setGlobalPrefix(globalPrefix);
   app.enableCors({origin: '*', allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"]});// TODO fix this
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  const server = await app.listen(port);
+  server.setTimeout(3600000);
   Logger.log(`🚀 Application audio-file-uploader is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
