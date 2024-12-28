@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
 import axios, { AxiosRequestConfig } from 'axios';
 
-const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL; // TODO centralize
+const audioFileUploaderAPI = import.meta.env.VITE_AUDIO_FILE_UPLOADER_API_URL;
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -45,7 +45,7 @@ export function FileUpload(props: FileUploadProps) {
       };
 
       axios
-        .post(`${rpgmaestroapiurl}/admin/tracks/upload`, formData, config)
+        .post(`${audioFileUploaderAPI}/upload/audio`, formData, config)
         .then((response) => {
           console.log(response.data);
           const uploadRes = response.data as {fileURL: string};

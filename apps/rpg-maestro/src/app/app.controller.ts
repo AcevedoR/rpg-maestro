@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Post, Put } from '@nestjs/common';
 import { TrackService } from './admin-api/TrackService';
 import { Database } from './admin-api/Database';
 import { ManageCurrentlyPlayingTracks } from './admin-api/ManageCurrentlyPlayingTracks';
@@ -13,10 +13,6 @@ import {
 import { DEFAULT_CURRENT_SESSION_ID, FirestoreDatabase } from './infrastructure/FirestoreDatabase';
 import * as process from 'node:process';
 import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
-import 'multer';
-import { FileUploadService } from './infrastructure/fileUpload/FileUploadService';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 
@@ -29,10 +25,8 @@ export class AppController {
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
   constructor(
-    private readonly fileUploadService: FileUploadService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {
-    this.fileUploadService = fileUploadService;
     const databaseImpl: string | undefined = process.env.DATABASE;
     if (databaseImpl === 'firestore') {
       console.log('using firestore as database');
@@ -68,12 +62,6 @@ export class AppController {
     return this.trackService.getAll();
   }
 
-  @Post('/admin/tracks/upload')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadTrack(@UploadedFile() file: Express.Multer.File) {
-    return this.fileUploadService.handleFileUpload(file);
-  }
-
   @Put('/admin/sessions/current/tracks')
   async changeCurrentTrack(@Body() trackToPlay: TrackToPlay): Promise<PlayingTrack> {
     const playingTrack = await this.manageCurrentlyPlayingTracks.changeCurrentTrack(trackToPlay);
@@ -86,7 +74,7 @@ export class AppController {
     return this.trackService.get(id);
   }
 
-  @Get   ('/sessions/current/tracks')
+  @Get('/sessions/current/tracks')
   async getCurrentTrack(): Promise<PlayingTrack> {
     // TODO fix this hack forbidding having more than one instance
     // this was done to avoid reaching Firestore quotas
