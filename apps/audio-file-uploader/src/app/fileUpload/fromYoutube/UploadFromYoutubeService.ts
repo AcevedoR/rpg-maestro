@@ -30,12 +30,16 @@ export async function uploadAudioFromYoutube(
         const info = await ytdl.getInfo(url);
         const fileName = (info.videoDetails.title ?? `audio_${Date.now()}`).replace(/[^a-zA-Z0-9]/g, '_') + '.mp3';
         const filePath = join(UPLOAD_DIRECTORY, fileName);
-        const audioStream = ytdl(url, { filter: 'audioonly' });
+        const audioStream = ytdl(url, {
+          filter: 'audioonly',
+          highWaterMark: 512 * 1024 * 1024, // 32MB chunks
+        });
 
         await new Promise((resolve, reject) => {
           const fileStream = createWriteStream(filePath);
           ffmpeg(audioStream)
             .audioCodec('libmp3lame')
+            .audioBitrate(128)
             .format('mp3')
             .on('error', (err) => {
               Logger.error(`Error converting to MP3 for URL ${url}: ${err.message}`);
