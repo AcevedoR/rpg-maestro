@@ -5,5 +5,11 @@
   "sourceRoot": "apps/rpg-maestro-ui-e2e/src",
   "implicitDependencies": ["rpg-maestro-ui"],
   "// targets": "to see all targets run: nx show project rpg-maestro-ui-e2e --web",
-  "targets": {}
+  "targets": {
+    "e2e": {
+      "dependsOn": [
+        "rpg-maestro:build", "audio-file-uploader:build", "rpg-maestro-ui:build"
+      ]
+    }
+  }
 }
