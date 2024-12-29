@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
 import React from 'react';
 import { SvgIconComponent } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import { noop } from '../utils/noop';
 
 export interface TextLinkWithIconProps {
   link: string;
@@ -10,16 +11,25 @@ export interface TextLinkWithIconProps {
 
 export function TextLinkWithIconWrapper(props: TextLinkWithIconProps) {
   const { link, text, materialUiIcon } = props;
-  const icon = React.createElement(materialUiIcon, { sx: { fontSize: 100 } });
+  const icon = React.createElement(materialUiIcon, { sx: { fontSize: '60px' } });
   return (
-    <Link
-      style={{ fontSize: '14px', display: 'flex', textDecoration: 'none', color: '#5f1285', height: '100px', width: '170px'}}
-      to={link}
+    <Button
+      href={link}
+      style={{
+        display: 'flex',
+        textDecoration: 'none',
+        color: '#97723d',
+        height: '100px',
+        width: '170px',
+        border: '1px solid',
+        fontSize: '0.2em',
+      }}
+      onClick={() => noop()}
     >
-      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         {icon}
         <p>{text}</p>
       </div>
-    </Link>
+    </Button>
   );
 }
