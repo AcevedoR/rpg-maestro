@@ -1,13 +1,15 @@
 import AudioPlayer from 'react-h5-audio-player';
 import H5AudioPlayer from 'react-h5-audio-player';
 import { ToastContainer } from 'react-toastify';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { resyncCurrentTrackIfNeeded } from '../track-sync/track-sync';
 import { displayError } from '../error-utils';
 import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
 import GithubSourceCodeLink from '../ui-components/github-source-code-link/github-source-code-link';
 import './audio-player-readonly.css';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
+import SpatialAudioOffIcon from '@mui/icons-material/SpatialAudioOff';
 
 export function ClientsUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
@@ -75,7 +77,27 @@ export function ClientsUi() {
           rowGap: '10vh',
         }}
       >
-        <h1>RPG-Maestro player UI</h1>
+        <div style={{ display: 'flex', justifyContent: 'center', alignContent: 'center', width: '100%' }}>
+          <div style={{ width: '30%', minWidth: '0' }}></div>
+          <h1 style={{ textAlign: 'center' }}>RPG-Maestro player UI</h1>
+          <div style={{ width: '30%', minWidth: '170px' }}>
+            <div style={{ justifySelf: 'end' }}>
+              <TextLinkWithIconWrapper
+                link="/admin"
+                text={'Maestro interface is available here'}
+                materialUiIcon={SpatialAudioOffIcon}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <p>
+            Welcome! This app is primarily meant for TTRPG games: a Maestro manages the current track being played, the
+            track is synced between all Players on this page.
+          </p>
+          <p>To avoid sync issues, Players can only change their volume.</p>
+        </div>
         <div
           style={{
             display: 'flex',
@@ -98,7 +120,7 @@ export function ClientsUi() {
             }}
             header={<h3 style={{ textAlign: 'center' }}>{currentTrack?.name}</h3>}
             customIcons={{
-              pause: <MusicNoteIcon style={{cursor:'not-allowed'}}/>
+              pause: <MusicNoteIcon style={{ cursor: 'not-allowed' }} />,
             }}
           />
         </div>
