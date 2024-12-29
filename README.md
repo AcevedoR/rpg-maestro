@@ -1,7 +1,7 @@
 # RpgMaestro
 ## TODO
 - Youtube to mp3
-  - make a script that do conversion on my server and put it in correct directory
+  - make a script that do conversion on my server and put it in correct directory ✅
   - upload on fourgate.cloud.private by default
   - for now, add them to default session via API
   - auto create the track in RPG maestro shared db <- this is not possible yet, might want to think about that.. like a catalogue ?
