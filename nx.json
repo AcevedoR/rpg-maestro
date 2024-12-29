@@ -68,7 +68,7 @@
       "dependsOn": ["^build"]
     },
     "semantic-release": {
-      "dependsOn": ["test", "e2e"]
+      "dependsOn": ["test", "e2e", "rpg-maestro-ui-e2e:e2e"]
     },
     "@nx/vite:build": {
       "cache": true,
