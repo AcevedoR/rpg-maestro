@@ -6,6 +6,8 @@ import { resyncCurrentTrackIfNeeded } from '../track-sync/track-sync';
 import { displayError } from '../error-utils';
 import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
 import GithubSourceCodeLink from '../ui-components/github-source-code-link/github-source-code-link';
+import './audio-player-readonly.css';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
 export function ClientsUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
@@ -64,15 +66,43 @@ export function ClientsUi() {
 
   return (
     <>
-      <div>
-        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', rowGap: '10vh' }}>
-          <h1>RPG-Maestro player UI</h1>
-          <div>
-            <h3>{currentTrack?.name}</h3>
-            <AudioPlayer src={currentTrack?.url} ref={audioPlayer} loop={true} />
-          </div>
-          <GithubSourceCodeLink />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          rowGap: '10vh',
+        }}
+      >
+        <h1>RPG-Maestro player UI</h1>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-around',
+            alignItems: 'center',
+            height: '20vh',
+          }}
+        >
+          <AudioPlayer
+            src={currentTrack?.url}
+            ref={audioPlayer}
+            loop={true}
+            showJumpControls={false}
+            showSkipControls={false}
+            customAdditionalControls={undefined}
+            style={{
+              width: '50vw',
+              minWidth: '300px',
+            }}
+            header={<h3 style={{ textAlign: 'center' }}>{currentTrack?.name}</h3>}
+            customIcons={{
+              pause: <MusicNoteIcon style={{cursor:'not-allowed'}}/>
+            }}
+          />
         </div>
+        <GithubSourceCodeLink />
         <ToastContainer limit={5} />
       </div>
     </>

@@ -1,0 +1,33 @@
+.rhap_controls-section {
+    display: flex;
+    justify-content: space-evenly;
+    align-content: center;
+    align-items: center;
+    width: 80%;
+}
+
+.rhap_main-controls {
+}
+
+.rhap_volume-controls {
+    flex: none;
+
+}
+
+.rhap_volume-container {
+    flex: none;
+    min-width: 100px;
+    width: 10vw;
+}
+
+.rhap_additional-controls {
+    display: none;
+}
+
+.rhap_progress-section{
+    cursor: not-allowed;
+}
+.rhap_progress-section .rhap_progress-bar,
+.rhap_progress-section .rhap_progress-container {
+    pointer-events: none;
+}
