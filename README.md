@@ -6,7 +6,7 @@
     - have a private url for my own usage, only available in France && make the public one available to all && disable track uploading <-- demo version ?
     - secure mp3 files behind auth
       - crossOrigin={'use-credentials'} ?
-      - or add a token in url
+      - or add a token in url -> https://github.com/icidasset/diffuse/blob/6837490c25ec5a534fffdeb3abc818dea9386665/src/Javascript/Workers/service.js#L104
   - for now, add them to default session via API
   - auto create the track in RPG maestro shared db <- this is not possible yet, might want to think about that.. like a catalogue ?
 - demo env vs my personal use !
