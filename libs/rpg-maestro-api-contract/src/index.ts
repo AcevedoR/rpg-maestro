@@ -6,3 +6,5 @@ export * from './lib/TrackUpdate';
 export * from './lib/TracksFromDirectoryCreation';
 export * from './lib/TrackToPlay';
 export * from './lib/Tag';
+export * from './lib/SessionPlayingTracks';
+export * from './lib/ChangeSessionPlayingTracksRequest';

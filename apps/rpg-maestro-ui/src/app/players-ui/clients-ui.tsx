@@ -10,15 +10,21 @@ import './audio-player-readonly.css';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
 import SpatialAudioOffIcon from '@mui/icons-material/SpatialAudioOff';
+import { useParams } from 'react-router';
 
 export function ClientsUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const audioPlayer = useRef<H5AudioPlayer>();
+  const sessionId = useParams().sessionId ?? '';
+  if (sessionId === '') {
+    displayError('no session found in URL (it should be https://{URL}/session/{sessionId})');
+  }
 
   useEffect(() => {
     async function resyncCurrentTrackOnUi() {
       const newerServerTrack = await resyncCurrentTrackIfNeeded(
+        sessionId,
         audioPlayer.current?.audio?.current?.currentTime ?? null,
         currentTrack
       );
@@ -83,7 +89,7 @@ export function ClientsUi() {
           <div style={{ width: '30%', minWidth: '170px' }}>
             <div style={{ justifySelf: 'end' }}>
               <TextLinkWithIconWrapper
-                link="/admin"
+                link={`/maestro/${sessionId}`}
                 text={'Maestro interface is available here'}
                 materialUiIcon={SpatialAudioOffIcon}
               />
@@ -109,6 +115,7 @@ export function ClientsUi() {
         >
           <AudioPlayer
             src={currentTrack?.url}
+            // @ts-expect-error: No overload matches this call
             ref={audioPlayer}
             loop={true}
             showJumpControls={false}

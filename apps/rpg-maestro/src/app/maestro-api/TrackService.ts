@@ -3,11 +3,11 @@ import path from 'path';
 import { Database } from './Database';
 import { getTrackDuration } from './audio/AudioHelper';
 import {
-  PlayingTrack,
+  SessionPlayingTracks,
   Track,
   TrackCreation,
   TracksFromDirectoryCreation,
-  TrackUpdate
+  TrackUpdate,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/FetchCaddyDirectory';
 
@@ -18,7 +18,7 @@ export class TrackService {
     this.database = database;
   }
 
-  async createTrack(trackCreation: TrackCreation): Promise<Track> {
+  async createTrack(sessionId: string, trackCreation: TrackCreation): Promise<Track> {
     const now = Date.now();
 
     const url = new URL(trackCreation.url);
@@ -28,6 +28,7 @@ export class TrackService {
 
     const track: Track = {
       id: uuid(),
+      sessionId: sessionId,
       created_at: now,
       updated_at: now,
 
@@ -60,24 +61,26 @@ export class TrackService {
     return existing;
   }
 
-  async getAll(): Promise<Track[]> {
-    return this.database.getAllTracks();
+  async getAll(sessionId: string): Promise<Track[]> {
+    return this.database.getAllTracks(sessionId);
   }
 
   async get(id: string): Promise<Track> {
     return this.database.getTrack(id);
   }
 
-  async getCurrentlyPlaying(): Promise<PlayingTrack> {
-    const s = await this.database.getCurrentSession();
-    return s.currentTrack;
+  async getSessionPlayingTracks(sessionId: string): Promise<SessionPlayingTracks> {
+    return this.database.getCurrentSession(sessionId);
   }
 
-  async createAllTracksFromDirectory(tracksFromDirectoryCreation: TracksFromDirectoryCreation): Promise<void> {
+  async createAllTracksFromDirectory(
+    sessionId: string,
+    tracksFromDirectoryCreation: TracksFromDirectoryCreation
+  ): Promise<void> {
     await Promise.all(
       (
         await getAllFilesFromCaddyFileServerDirectory(tracksFromDirectoryCreation.directoryUrl)
-      ).map((x) => this.createTrack(x))
+      ).map((x) => this.createTrack(sessionId, x))
     );
   }
 }

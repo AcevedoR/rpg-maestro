@@ -24,9 +24,10 @@
     display: none;
 }
 
-.rhap_progress-section{
+.rhap_progress-section {
     cursor: not-allowed;
 }
+
 .rhap_progress-section .rhap_progress-bar,
 .rhap_progress-section .rhap_progress-container {
     pointer-events: none;

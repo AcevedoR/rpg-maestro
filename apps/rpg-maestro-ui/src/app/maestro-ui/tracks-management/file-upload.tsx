@@ -17,11 +17,13 @@ const VisuallyHiddenInput = styled('input')({
   whiteSpace: 'nowrap',
   width: 1,
 });
-export interface FileUploadProps{
-  onFileUploaded: (uploadedFileURL: string) => void
+
+export interface FileUploadProps {
+  onFileUploaded: (uploadedFileURL: string) => void;
 }
+
 export function FileUpload(props: FileUploadProps) {
-  const {onFileUploaded} = props;
+  const { onFileUploaded } = props;
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const onFileUploadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,8 +50,8 @@ export function FileUpload(props: FileUploadProps) {
         .post(`${audioFileUploaderAPI}/upload/audio`, formData, config)
         .then((response) => {
           console.log(response.data);
-          const uploadRes = response.data as {fileURL: string};
-          onFileUploaded(`${uploadRes.fileURL}`)
+          const uploadRes = response.data as { fileURL: string };
+          onFileUploaded(`${uploadRes.fileURL}`);
         })
         .catch((error) => {
           console.error('Error uploading file: ', error);

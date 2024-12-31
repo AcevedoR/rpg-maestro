@@ -14,17 +14,26 @@ export interface QuickTagSelectionProps {
   icon: SvgIconComponent;
   color: Color;
   tags: string[];
-  onQuickTagSelection:(tags: string[]) => void
+  onQuickTagSelection: (tags: string[]) => void;
 }
 
 export function QuickTagSelection(props: QuickTagSelectionProps) {
-  const { text, icon, tags, color, onQuickTagSelection} = props;
+  const { text, icon, tags, color, onQuickTagSelection } = props;
   const iconInstance = React.createElement(icon, { sx: { fontSize: 50 } });
   return (
-    <Button style={{ display: 'flex', textDecoration: 'none', color: color, height: '60px', width: '110px',border: '1px solid', fontSize: '10px' }}
-    onClick={() => onQuickTagSelection(tags)}
+    <Button
+      style={{
+        display: 'flex',
+        textDecoration: 'none',
+        color: color,
+        height: '60px',
+        width: '110px',
+        border: '1px solid',
+        fontSize: '10px',
+      }}
+      onClick={() => onQuickTagSelection(tags)}
     >
-      <div style={{ display: 'flex', alignItems: 'center'}}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         {iconInstance}
         <p>{text}</p>
       </div>

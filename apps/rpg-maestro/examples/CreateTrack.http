@@ -1,10 +1,10 @@
 ###
-POST localhost:3000/admin/tracks
+POST localhost:3000/maestro/sessions/test-session/tracks
 Content-Type: application/json
 
 {
   "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
-  "name": "my-track"
+  "name": "my-track2"
 }
 > {%
   client.global.set("last_created_track_id", response.body.id);
@@ -12,13 +12,14 @@ Content-Type: application/json
 
 ###
 ### create from directory
-POST localhost:3000/admin/tracks/directory
+POST localhost:3000/maestro/sessions/test-session/tracks/from-directory
 Accept: application/json
 Content-Type: application/json
 
 {
   "directoryUrl": "https://fourgate.cloud/public/musics"
 }
+
 ###
 ### Get one
 GET localhost:3000/tracks/{{last_created_track_id}}
@@ -26,19 +27,22 @@ GET localhost:3000/tracks/{{last_created_track_id}}
 ###
 ###
 ### Get all
-GET localhost:3000/admin/tracks
+GET localhost:3000/maestro/sessions/test-session/tracks
+
 ###
 
 ### Set created track to current playing
-PUT localhost:3000/admin/sessions/current/tracks
+PUT localhost:3000//maestro/sessions/test-session/playing-tracks
 Content-Type: application/json
 
 {
   "trackId": "{{last_created_track_id}}",
   "paused": false
 }
+
 ###
 
 ### get playing track
-GET localhost:3000/sessions/current/tracks
+GET localhost:3000/sessions/test-session/playing-tracks
+
 ###

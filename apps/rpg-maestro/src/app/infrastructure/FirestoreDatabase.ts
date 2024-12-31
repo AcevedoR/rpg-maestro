@@ -1,11 +1,11 @@
-import { PlayingTrack, Track } from '@rpg-maestro/rpg-maestro-api-contract';
-import { Database } from '../admin-api/Database';
-import { Session } from '../model/Session';
+import { PlayingTrack, SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { Database } from '../maestro-api/Database';
 import { cert, initializeApp } from 'firebase-admin/app';
 
 import { getFirestore } from 'firebase-admin/firestore';
 import { firestore } from 'firebase-admin';
 import Firestore = firestore.Firestore;
+import Filter = firestore.Filter;
 
 export const DEFAULT_CURRENT_SESSION_ID = 'default-current-session';
 
@@ -24,7 +24,7 @@ export class FirestoreDatabase implements Database {
       throw new Error('GOOGLE_APPLICATION_CREDENTIALS env var is required when running with Firestore as database');
     }
     const serviceAccount: GCPServiceAccountJson = JSON.parse(googleApplicationCredentials) as GCPServiceAccountJson;
-    if(!serviceAccount || !serviceAccount.project_id){
+    if (!serviceAccount || !serviceAccount.project_id) {
       throw new Error('GOOGLE_APPLICATION_CREDENTIALS env var is required when running with Firestore as database');
     }
     initializeApp({
@@ -45,10 +45,10 @@ export class FirestoreDatabase implements Database {
       .then(() => Promise.resolve());
   }
 
-  async getCurrentSession(): Promise<Session> {
-    const sessionDoc = await this.db.collection('rpg-maestro-sessions').doc(DEFAULT_CURRENT_SESSION_ID).get();
+  async getCurrentSession(sessionId: string): Promise<SessionPlayingTracks> {
+    const sessionDoc = await this.db.collection('rpg-maestro-sessions').doc(sessionId).get();
     if (sessionDoc.exists) {
-      const data = sessionDoc.data() as SessionEntity;
+      const data = sessionDoc.data() as SessionPlayingTrackEntity;
       const currentTrackEntity = data.currentTrack;
       return {
         currentTrack: new PlayingTrack(
@@ -66,8 +66,9 @@ export class FirestoreDatabase implements Database {
     }
   }
 
-  async upsertCurrentTrack(playingTrack: PlayingTrack): Promise<void> {
-    const defaultCurrentSession: SessionEntity = {
+  async upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<void> {
+    const defaultCurrentSession: SessionPlayingTrackEntity = {
+      id: sessionId,
       currentTrack: {
         id: playingTrack.id,
         name: playingTrack.name,
@@ -80,7 +81,7 @@ export class FirestoreDatabase implements Database {
     };
     return this.db
       .collection('rpg-maestro-sessions')
-      .doc(DEFAULT_CURRENT_SESSION_ID)
+      .doc(sessionId)
       .set(defaultCurrentSession)
       .then(() => Promise.resolve());
   }
@@ -94,12 +95,15 @@ export class FirestoreDatabase implements Database {
     }
   }
 
-  async getAllTracks(): Promise<Track[]> {
-    return (await this.db.collection('rpg-maestro-tracks').get()).docs.map((doc) => doc.data() as Track);
+  async getAllTracks(sessionId: string): Promise<Track[]> {
+    return (
+      await this.db.collection('rpg-maestro-tracks').where(Filter.where('sessionId', '==', sessionId)).get()
+    ).docs.map((doc) => doc.data() as Track);
   }
 }
 
-interface SessionEntity {
+interface SessionPlayingTrackEntity {
+  id: string;
   currentTrack: PlayingTrackEntity;
 }
 

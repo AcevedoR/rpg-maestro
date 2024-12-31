@@ -1,8 +1,7 @@
 import { TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useState } from 'react';
-import { getAllTracks } from '../tracks-api';
 import { Tag, Track } from '@rpg-maestro/rpg-maestro-api-contract';
-import { setTrackToPlay } from './admin-api';
+import { getAllTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
@@ -14,11 +13,18 @@ import HolidayVillageIcon from '@mui/icons-material/HolidayVillage';
 import CastleIcon from '@mui/icons-material/Castle';
 import ForestIcon from '@mui/icons-material/Forest';
 import HikingIcon from '@mui/icons-material/Hiking';
+import { displayError } from '../error-utils';
+import { useParams } from 'react-router';
 
 export function MaestroSoundboard() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
   const [trackFilters, setTrackFilters] = useState<TrackFilters>({});
-
+  const sessionId = useParams().sessionId ?? '';
+  if (sessionId === '') {
+    displayError('no session found in URL (it should be https://{URL}/maestro/{sessionId})');
+    // TODO redirect by generating a sessionId in backend, and redirect on /maestro/{sessionId}
+    throw new Error('no session found in URL');
+  }
   useEffect(() => {
     if (allTracks === undefined) {
       refreshTracks();
@@ -26,11 +32,11 @@ export function MaestroSoundboard() {
   });
 
   const refreshTracks = () => {
-    getAllTracks().then((x) => setAllTracks(x));
+    getAllTracks(sessionId).then((x) => setAllTracks(x));
   };
 
   const requestSetTrackToPlay = async (trackId: string) => {
-    await setTrackToPlay({ trackId });
+    await setTrackToPlay(sessionId, { currentTrack: { trackId } });
   };
 
   const onTrackSearchChange = (track: Track | null) => {
@@ -53,12 +59,20 @@ export function MaestroSoundboard() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 style={{ marginTop: 0 }}>Admin UI</h1>
+          <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
           <p>As the Maestro, control what current track is playing for the session</p>
           <p>WIP under construction</p>
         </div>
-        <TextLinkWithIconWrapper link="/" text={'see what your players are seeing'} materialUiIcon={Visibility} />
-        <TextLinkWithIconWrapper link="/admin/manage" text={'Manage your tracks'} materialUiIcon={LyricsTwoTone} />
+        <TextLinkWithIconWrapper
+          link={`/${sessionId}`}
+          text={'see what your players are seeing'}
+          materialUiIcon={Visibility}
+        />
+        <TextLinkWithIconWrapper
+          link={`/maestro/manage/${sessionId}`}
+          text={'Manage your tracks'}
+          materialUiIcon={LyricsTwoTone}
+        />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
@@ -104,13 +118,18 @@ export function MaestroSoundboard() {
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <SearchTags tags={trackFilters.tagsToFilterOn ?? []} tracks={allTracks ?? []} onTrackSearchByTagChange={onTrackSearchByTagChange} />
+          <SearchTags
+            tags={trackFilters.tagsToFilterOn ?? []}
+            tracks={allTracks ?? []}
+            onTrackSearchByTagChange={onTrackSearchByTagChange}
+          />
           <div>or</div>
           <SearchSpecificTrack tracks={allTracks ?? []} onTrackSearchChange={onTrackSearchChange} />
         </div>
       </div>
       <div>
         <TracksTable
+          sessionId={sessionId}
           tracks={allTracks ?? []}
           onSetTrackToPlay={requestSetTrackToPlay}
           filters={trackFilters}
