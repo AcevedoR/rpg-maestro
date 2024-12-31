@@ -2,10 +2,11 @@ import { getCurrentTrack } from '../tracks-api';
 import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export const resyncCurrentTrackIfNeeded = async (
+  sessionId: string,
   currentTrackPlayTime: number | null,
   currentTrack: PlayingTrack | null
 ): Promise<PlayingTrack | null> => {
-  const optServerTrack = await getCurrentTrack();
+  const optServerTrack = await getCurrentTrack(sessionId);
   if (!optServerTrack) {
     return null;
   }
@@ -14,7 +15,7 @@ export const resyncCurrentTrackIfNeeded = async (
     currentTrackPlayTime === undefined ||
     !currentTrack ||
     isCurrentTrackOutOfDate(currentTrack, optServerTrack) ||
-    isCurrentTrackTooMuchDesynchronizedFromServer(currentTrackPlayTime*1000, optServerTrack)
+    isCurrentTrackTooMuchDesynchronizedFromServer(currentTrackPlayTime * 1000, optServerTrack)
   ) {
     return optServerTrack;
   }

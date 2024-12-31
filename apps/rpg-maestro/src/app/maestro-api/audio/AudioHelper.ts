@@ -1,4 +1,4 @@
-import ffmpeg from "fluent-ffmpeg";
+import ffmpeg from 'fluent-ffmpeg';
 
 export async function getTrackDuration(url: URL): Promise<number> {
   return new Promise((resolve, reject) => {

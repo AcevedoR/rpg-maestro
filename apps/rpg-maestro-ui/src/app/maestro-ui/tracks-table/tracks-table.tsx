@@ -15,6 +15,7 @@ export interface TrackFilters {
 }
 
 export interface TracksTableProps {
+  sessionId: string;
   tracks: Track[];
   onSetTrackToPlay: (trackId: string) => Promise<void>;
   onRefreshRequested: () => unknown;
@@ -22,7 +23,7 @@ export interface TracksTableProps {
 }
 
 export function TracksTable(props: TracksTableProps) {
-  const { tracks, onSetTrackToPlay, filters, onRefreshRequested } = props;
+  const { sessionId, tracks, onSetTrackToPlay, filters, onRefreshRequested } = props;
   const [selectedTrackToEdit, setSelectedTrackToEdit] = useState<Track | null>(null);
 
   const onClickEditButton = (id: string, row: any) => {
@@ -88,6 +89,7 @@ export function TracksTable(props: TracksTableProps) {
       {selectedTrackToEdit ? (
         <EditTrackSideForm
           trackToEdit={selectedTrackToEdit}
+          sessionId={sessionId}
           open={true}
           onClose={onEditTrackSideFormClose}
           onTrackUpdated={onTrackUpdated}

@@ -3,15 +3,16 @@ import TextField from '@mui/material/TextField';
 import { Box } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
-import { createTrack } from '../admin-api';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { createTrack } from '../maestro-api';
 
 export interface CreateTrackFormProps {
+  sessionId: string;
   consumeFileUploadedEvent: () => string | null;
 }
 
 export function CreateTrackForm(props: CreateTrackFormProps) {
-  const { consumeFileUploadedEvent } = props;
+  const { sessionId, consumeFileUploadedEvent } = props;
   const [inputUrl, setInputUrl] = useState<string | undefined>(undefined);
   const [inputUrlError, setInputUrlError] = useState<string | null>(null);
   const [inputName, setInputName] = useState<string | undefined>(undefined);
@@ -40,7 +41,7 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
       throw Error('inputUrl should be present');
     }
     setIsCreatingTrack(true);
-    createTrack({
+    createTrack(sessionId, {
       url: inputUrl,
       name: inputName,
       tags: inputTags ?? [],

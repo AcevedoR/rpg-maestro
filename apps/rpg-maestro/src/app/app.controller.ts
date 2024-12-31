@@ -1,16 +1,16 @@
-import { Body, Controller, Get, Inject, Param, Post, Put } from '@nestjs/common';
-import { TrackService } from './admin-api/TrackService';
-import { Database } from './admin-api/Database';
-import { ManageCurrentlyPlayingTracks } from './admin-api/ManageCurrentlyPlayingTracks';
+import { Body, Controller, Get, Inject, Logger, Param, Post, Put } from '@nestjs/common';
+import { TrackService } from './maestro-api/TrackService';
+import { Database } from './maestro-api/Database';
+import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
 import {
-  PlayingTrack,
+  ChangeSessionPlayingTracksRequest,
+  SessionPlayingTracks,
   Track,
   TrackCreation,
   TracksFromDirectoryCreation,
-  TrackToPlay,
   TrackUpdate,
 } from '@rpg-maestro/rpg-maestro-api-contract';
-import { DEFAULT_CURRENT_SESSION_ID, FirestoreDatabase } from './infrastructure/FirestoreDatabase';
+import { FirestoreDatabase } from './infrastructure/FirestoreDatabase';
 import * as process from 'node:process';
 import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -24,16 +24,14 @@ export class AppController {
   private readonly trackService: TrackService;
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
-  constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache
-  ) {
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
     const databaseImpl: string | undefined = process.env.DATABASE;
     if (databaseImpl === 'firestore') {
-      console.log('using firestore as database');
+      Logger.log('using firestore as database');
       this.database = new FirestoreDatabase();
     } else if (databaseImpl === 'in-memory' || !databaseImpl) {
       this.database = new InMemoryDatabase();
-      console.log('using in-memory database');
+      Logger.log('using in-memory database');
     } else {
       throw new Error(`database wanted implementation: "${process.env.DATABASE}" is not handled`);
     }
@@ -41,31 +39,46 @@ export class AppController {
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
   }
 
-  @Post('/admin/tracks/directory')
-  createAllTracksFromDirectory(@Body() tracksFromDirectoryCreation: TracksFromDirectoryCreation): Promise<void> {
-    console.log(tracksFromDirectoryCreation);
-    return this.trackService.createAllTracksFromDirectory(tracksFromDirectoryCreation);
+  @Post('/maestro/sessions/:sessionId/tracks/from-directory')
+  createAllTracksFromDirectory(
+    @Param('sessionId') sessionId: string,
+    @Body() tracksFromDirectoryCreation: TracksFromDirectoryCreation
+  ): Promise<void> {
+    Logger.log(
+      `importing tracks for session ${tracksFromDirectoryCreation.sessionId} from: ${tracksFromDirectoryCreation}`
+    );
+    return this.trackService.createAllTracksFromDirectory(sessionId, tracksFromDirectoryCreation);
   }
 
-  @Post('/admin/tracks')
-  postTrack(@Body() trackCreation: TrackCreation): Promise<Track> {
-    return this.trackService.createTrack(trackCreation);
+  @Post('/maestro/sessions/:sessionId/tracks')
+  postTrack(@Param('sessionId') sessionId: string, @Body() trackCreation: TrackCreation): Promise<Track> {
+    return this.trackService.createTrack(sessionId, trackCreation);
   }
 
-  @Put('/admin/tracks/:id')
-  updateTrack(@Param('id') id: string, @Body() trackUpdate: TrackUpdate): Promise<Track> {
+  @Put('/maestro/sessions/:sessionId/tracks/:trackId')
+  updateTrack(
+    @Param('sessionId') sessionId: string,
+    @Param('trackId') id: string,
+    @Body() trackUpdate: TrackUpdate
+  ): Promise<Track> {
     return this.trackService.updateTrack(id, trackUpdate);
   }
 
-  @Get('/admin/tracks')
-  getAllTracks(): Promise<Track[]> {
-    return this.trackService.getAll();
+  @Get('/maestro/sessions/:sessionId/tracks')
+  getAllTracks(@Param('sessionId') sessionId: string): Promise<Track[]> {
+    return this.trackService.getAll(sessionId);
   }
 
-  @Put('/admin/sessions/current/tracks')
-  async changeCurrentTrack(@Body() trackToPlay: TrackToPlay): Promise<PlayingTrack> {
-    const playingTrack = await this.manageCurrentlyPlayingTracks.changeCurrentTrack(trackToPlay);
-    await this.cacheManager.set(DEFAULT_CURRENT_SESSION_ID, playingTrack, ONE_DAY_TTL);
+  @Put('/maestro/sessions/:sessionId/playing-tracks')
+  async changeCurrentTrack(
+    @Param('sessionId') sessionId: string,
+    @Body() changeSessionPlayingTracks: ChangeSessionPlayingTracksRequest
+  ): Promise<SessionPlayingTracks> {
+    const playingTrack = await this.manageCurrentlyPlayingTracks.changeSessionPlayingTracks(
+      sessionId,
+      changeSessionPlayingTracks
+    );
+    await this.cacheManager.set(sessionId, playingTrack, ONE_DAY_TTL);
     return playingTrack;
   }
 
@@ -74,16 +87,16 @@ export class AppController {
     return this.trackService.get(id);
   }
 
-  @Get('/sessions/current/tracks')
-  async getCurrentTrack(): Promise<PlayingTrack> {
+  @Get('/sessions/:id/playing-tracks')
+  async getSessionTracks(@Param('id') sessionId: string): Promise<SessionPlayingTracks> {
     // TODO fix this hack forbidding having more than one instance
     // this was done to avoid reaching Firestore quotas
-    const cachedValue = (await this.cacheManager.get(DEFAULT_CURRENT_SESSION_ID)) as PlayingTrack;
+    const cachedValue = (await this.cacheManager.get(sessionId)) as SessionPlayingTracks;
     if (cachedValue) {
       return Promise.resolve(cachedValue);
     }
-    const dbValue = await this.trackService.getCurrentlyPlaying();
-    await this.cacheManager.set(DEFAULT_CURRENT_SESSION_ID, dbValue, ONE_DAY_TTL);
+    const dbValue = await this.trackService.getSessionPlayingTracks(sessionId);
+    await this.cacheManager.set(sessionId, dbValue, ONE_DAY_TTL);
     return dbValue;
   }
 }

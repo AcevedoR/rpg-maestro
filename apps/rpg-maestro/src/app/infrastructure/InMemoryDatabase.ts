@@ -1,34 +1,32 @@
-import { Database } from "../admin-api/Database";
-import { SessionDatabase } from "./SessionDatabase";
-import { Session } from "../model/Session";
-import { PlayingTrack, Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { Database } from '../maestro-api/Database';
+import { InMemorySession } from './InMemorySession';
+import { PlayingTrack, SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export class InMemoryDatabase implements Database {
   tracksDatabase: Track[] = [];
-  sessionDatabase?: SessionDatabase;
+  sessionDatabase: { [name: string]: InMemorySession } = {};
 
   async save(track: Track): Promise<void> {
-    this.tracksDatabase = this.tracksDatabase.filter(item => item.id !== track.id);// remove before update
-    this.tracksDatabase.push({...track});
+    this.tracksDatabase = this.tracksDatabase.filter((item) => item.id !== track.id); // remove before update
+    this.tracksDatabase.push({ ...track });
     return Promise.resolve(undefined);
   }
 
-  getCurrentSession(): Promise<Session> {
-    if (!this.sessionDatabase) {
-      throw new Error("no session is playing");
+  getCurrentSession(sessionId: string): Promise<SessionPlayingTracks> {
+    if (!this.sessionDatabase || !this.sessionDatabase[sessionId]) {
+      throw new Error('no session is playing');
     }
     return Promise.resolve({
-      currentTrack: this.sessionDatabase.currentTrack,
+      currentTrack: this.sessionDatabase[sessionId].currentTrack,
     });
   }
 
-  upsertCurrentTrack(playingTrack: PlayingTrack): Promise<void> {
-    if (!this.sessionDatabase) {
-      this.sessionDatabase = { currentTrack: playingTrack };
-    }else{
-      this.sessionDatabase.currentTrack = playingTrack;
+  upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<void> {
+    if (!this.sessionDatabase[sessionId]) {
+      this.sessionDatabase[sessionId] = { currentTrack: playingTrack };
+    } else {
+      this.sessionDatabase[sessionId].currentTrack = playingTrack;
     }
-
     return Promise.resolve();
   }
 
@@ -37,9 +35,10 @@ export class InMemoryDatabase implements Database {
     if (!track) {
       throw new Error(`track not found for id: ${trackId}`);
     }
-    return Promise.resolve({...track});
+    return Promise.resolve({ ...track });
   }
-  getAllTracks(): Promise<Track[]> {
-    return Promise.resolve(this.tracksDatabase);
+
+  getAllTracks(sessionId: string): Promise<Track[]> {
+    return Promise.resolve(this.tracksDatabase.filter((x) => x.sessionId === sessionId));
   }
 }
