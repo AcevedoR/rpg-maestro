@@ -1,4 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import process from 'node:process';
+
+const AUDIO_FILE_SERVER_BASE_URL = process.env.AUDIO_FILE_SERVER_BASE_URL;
 
 @Injectable()
 export class FileUploadService {
@@ -21,7 +24,7 @@ export class FileUploadService {
     console.log(`uploading file ${file.filename} with size ${(file.size / 1024 / 1024).toFixed(2)}mb`);
     return {
       message: 'File uploaded successfully',
-      fileURL: `https://fourgate.cloud/public/musics/uploads/${file.filename}`,
+      fileURL: `${AUDIO_FILE_SERVER_BASE_URL}/uploads/${file.filename}`,
     };
   }
 }

@@ -1,19 +1,21 @@
-import { UploadAudioFromYoutubeRequest } from './UploadAudioFromYoutubeRequest';
-import { UploadAudioFromYoutubeResponse, UploadAudioFromYoutubeResponseForUrl } from './UploadAudioFromYoutubeResponse';
 import { Logger } from '@nestjs/common';
 import ytdl from '@distube/ytdl-core';
 import ffmpeg from 'fluent-ffmpeg';
 import { join } from 'path';
 import { createWriteStream } from 'fs';
 import process from 'node:process';
+import {
+  UploadAudioFromYoutubeRequest,
+  UploadAudioFromYoutubeResponse, UploadAudioFromYoutubeResponseForUrl
+} from '@rpg-maestro/audio-file-uploader-api-contract';
 
 const UPLOAD_DIRECTORY = `${process.env.FILESERVER_PATH ? process.env.FILESERVER_PATH : '.'}/uploads`;
+const AUDIO_FILE_SERVER_BASE_URL = process.env.AUDIO_FILE_SERVER_BASE_URL;
 
 export async function uploadAudioFromYoutube(
   uploadRequest: UploadAudioFromYoutubeRequest
 ): Promise<UploadAudioFromYoutubeResponse> {
   let i = 0;
-  const uploadedFilesLinks = [];
 
   const uploadResult = await Promise.all(
     uploadRequest.urls.map(async (url) => {
@@ -53,8 +55,13 @@ export async function uploadAudioFromYoutube(
             })
             .pipe(fileStream);
         });
-        uploadedFilesLinks.push(`https://fourgate.cloud/public/musics/uploads/${fileName}`);
-        return <UploadAudioFromYoutubeResponseForUrl>{ url: url, status: 'ok', uploadedFile: fileName };
+
+        return <UploadAudioFromYoutubeResponseForUrl>{
+          url: url,
+          status: 'ok',
+          uploadedFile: fileName,
+          uploadedFileLink: `${AUDIO_FILE_SERVER_BASE_URL}/uploads/${fileName}`,
+        };
       } catch (error) {
         Logger.error(`Error while downloading audio from URL ${url}: ${error.message}`);
         console.trace(error);
@@ -62,7 +69,7 @@ export async function uploadAudioFromYoutube(
       }
     })
   );
-  return { uploadResult: uploadResult, uploadedFilesLinks: uploadedFilesLinks };
+  return { uploadResult: uploadResult };
 }
 
 function sleep(ms) {
