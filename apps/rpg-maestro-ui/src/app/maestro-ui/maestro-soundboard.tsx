@@ -15,6 +15,7 @@ import ForestIcon from '@mui/icons-material/Forest';
 import HikingIcon from '@mui/icons-material/Hiking';
 import { displayError } from '../error-utils';
 import { useParams } from 'react-router';
+import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
 
 export function MaestroSoundboard() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
@@ -54,14 +55,20 @@ export function MaestroSoundboard() {
   const onQuickTagSelection = (tags: Tag[]) => {
     onTrackSearchByTagChange(tags);
   };
+  const getURLToShareToPlayers = () => {
+    return `${window.location.origin}/${sessionId}`;
+  };
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
-          <p>As the Maestro, control what current track is playing for the session</p>
-          <p>WIP under construction</p>
+          <p>As the Maestro, control what current track is playing for the session: {sessionId}</p>
+          <p>
+            Share this link to your Players so then can join your session:
+            <ContentToCopy content={getURLToShareToPlayers()} />
+          </p>
         </div>
         <TextLinkWithIconWrapper
           link={`/${sessionId}`}
