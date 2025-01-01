@@ -5,6 +5,7 @@ import { join } from 'path';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AuthenticatedMaestroController } from './AuthenticatedMaestroController';
 import { PlayersController } from './PlayersController';
+import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { PlayersController } from './PlayersController';
     CacheModule.register(),
 ],
   controllers: [AuthenticatedMaestroController, PlayersController],
-  providers: [],
+  providers: [DatabaseWrapperConfiguration],
 })
 export class AppModule {}
