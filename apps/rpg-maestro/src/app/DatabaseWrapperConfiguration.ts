@@ -1,28 +1,26 @@
 import { Database } from './maestro-api/Database';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { FirestoreDatabase } from './infrastructure/FirestoreDatabase';
 import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
-import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
-export class DatabaseWrapperConfiguration implements OnModuleInit {
+export class DatabaseWrapperConfiguration {
   private databaseImplementation: Database;
 
-  constructor(private moduleRef: ModuleRef) {}
-
-  async onModuleInit() {
+  constructor() {
     const databaseImpl: string | undefined = process.env.DATABASE;
     if (databaseImpl === 'firestore') {
       Logger.log('using firestore as database');
-      this.databaseImplementation = await this.moduleRef.create(FirestoreDatabase);
+      this.databaseImplementation = new FirestoreDatabase();
     } else if (databaseImpl === 'in-memory' || !databaseImpl) {
       Logger.log('using in-memory database');
-      this.databaseImplementation = await this.moduleRef.create(InMemoryDatabase);
+      this.databaseImplementation = new InMemoryDatabase();
     } else {
       throw new Error(`database wanted implementation: "${process.env.DATABASE}" is not handled`);
     }
   }
-  get(){
+
+  get() {
     return this.databaseImplementation;
   }
 }
