@@ -8,33 +8,26 @@ import {
   Track,
   TrackCreation,
   TracksFromDirectoryCreation,
-  TrackUpdate, UploadAndCreateTracksFromYoutubeRequest, UploadAndCreateTracksFromYoutubeResponse
+  TrackUpdate,
+  UploadAndCreateTracksFromYoutubeRequest,
+  UploadAndCreateTracksFromYoutubeResponse,
 } from '@rpg-maestro/rpg-maestro-api-contract';
-import { FirestoreDatabase } from './infrastructure/FirestoreDatabase';
-import * as process from 'node:process';
-import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
+import { ApiCookieAuth } from '@nestjs/swagger';
+import { getConfiguredDatabaseImplementation } from './Configuration';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
+@ApiCookieAuth()
 @Controller()
-export class AppController {
+export class AuthenticatedMaestroController {
   private readonly database: Database;
   private readonly trackService: TrackService;
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
-    const databaseImpl: string | undefined = process.env.DATABASE;
-    if (databaseImpl === 'firestore') {
-      Logger.log('using firestore as database');
-      this.database = new FirestoreDatabase();
-    } else if (databaseImpl === 'in-memory' || !databaseImpl) {
-      this.database = new InMemoryDatabase();
-      Logger.log('using in-memory database');
-    } else {
-      throw new Error(`database wanted implementation: "${process.env.DATABASE}" is not handled`);
-    }
+    this.database = getConfiguredDatabaseImplementation();
     this.trackService = new TrackService(this.database);
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
   }
@@ -88,23 +81,5 @@ export class AppController {
     );
     await this.cacheManager.set(sessionId, playingTrack, ONE_DAY_TTL);
     return playingTrack;
-  }
-
-  @Get('/tracks/:id')
-  getTrack(@Param('id') id: string): Promise<Track> {
-    return this.trackService.get(id);
-  }
-
-  @Get('/sessions/:id/playing-tracks')
-  async getSessionTracks(@Param('id') sessionId: string): Promise<SessionPlayingTracks> {
-    // TODO fix this hack forbidding having more than one instance
-    // this was done to avoid reaching Firestore quotas
-    const cachedValue = (await this.cacheManager.get(sessionId)) as SessionPlayingTracks;
-    if (cachedValue) {
-      return Promise.resolve(cachedValue);
-    }
-    const dbValue = await this.trackService.getSessionPlayingTracks(sessionId);
-    await this.cacheManager.set(sessionId, dbValue, ONE_DAY_TTL);
-    return dbValue;
   }
 }

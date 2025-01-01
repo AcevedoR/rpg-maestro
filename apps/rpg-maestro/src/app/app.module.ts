@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 
-import { AppController } from './app.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CacheModule } from '@nestjs/cache-manager';
+import { AuthenticatedMaestroController } from './AuthenticatedMaestroController';
+import { PlayersController } from './PlayersController';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     }),
     CacheModule.register(),
 ],
-  controllers: [AppController],
+  controllers: [AuthenticatedMaestroController, PlayersController],
   providers: [],
 })
 export class AppModule {}
