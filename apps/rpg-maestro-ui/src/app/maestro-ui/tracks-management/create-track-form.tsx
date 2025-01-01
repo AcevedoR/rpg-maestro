@@ -4,7 +4,8 @@ import { Box } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
-import { createTrack } from '../maestro-api';
+import { createTrack, createTrackFromYoutube } from '../maestro-api';
+import { Bounce, toast } from 'react-toastify';
 
 export interface CreateTrackFormProps {
   sessionId: string;
@@ -41,14 +42,44 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
       throw Error('inputUrl should be present');
     }
     setIsCreatingTrack(true);
-    createTrack(sessionId, {
-      url: inputUrl,
-      name: inputName,
-      tags: inputTags ?? [],
-    }).then((track: Track) => {
-      console.log(`track created: ${JSON.stringify(track)}`);
-      setIsCreatingTrack(false);
-    });
+    if(inputUrl.startsWith('https://www.youtube.com/')){
+      toast.info(`Trying to upload and create from youtube, this might take some times depending on the track length (1-10min)`, {
+        position: 'bottom-left',
+        autoClose: 10000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+        transition: Bounce,
+      })
+      createTrackFromYoutube(sessionId, inputUrl)
+        .then((res => {
+          console.log(`create youtube res: ${JSON.stringify(res)}`);
+          setIsCreatingTrack(false);
+          toast.success(`Track created from youtube`, {
+            position: 'bottom-left',
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'dark',
+            transition: Bounce,
+          })
+        } ));
+    } else{
+      createTrack(sessionId, {
+        url: inputUrl,
+        name: inputName,
+        tags: inputTags ?? [],
+      }).then((track: Track) => {
+        console.log(`track created: ${JSON.stringify(track)}`);
+        setIsCreatingTrack(false);
+      });
+    }
   };
 
   return (

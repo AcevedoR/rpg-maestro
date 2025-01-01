@@ -1,9 +1,11 @@
 import { displayError } from '../error-utils';
 import {
   ChangeSessionPlayingTracksRequest,
+  CreateTrackFromYoutubeResponseForUrl,
   Track,
   TrackCreation,
   TrackUpdate,
+  UploadAndCreateTracksFromYoutubeRequest,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 
 const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL; // TODO centralize
@@ -62,6 +64,32 @@ export const createTrack = async (sessionId: string, trackCreation: TrackCreatio
       throw new Error('fetch failed for error: ' + response);
     }
     return (await response.json()) as Track;
+  } catch (error) {
+    console.error(error);
+    displayError(`Fetch error: ${JSON.stringify(error)}`);
+    return Promise.reject();
+  }
+};
+
+export const createTrackFromYoutube = async (
+  sessionId: string,
+  url: string
+): Promise<CreateTrackFromYoutubeResponseForUrl> => {
+  try {
+    const request: UploadAndCreateTracksFromYoutubeRequest = { urls: [url] };
+    const response = await fetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/from-youtube`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+    if (!response.ok) {
+      console.log(response.status, response.statusText);
+      throw new Error('fetch failed for error: ' + response);
+    }
+    return (await response.json()) as CreateTrackFromYoutubeResponseForUrl;
   } catch (error) {
     console.error(error);
     displayError(`Fetch error: ${JSON.stringify(error)}`);
