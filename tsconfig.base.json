@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@rpg-maestro/audio-file-uploader-api-contract": ["libs/audio-file-uploader-api-contract/src/index.ts"],
       "@rpg-maestro/rpg-maestro-api-contract": ["libs/rpg-maestro-api-contract/src/index.ts"]
     }
   },

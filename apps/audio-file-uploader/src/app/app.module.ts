@@ -5,6 +5,8 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import process from 'node:process';
 import { FileUploadService } from './fileUpload/FileUploadService';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -16,6 +18,11 @@ import { FileUploadService } from './fileUpload/FileUploadService';
           cb(null, filename);
         },
       }),
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, 'assets'),
+      serveRoot: '/public',
+      serveStaticOptions: { redirect: false },
     }),
   ],
   controllers: [AppController],

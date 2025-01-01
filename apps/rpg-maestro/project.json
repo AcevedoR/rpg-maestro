@@ -53,6 +53,11 @@
         "e2e-tests": {}
       }
     },
+    "rpg-maestro:dev": {
+      "configurations": {
+        "dev": {}
+      }
+    },
     "semantic-release": {
       "executor": "@theunderscorer/nx-semantic-release:semantic-release"
     },
