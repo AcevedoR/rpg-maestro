@@ -1,0 +1,34 @@
+.copyLinkButton {
+    background: rgba(151, 114, 61, 0.11);
+    border: none; /* Removes border */
+    color: inherit; /* Matches the surrounding text color */
+    font-family: inherit; /* Matches surrounding font */
+    font-size: inherit; /* Matches surrounding text size */
+    text-align: left; /* Aligns text to the left */
+    padding: 0; /* Removes button padding */
+    margin: 0; /* Ensures no unexpected margins */
+    cursor: pointer; /* Indicates interactivity */
+    display: inline-flex; /* Allows alignment with icon */
+    align-items: center; /* Vertically centers the icon */
+    gap: 0.5rem; /* Space between text and the icon */
+    white-space: nowrap; /* Prevents wrapping */
+}
+
+.copyLinkButton:hover {
+    background: rgba(151, 114, 61, 0.55);
+    border-radius: 4px; /* Slight rounding for hover effect */
+}
+
+.copyLinkButton:focus {
+    outline: none; /* Removes focus outline */
+    box-shadow: 0 0 0 2px #d0d0d0; /* Adds a subtle focus ring */
+}
+
+.copyLinkButton svg {
+    font-size: 1rem; /* Adjusts icon size */
+    color: gray; /* Muted color for the icon */
+}
+
+.copyLinkButton:active svg {
+    color: black; /* Darkens icon on active click */
+}
