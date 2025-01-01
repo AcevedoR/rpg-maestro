@@ -3,8 +3,8 @@ import { Body, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/c
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { FileUploadService } from './fileUpload/FileUploadService';
-import { UploadAudioFromYoutubeRequest } from './fileUpload/fromYoutube/UploadAudioFromYoutubeRequest';
 import { uploadAudioFromYoutube } from './fileUpload/fromYoutube/UploadFromYoutubeService';
+import { UploadAudioFromYoutubeRequest } from '@rpg-maestro/audio-file-uploader-api-contract';
 
 @Controller()
 export class AppController {
