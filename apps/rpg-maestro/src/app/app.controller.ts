@@ -8,7 +8,7 @@ import {
   Track,
   TrackCreation,
   TracksFromDirectoryCreation,
-  TrackUpdate,
+  TrackUpdate, UploadAndCreateTracksFromYoutubeRequest
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { FirestoreDatabase } from './infrastructure/FirestoreDatabase';
 import * as process from 'node:process';
@@ -49,6 +49,14 @@ export class AppController {
     );
     return this.trackService.createAllTracksFromDirectory(sessionId, tracksFromDirectoryCreation);
   }
+
+  // @Put('/maestro/sessions/:sessionId/tracks/from-youtube')
+  // uploadAndCreateTracksFromYoutube(
+  //   @Param('sessionId') sessionId: string,
+  //   @Body() uploadTrackFromYoutubeRequest: UploadAndCreateTracksFromYoutubeRequest
+  // ): Promise<Track> {
+  //   return this.trackService.updateTrack(id, trackUpdate);
+  // }
 
   @Post('/maestro/sessions/:sessionId/tracks')
   postTrack(@Param('sessionId') sessionId: string, @Body() trackCreation: TrackCreation): Promise<Track> {

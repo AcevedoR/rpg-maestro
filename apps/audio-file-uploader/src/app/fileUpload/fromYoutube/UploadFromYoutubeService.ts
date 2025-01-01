@@ -53,8 +53,13 @@ export async function uploadAudioFromYoutube(
             })
             .pipe(fileStream);
         });
-        uploadedFilesLinks.push(`https://fourgate.cloud/public/musics/uploads/${fileName}`);
-        return <UploadAudioFromYoutubeResponseForUrl>{ url: url, status: 'ok', uploadedFile: fileName };
+
+        return <UploadAudioFromYoutubeResponseForUrl>{
+          url: url,
+          status: 'ok',
+          uploadedFile: fileName,
+          uploadedFileLink: `https://fourgate.cloud/public/musics/uploads/${fileName}`,
+        };
       } catch (error) {
         Logger.error(`Error while downloading audio from URL ${url}: ${error.message}`);
         console.trace(error);
@@ -62,7 +67,7 @@ export async function uploadAudioFromYoutube(
       }
     })
   );
-  return { uploadResult: uploadResult, uploadedFilesLinks: uploadedFilesLinks };
+  return { uploadResult: uploadResult };
 }
 
 function sleep(ms) {
