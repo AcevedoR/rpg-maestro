@@ -3,6 +3,10 @@
 ## TODO
 
 - use Creator musics, credit him !!!
+- TODO: make YT upload in background, to avoid any Timeout
+  -> rpgmaestro: acknoledge request immediately, and, in another process check for 15minutes if audio-file-uploader has finished, then create the tracks
+  -> audiofileuploader: store upload request inmemory with key: session, update their status when: request received, downloading, success or error
+
 - Youtube to mp3
     - make a script that do conversion on my server and put it in correct directory ✅
     - upload on fourgate.cloud.private by default <--- figure out a way to either:
