@@ -5,6 +5,7 @@ import { SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contra
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
+import { RunningJobsDatabase } from './maestro-api/RunningJobsDatabase';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
@@ -13,9 +14,13 @@ export class PlayersController {
   private readonly database: Database;
   private readonly trackService: TrackService;
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache, private databaseWrapper: DatabaseWrapperConfiguration) {
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private databaseWrapper: DatabaseWrapperConfiguration,
+    @Inject(RunningJobsDatabase) private readonly runningJobsDatabase: RunningJobsDatabase// TODO remove and split track service
+  ) {
     this.database = databaseWrapper.get();
-    this.trackService = new TrackService(this.database);
+    this.trackService = new TrackService(this.database, runningJobsDatabase);
   }
 
   @Get('/tracks/:id')

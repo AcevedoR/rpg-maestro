@@ -2,8 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
-    "module": "commonjs",
     "types": ["node"],
+    "moduleResolution": "node",
+    "lib": ["ESNext", "DOM"],
+    "sourceMap": true,
     "emitDecoratorMetadata": true,
     "target": "es2021"
   },
