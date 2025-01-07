@@ -80,6 +80,7 @@ export const createTrackFromYoutube = async (sessionId: string, url: string): Pr
         Accept: 'application/json',
       },
       body: JSON.stringify(request),
+      signal: AbortSignal.timeout(60 * 60 * 1000)
     });
     if (!response.ok) {
       console.log(response.status, response.statusText);
