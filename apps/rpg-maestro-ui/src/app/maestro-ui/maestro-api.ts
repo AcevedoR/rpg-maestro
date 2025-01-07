@@ -1,7 +1,6 @@
 import { displayError } from '../error-utils';
 import {
   ChangeSessionPlayingTracksRequest,
-  CreateTrackFromYoutubeResponseForUrl,
   Track,
   TrackCreation,
   TrackUpdate,
@@ -71,10 +70,7 @@ export const createTrack = async (sessionId: string, trackCreation: TrackCreatio
   }
 };
 
-export const createTrackFromYoutube = async (
-  sessionId: string,
-  url: string
-): Promise<CreateTrackFromYoutubeResponseForUrl> => {
+export const createTrackFromYoutube = async (sessionId: string, url: string): Promise<void> => {
   try {
     const request: UploadAndCreateTracksFromYoutubeRequest = { urls: [url] };
     const response = await fetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/from-youtube`, {
@@ -84,13 +80,12 @@ export const createTrackFromYoutube = async (
         Accept: 'application/json',
       },
       body: JSON.stringify(request),
-      signal: AbortSignal.timeout(60 * 60 * 1000)
     });
     if (!response.ok) {
       console.log(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     }
-    return (await response.json()) as CreateTrackFromYoutubeResponseForUrl;
+    return;
   } catch (error) {
     console.error(error);
     displayError(`Fetch error: ${JSON.stringify(error)}`);

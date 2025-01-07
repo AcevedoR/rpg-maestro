@@ -1,0 +1,11 @@
+
+###
+POST https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks/from-youtube
+Content-Type: application/json
+cookie: CF_Authorization=XXX-replace-with-token-xXX
+
+{
+  "urls": [
+    "https://www.youtube.com/watch?v=nkvhwh7CQqA&ab_channel=ForsakenTunes"
+  ]
+}

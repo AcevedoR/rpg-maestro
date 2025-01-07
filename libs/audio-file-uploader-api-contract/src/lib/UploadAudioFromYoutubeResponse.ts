@@ -1,21 +1,23 @@
-export interface GetUploadAudioFromYoutubeResponse {
-  jobs: UploadAudioFromYoutubeJob[];
-}
-
-export class UploadAudioFromYoutubeJob {
-  id: string;
+export class UploadAudioFromYoutubeJobDto {
   youtubeURL: string;
 
   status: 'running' | 'failed' | 'success';
-  createdDate: Date;
-  updatedDate: Date;
+  createdDate: number;
+  updatedDate: number;
 
   error?: string;
   uploadedFile?: string;
   uploadedFileLink?: string;
 
-  constructor(id: string, youtubeURL: string, status: "running" | "failed" | "success", createdDate: Date, updatedDate: Date, error: string, uploadedFile: string, uploadedFileLink: string) {
-    this.id = id;
+  constructor(
+    youtubeURL: string,
+    status: 'running' | 'failed' | 'success',
+    createdDate: number,
+    updatedDate: number,
+    error: string,
+    uploadedFile: string,
+    uploadedFileLink: string
+  ) {
     this.youtubeURL = youtubeURL;
     this.status = status;
     this.createdDate = createdDate;

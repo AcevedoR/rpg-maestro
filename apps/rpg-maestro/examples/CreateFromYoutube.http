@@ -3,14 +3,12 @@ POST localhost:3000/maestro/sessions/default-current-session/tracks/from-youtube
 Content-Type: application/json
 
 {
-  "urls": ["https://www.llyoutube.com/watch?v=nkvhwh7CQqA&ab_channel=ForsakenTunes"]
+  "urls": [
+    "https://www.youtube.com/watch?v=nkvhwh7CQqA&ab_channel=ForsakenTunes"
+  ]
 }
 
 ###
-POST https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks/from-youtube
+GET localhost:3000/maestro/sessions/default-current-session/tracks/from-youtube
 Content-Type: application/json
-cookie: CF_Authorization=eyJhbGciOiJSUzI1NiIsImtpZCI6IjY5MDdmNzg0NjJhZGM0ZmZlMjhmZmI3MGM3NDY0MjNkMTg1NGU4MDJmNmQ4Y2Q2OGNmYTZhMTM0MzVhNjM0YTkifQ.eyJhdWQiOlsiMmEyMDdhZGI2YWYwYWUyMWQ1MmJmM2JkMTk4OTA1MjNhMDk3ZTU3MTgwZDBmMGM4NDI2M2UyOTRjNWMxNmFiZiJdLCJlbWFpbCI6InJvbWFuLmFjZXZlZG82MkBnbWFpbC5jb20iLCJleHAiOjE3MzU3ODAwMDYsImlhdCI6MTczNTczNjgwNiwibmJmIjoxNzM1NzM2ODA2LCJpc3MiOiJodHRwczovL2ZvdXJnYXRlLmNsb3VkZmxhcmVhY2Nlc3MuY29tIiwidHlwZSI6ImFwcCIsImlkZW50aXR5X25vbmNlIjoiOGxIMUZnTnE0ZHRuMFBxZCIsInN1YiI6IjA5OWQxMDFkLTJjOGYtNWZiMC1iYmExLTBiYjZmMDQ5NDBjYyIsImNvdW50cnkiOiJGUiJ9.JZHtJHBU4orbVZdBBeZKvgoOD2-7KTgim2H4-6KyyFRzr7r7CT4mIxch-Y6-i0iwEqZkDdYaXu3qgiYuUAkj7ulX41VMlEbLP5RSZHQYxaZQB5bf97Wgc4_CZ6Xk8kceoM2gmZV_kHXveWA6_5Mlluo3dyV44hIHNuvW5hh4NPa7RF6OZgqwc7fWvwEozrhzIfMm9ZFlzmmB6edmC2EnRfHdsAan6P_IcgbY7HR9nLGgucbx9QK5sUZGZRMkrUa_SuTOhYxJwk2aB-QKg_EutlGkTVJXhNM5KDie98TVXSw23lotDxTPfIMOvb8RdejqVy3yy2LVJld7cshVKCJL7A
 
-{
-  "urls": ["https://www.youtube.com/watch?v=nkvhwh7CQqA&ab_channel=ForsakenTunes"]
-}

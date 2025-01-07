@@ -15,7 +15,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { RunningJobsDatabase } from './maestro-api/RunningJobsDatabase';
+import { TrackCreationFromYoutubeJob } from './maestro-api/TrackCreationFromYoutubeJobsStore';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
@@ -23,16 +23,14 @@ const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 @Controller()
 export class AuthenticatedMaestroController {
   private readonly database: Database;
-  private readonly trackService: TrackService;
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private databaseWrapper: DatabaseWrapperConfiguration,
-    @Inject(RunningJobsDatabase) private readonly runningJobsDatabase: RunningJobsDatabase
+    @Inject() private trackService: TrackService
   ) {
     this.database = databaseWrapper.get();
-    this.trackService = new TrackService(this.database, runningJobsDatabase);
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
   }
 
@@ -52,6 +50,11 @@ export class AuthenticatedMaestroController {
     @Body() uploadAndCreateTracksFromYoutubeRequest: UploadAndCreateTracksFromYoutubeRequest
   ): Promise<void> {
     return this.trackService.uploadAndCreateTrackFromYoutube(sessionId, uploadAndCreateTracksFromYoutubeRequest);
+  }
+
+  @Get('/maestro/sessions/:sessionId/tracks/from-youtube')
+  getYoutubeTrackCreations(@Param('sessionId') sessionId: string): Promise<TrackCreationFromYoutubeJob[]> {
+    return this.trackService.getTrackFromYoutubeCreations(sessionId);
   }
 
   @Post('/maestro/sessions/:sessionId/tracks')

@@ -14,14 +14,14 @@ export interface CreateTrackFormProps {
 
 export function CreateTrackForm(props: CreateTrackFormProps) {
   const { sessionId, consumeFileUploadedEvent } = props;
-  const [inputUrl, setInputUrl] = useState<string | undefined>(undefined);
+  const [inputUrl, setInputUrl] = useState<string | null | undefined>(undefined);
   const [inputUrlError, setInputUrlError] = useState<string | null>(null);
   const [inputName, setInputName] = useState<string | undefined>(undefined);
   const [inputTags, setInputTags] = useState<string[] | null>(null);
   const [creatingTrack, setIsCreatingTrack] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!inputUrl) {
+    if (inputUrl === null || (inputUrl && inputUrl.length < 3)) {
       setInputUrlError('valid URL is required');
     } else {
       setInputUrlError(null);
@@ -34,33 +34,23 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
   }, [inputUrl, consumeFileUploadedEvent]);
 
   const isThereAnErrorInTheForm = () => {
-    return !!inputUrlError;
+    return inputUrlError != null && !!inputUrlError;
   };
 
   const onSubmit = () => {
     if (!inputUrl) {
+      setInputUrl(null);
       throw Error('inputUrl should be present');
     }
     setIsCreatingTrack(true);
-    if(inputUrl.startsWith('https://www.youtube.com/')){
-      toast.info(`Trying to upload and create from youtube, this might take some times depending on the track length (1-10min)`, {
-        position: 'bottom-left',
-        autoClose: 10000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'dark',
-        transition: Bounce,
-      })
-      createTrackFromYoutube(sessionId, inputUrl)
-        .then((res => {
-          console.log(`create youtube res: ${JSON.stringify(res)}`);
-          setIsCreatingTrack(false);
-          toast.success(`Track created from youtube`, {
+    if (inputUrl.startsWith('https://www.youtube.com/')) {
+      createTrackFromYoutube(sessionId, inputUrl).then((res) => {
+        setIsCreatingTrack(false);
+        toast.info(
+          `Trying to upload and create from youtube, this might take some times depending on the track length (1-10min)`,
+          {
             position: 'bottom-left',
-            autoClose: 2000,
+            autoClose: 10000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
@@ -68,18 +58,39 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
             progress: undefined,
             theme: 'dark',
             transition: Bounce,
-          })
-        } ));
-    } else{
+          }
+        );
+        resetform();
+      });
+    } else {
       createTrack(sessionId, {
         url: inputUrl,
         name: inputName,
         tags: inputTags ?? [],
       }).then((track: Track) => {
         console.log(`track created: ${JSON.stringify(track)}`);
+        toast.success(`Track created: ${track.name}`, {
+          position: 'bottom-left',
+          autoClose: 10000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'dark',
+          transition: Bounce,
+        });
+        resetform();
         setIsCreatingTrack(false);
       });
     }
+  };
+
+  const resetform = () => {
+    setInputUrl(undefined);
+    setInputName(undefined);
+    setInputTags(null);
+    setInputUrlError(null);
   };
 
   return (

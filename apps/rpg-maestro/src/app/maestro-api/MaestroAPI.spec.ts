@@ -5,6 +5,12 @@ import { TrackService } from './TrackService';
 import { InMemoryDatabase } from '../infrastructure/InMemoryDatabase';
 import { ManageCurrentlyPlayingTracks } from './ManageCurrentlyPlayingTracks';
 import { randomUUID } from 'node:crypto';
+import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/in-memory-create-track-from-youtube-jobs-database.service';
+import { AudioFileUploaderClient } from '../track-creation-from-youtube-jobs-watcher/audio-file-uploader-client';
+import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
+import {
+  TrackCreationFromYoutubeJobsWatcher
+} from '../track-creation-from-youtube-jobs-watcher/track-creation-from-youtube-jobs-watcher.service';
 
 let createTrack: TrackService;
 let manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
@@ -17,7 +23,12 @@ const port = 3003;
 const CURRENT_DATE = Date.now();
 
 beforeAll(() => {
-  createTrack = new TrackService(database);
+  createTrack = new TrackService(
+    {get: () => database} as unknown as DatabaseWrapperConfiguration,
+    new InMemoryTrackCreationFromYoutubeJobsStore(),
+    null as TrackCreationFromYoutubeJobsWatcher,
+    null as AudioFileUploaderClient
+  );
   manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(database);
 
   app.use('/public', express.static(path.join(__dirname, '../../assets')));

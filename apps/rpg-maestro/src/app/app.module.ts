@@ -5,9 +5,9 @@ import { join } from 'path';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AuthenticatedMaestroController } from './AuthenticatedMaestroController';
 import { PlayersController } from './PlayersController';
-import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { RunningJobsDatabase } from './maestro-api/RunningJobsDatabase';
-import { InMemoryRunningJobsDatabase } from './infrastructure/InMemoryRunningJobsDatabase';
+import { DatabaseModule } from './infrastructure/database.module';
+import { PlayersService } from './players-api/players-service';
+import { MaestroApiModule } from './maestro-api/maestro-api.module';
 
 @Module({
   imports: [
@@ -17,14 +17,10 @@ import { InMemoryRunningJobsDatabase } from './infrastructure/InMemoryRunningJob
       serveStaticOptions: { redirect: false },
     }),
     CacheModule.register(),
-],
-  controllers: [AuthenticatedMaestroController, PlayersController],
-  providers: [
-    DatabaseWrapperConfiguration,
-    {
-      provide: RunningJobsDatabase,
-      useClass: InMemoryRunningJobsDatabase
-    }
+    DatabaseModule,
+    MaestroApiModule,
   ],
+  controllers: [AuthenticatedMaestroController, PlayersController],
+  providers: [PlayersService],
 })
 export class AppModule {}
