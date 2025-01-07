@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Logger, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Logger, Param, Post, Put } from '@nestjs/common';
 import { TrackService } from './maestro-api/TrackService';
 import { Database } from './maestro-api/Database';
 import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
@@ -10,12 +10,12 @@ import {
   TracksFromDirectoryCreation,
   TrackUpdate,
   UploadAndCreateTracksFromYoutubeRequest,
-  UploadAndCreateTracksFromYoutubeResponse,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
+import { TrackCreationFromYoutubeJob } from './maestro-api/TrackCreationFromYoutubeJobsStore';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
@@ -23,12 +23,14 @@ const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 @Controller()
 export class AuthenticatedMaestroController {
   private readonly database: Database;
-  private readonly trackService: TrackService;
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache, private databaseWrapper: DatabaseWrapperConfiguration) {
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private databaseWrapper: DatabaseWrapperConfiguration,
+    @Inject() private trackService: TrackService
+  ) {
     this.database = databaseWrapper.get();
-    this.trackService = new TrackService(this.database);
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
   }
 
@@ -37,18 +39,22 @@ export class AuthenticatedMaestroController {
     @Param('sessionId') sessionId: string,
     @Body() tracksFromDirectoryCreation: TracksFromDirectoryCreation
   ): Promise<void> {
-    Logger.log(
-      `importing tracks for session ${tracksFromDirectoryCreation.sessionId} from: ${tracksFromDirectoryCreation}`
-    );
+    Logger.log(`importing tracks for session ${sessionId} from: ${tracksFromDirectoryCreation}`);
     return this.trackService.createAllTracksFromDirectory(sessionId, tracksFromDirectoryCreation);
   }
 
   @Post('/maestro/sessions/:sessionId/tracks/from-youtube')
+  @HttpCode(HttpStatus.ACCEPTED)
   uploadAndCreateTracksFromYoutube(
     @Param('sessionId') sessionId: string,
     @Body() uploadAndCreateTracksFromYoutubeRequest: UploadAndCreateTracksFromYoutubeRequest
-  ): Promise<UploadAndCreateTracksFromYoutubeResponse> {
+  ): Promise<void> {
     return this.trackService.uploadAndCreateTrackFromYoutube(sessionId, uploadAndCreateTracksFromYoutubeRequest);
+  }
+
+  @Get('/maestro/sessions/:sessionId/tracks/from-youtube')
+  getYoutubeTrackCreations(@Param('sessionId') sessionId: string): Promise<TrackCreationFromYoutubeJob[]> {
+    return this.trackService.getTrackFromYoutubeCreations(sessionId);
   }
 
   @Post('/maestro/sessions/:sessionId/tracks')

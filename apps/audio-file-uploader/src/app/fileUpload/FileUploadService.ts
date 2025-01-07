@@ -17,7 +17,7 @@ export class FileUploadService {
     // }
 
     // validate file size (e.g., max 200mb)
-    const maxSize = 200 * 1024 * 1024;
+    const maxSize = 300 * 1024 * 1024;
     if (file.size > maxSize) {
       throw new BadRequestException('file is too large!');
     }

@@ -3,24 +3,37 @@ import path from 'path';
 import { Database } from './Database';
 import { getTrackDuration } from './audio/AudioHelper';
 import {
-  CreateTrackFromYoutubeResponseForUrl,
-  SessionPlayingTracks,
   Track,
   TrackCreation,
   TracksFromDirectoryCreation,
   TrackUpdate,
   UploadAndCreateTracksFromYoutubeRequest,
-  UploadAndCreateTracksFromYoutubeResponse,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/FetchCaddyDirectory';
-import { uploadAudioFromYoutube } from '../infrastructure/audio-file-uploader-client/AudioFileUploaderClient';
-import { Logger } from '@nestjs/common';
+import { TrackCreationFromYoutubeJob, TrackCreationFromYoutubeJobsStore } from './TrackCreationFromYoutubeJobsStore';
+import { AudioFileUploaderClient } from '../track-creation-from-youtube-jobs-watcher/audio-file-uploader-client';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
+import { TrackCreationFromYoutubeJobsWatcher } from '../track-creation-from-youtube-jobs-watcher/track-creation-from-youtube-jobs-watcher.service';
 
+@Injectable()
 export class TrackService {
   database: Database;
+  trackCreationFromYoutubeJobsStore: TrackCreationFromYoutubeJobsStore;
+  trackCreationFromYoutubeJobsWatcher: TrackCreationFromYoutubeJobsWatcher;
+  audioFileUploaderClient: AudioFileUploaderClient;
 
-  constructor(database: Database) {
-    this.database = database;
+  constructor(
+    @Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration,
+    @Inject(TrackCreationFromYoutubeJobsStore) trackCreationFromYoutubeJobsStore: TrackCreationFromYoutubeJobsStore,
+    @Inject(forwardRef(() => TrackCreationFromYoutubeJobsWatcher))
+    trackCreationFromYoutubeJobsWatcher1: TrackCreationFromYoutubeJobsWatcher,
+    @Inject(AudioFileUploaderClient) audioFileUploaderClient: AudioFileUploaderClient
+  ) {
+    this.database = databaseWrapper.get();
+    this.trackCreationFromYoutubeJobsStore = trackCreationFromYoutubeJobsStore;
+    this.trackCreationFromYoutubeJobsWatcher = trackCreationFromYoutubeJobsWatcher1;
+    this.audioFileUploaderClient = audioFileUploaderClient;
   }
 
   async createTrack(sessionId: string, trackCreation: TrackCreation): Promise<Track> {
@@ -74,10 +87,6 @@ export class TrackService {
     return this.database.getTrack(id);
   }
 
-  async getSessionPlayingTracks(sessionId: string): Promise<SessionPlayingTracks> {
-    return this.database.getCurrentSession(sessionId);
-  }
-
   async createAllTracksFromDirectory(
     sessionId: string,
     tracksFromDirectoryCreation: TracksFromDirectoryCreation
@@ -92,45 +101,26 @@ export class TrackService {
   async uploadAndCreateTrackFromYoutube(
     sessionId: string,
     uploadAndCreateTracksFromYoutubeRequest: UploadAndCreateTracksFromYoutubeRequest
-  ): Promise<UploadAndCreateTracksFromYoutubeResponse> {
-    const uploadAudioFromYoutubeResponse = await uploadAudioFromYoutube({
+  ): Promise<void> {
+    await Promise.all(
+      uploadAndCreateTracksFromYoutubeRequest.urls.map(async (url) => {
+        Logger.log(`request track upload from youtube, sessionId: ${sessionId}, ytUrl: ${url}`);
+        await this.trackCreationFromYoutubeJobsStore.set(
+          `${sessionId}-${url}`,
+          new TrackCreationFromYoutubeJob(sessionId, url)
+        );
+      })
+    );
+
+    await this.audioFileUploaderClient.uploadAudioFromYoutube({
       urls: uploadAndCreateTracksFromYoutubeRequest.urls,
     });
-    const createsResults: CreateTrackFromYoutubeResponseForUrl[] = [];
 
-    for (const uploadResultForURL of uploadAudioFromYoutubeResponse.uploadResult) {
-      if (uploadResultForURL.status === 'ok') {
-        try {
-          const createdTrack = await this.createTrack(sessionId, {
-            url: uploadResultForURL.uploadedFileLink,
-            originUrl: uploadResultForURL.url,
-            originMedia: 'youtube',
-          });
-          createsResults.push({
-            status: 'created',
-            url: uploadResultForURL.url,
-            uploadedFile: uploadResultForURL.uploadedFile,
-            uploadedFileLink: uploadResultForURL.uploadedFileLink,
-            trackId: createdTrack.id,
-            trackName: createdTrack.name,
-          });
-        } catch (err) {
-          Logger.error(`failed creating track ${uploadResultForURL.uploadedFileLink} after uploading, err: ${err}`);
-          createsResults.push({
-            status: 'uploaded-but-creation-failed',
-            url: uploadResultForURL.url,
-            uploadedFile: uploadResultForURL.uploadedFile,
-            uploadedFileLink: uploadResultForURL.uploadedFileLink,
-          });
-        }
-      } else {
-        createsResults.push({
-          status: uploadResultForURL.status,
-          url: uploadResultForURL.url,
-        });
-      }
-    }
-    return { createResult: createsResults };
+    this.trackCreationFromYoutubeJobsWatcher.wakeUp();
+  }
+
+  async getTrackFromYoutubeCreations(sessionId: string) {
+    return this.trackCreationFromYoutubeJobsStore.getAllForSession(sessionId);
   }
 }
 

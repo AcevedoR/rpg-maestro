@@ -7,6 +7,8 @@ import process from 'node:process';
 import { FileUploadService } from './fileUpload/FileUploadService';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { UploadFromYoutubeService } from './fileUpload/fromYoutube/UploadFromYoutubeService';
+import { UploadFromYoutubeJobsStore } from './fileUpload/fromYoutube/upload-from-youtube-jobs-store';
 
 @Module({
   imports: [
@@ -26,6 +28,6 @@ import { join } from 'path';
     }),
   ],
   controllers: [AppController],
-  providers: [FileUploadService],
+  providers: [FileUploadService, UploadFromYoutubeService, UploadFromYoutubeJobsStore],
 })
 export class AppModule {}

@@ -3,5 +3,11 @@ POST localhost:3001/api/upload/audio/from-youtube
 Content-Type: application/json
 
 {
-  "urls": ["https://www.youtube.com/watch?v=nkvhwh7CQqA&ab_channel=ForsakenTunes"]
+  "urls": [
+    "https://www.youtube.com/watch?v=vyg5jJrZ42s&ab_channel=DaydreamingofPersephone"
+  ]
 }
+
+###
+GET localhost:3001/api/upload/audio/from-youtube
+Content-Type: application/json
