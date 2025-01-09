@@ -1,6 +1,6 @@
 import { TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useState } from 'react';
-import { Tag, Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { Tag, Track, TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
@@ -16,6 +16,7 @@ import HikingIcon from '@mui/icons-material/Hiking';
 import { displayError } from '../error-utils';
 import { useParams } from 'react-router';
 import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
+import { MaestroAudioPlayer } from './maestro-audio-player/maestro-audio-player';
 
 export function MaestroSoundboard() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
@@ -38,6 +39,9 @@ export function MaestroSoundboard() {
 
   const requestSetTrackToPlay = async (trackId: string) => {
     await setTrackToPlay(sessionId, { currentTrack: { trackId } });
+  };
+  const requestEditTrackToPlay = async (trackToPlay: TrackToPlay) => {
+    await setTrackToPlay(sessionId, { currentTrack: trackToPlay });
   };
 
   const onTrackSearchChange = (track: Track | null) => {
@@ -124,26 +128,29 @@ export function MaestroSoundboard() {
             />
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <SearchTags
-            tags={trackFilters.tagsToFilterOn ?? []}
-            tracks={allTracks ?? []}
-            onTrackSearchByTagChange={onTrackSearchByTagChange}
-          />
-          <div>or</div>
-          <SearchSpecificTrack tracks={allTracks ?? []} onTrackSearchChange={onTrackSearchChange} />
+        <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
+          <MaestroAudioPlayer sessionId={sessionId} onCurrentTrackEdit={requestEditTrackToPlay}/>
         </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <SearchTags
+              tags={trackFilters.tagsToFilterOn ?? []}
+              tracks={allTracks ?? []}
+              onTrackSearchByTagChange={onTrackSearchByTagChange}
+            />
+            <div>or</div>
+            <SearchSpecificTrack tracks={allTracks ?? []} onTrackSearchChange={onTrackSearchChange} />
+          </div>
+        </div>
+        <div>
+          <TracksTable
+            sessionId={sessionId}
+            tracks={allTracks ?? []}
+            onSetTrackToPlay={requestSetTrackToPlay}
+            filters={trackFilters}
+            onRefreshRequested={refreshTracks}
+          />
+        </div>
+        <ToastContainer limit={5} />
       </div>
-      <div>
-        <TracksTable
-          sessionId={sessionId}
-          tracks={allTracks ?? []}
-          onSetTrackToPlay={requestSetTrackToPlay}
-          filters={trackFilters}
-          onRefreshRequested={refreshTracks}
-        />
-      </div>
-      <ToastContainer limit={5} />
-    </div>
-  );
-}
+      );
+      }

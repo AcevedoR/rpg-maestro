@@ -29,9 +29,9 @@ export class ManageCurrentlyPlayingTracks {
       track.name,
       track.url,
       track.duration,
-      changeSessionPlayingTracksRequest.currentTrack?.paused ?? false,
+      changeSessionPlayingTracksRequest.currentTrack.paused ?? false,
       Date.now(),
-      0
+      changeSessionPlayingTracksRequest.currentTrack.startTime ?? 0
     );
     await this.database.upsertCurrentTrack(sessionId, playingTrack);
     return Promise.resolve({ currentTrack: playingTrack });

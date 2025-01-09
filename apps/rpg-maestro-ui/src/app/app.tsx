@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import 'react-h5-audio-player/lib/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { MaestroSoundboard } from './maestro-ui/maestro-soundboard';
-import { ClientsUi } from './players-ui/clients-ui';
+import { PlayersUi } from './players-ui/players-ui';
 import { TracksManagement } from './maestro-ui/tracks-management/tracks-management';
 
 const StyledApp = styled.div`
@@ -18,7 +18,7 @@ export function App() {
       {/* These routes and navigation have been generated for you */}
       {/* Feel free to move and update them to fit your needs */}
       <Routes>
-        <Route path="/:sessionId" element={<ClientsUi />} />
+        <Route path="/:sessionId" element={<PlayersUi />} />
         <Route path="/" element={<Navigate to="/default-current-session" replace />} />
         <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
         <Route path="/maestro/manage/:sessionId" element={<TracksManagement />} />
