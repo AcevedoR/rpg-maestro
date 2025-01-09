@@ -32,7 +32,7 @@ export const isCurrentTrackTooMuchDesynchronizedFromServer = (
   }
   const desyncTime = Math.abs(currentTrackPlayTime - serverPlayTime);
   if (desyncTime > 5000) {
-    console.log(`CurrentTrackTooMuchDesynchronizedFromServer by ${desyncTime}ms`);
+    console.log(`CurrentTrackTooMuchDesynchronizedFromServer by ${desyncTime}ms, current: ${currentTrackPlayTime} vs server: ${serverPlayTime}`);
     return true;
   } else {
     return false;

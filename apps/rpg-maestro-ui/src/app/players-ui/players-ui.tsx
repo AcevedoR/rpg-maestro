@@ -12,7 +12,7 @@ import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wr
 import SpatialAudioOffIcon from '@mui/icons-material/SpatialAudioOff';
 import { useParams } from 'react-router';
 
-export function ClientsUi() {
+export function PlayersUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const audioPlayer = useRef<H5AudioPlayer>();
@@ -35,6 +35,7 @@ export function ClientsUi() {
           throw new Error('Current track is not defined');
         }
         if (audioPlayer.current?.audio?.current) {
+          audioPlayer.current.audio.current.src = newerServerTrack.url;
           audioPlayer.current.audio.current.title = newerServerTrack.name;
           const currentPlayTime = newerServerTrack.getCurrentPlayTime();
           if (currentPlayTime) {
@@ -114,7 +115,6 @@ export function ClientsUi() {
           }}
         >
           <AudioPlayer
-            src={currentTrack?.url}
             // @ts-expect-error: No overload matches this call
             ref={audioPlayer}
             loop={true}

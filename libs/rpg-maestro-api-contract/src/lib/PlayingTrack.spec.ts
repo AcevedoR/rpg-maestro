@@ -7,19 +7,19 @@ beforeAll(() => {
 });
 
 describe("PlayingTrack getCurrentPlayTime()", () => {
-  it("should return null when paused", () => {
+  it("should return last track start time when it was paused", () => {
     const pausedTrack = new PlayingTrack(
       "id1",
       "name1",
       "url",
-      120000,
+      495046.531,
       true,
       Number.MIN_VALUE,
-      0
+      10563
     );
-    expect(pausedTrack.getCurrentPlayTime()).toBe(null);
+    expect(pausedTrack.getCurrentPlayTime()).toBe(10563);
   });
-  it("should return null when the track is set to play in the future", () => {
+  it("should raise error when the track is set to play in the future", () => {
     const playingTrack = new PlayingTrack(
       "id1",
       "name1",
@@ -29,7 +29,7 @@ describe("PlayingTrack getCurrentPlayTime()", () => {
       Number.MAX_VALUE,
       0
     );
-    expect(playingTrack.getCurrentPlayTime()).toBe(null);
+    expect(() => playingTrack.getCurrentPlayTime()).toThrow('this.playTimestamp in the future are not handled');
   });
   it("should return the current time the track is playing when it was started from 0", () => {
     const playTimestamp15sAgo = NOW.getTime() - 15000;
