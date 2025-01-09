@@ -38,7 +38,6 @@ export function TracksTable(props: TracksTableProps) {
     onRefreshRequested();
   };
   const columns: GridColDef[] = [
-    { field: 'id', width: 130 },
     { field: 'name', minWidth: 600 },
     {
       field: 'duration',
