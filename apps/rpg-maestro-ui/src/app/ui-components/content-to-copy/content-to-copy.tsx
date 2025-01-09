@@ -1,7 +1,7 @@
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import React from 'react';
-import { Bounce, toast } from 'react-toastify';
 import styles from './content-to-copy.module.css';
+import { toastInfo } from '../toast-popup';
 
 export interface ContentToCopyProps {
   content: string;
@@ -11,19 +11,7 @@ export function ContentToCopy(props: ContentToCopyProps) {
   const { content } = props;
 
   async function copyContentToClipboard(content: string) {
-    return navigator.clipboard.writeText(content).then(() =>
-      toast.info(`Content ${content} copied to clipboard`, {
-        position: 'bottom-left',
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'dark',
-        transition: Bounce,
-      })
-    );
+    return navigator.clipboard.writeText(content).then(() => toastInfo(`Content ${content} copied to clipboard`, 4000));
   }
 
   return (

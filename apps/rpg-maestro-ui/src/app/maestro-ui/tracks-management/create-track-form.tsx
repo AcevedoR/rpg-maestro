@@ -5,7 +5,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { createTrack, createTrackFromYoutube } from '../maestro-api';
-import { Bounce, toast } from 'react-toastify';
+import { toastInfo, toastSuccess } from '../../ui-components/toast-popup';
 
 export interface CreateTrackFormProps {
   sessionId: string;
@@ -46,19 +46,9 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
     if (inputUrl.startsWith('https://www.youtube.com/')) {
       createTrackFromYoutube(sessionId, inputUrl).then((res) => {
         setIsCreatingTrack(false);
-        toast.info(
+        toastInfo(
           `Trying to upload and create from youtube, this might take some times depending on the track length (1-10min)`,
-          {
-            position: 'bottom-left',
-            autoClose: 10000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: 'dark',
-            transition: Bounce,
-          }
+          10000
         );
         resetform();
       });
@@ -69,17 +59,7 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
         tags: inputTags ?? [],
       }).then((track: Track) => {
         console.log(`track created: ${JSON.stringify(track)}`);
-        toast.success(`Track created: ${track.name}`, {
-          position: 'bottom-left',
-          autoClose: 10000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'dark',
-          transition: Bounce,
-        });
+        toastSuccess(`Track created: ${track.name}`, 10000);
         resetform();
         setIsCreatingTrack(false);
       });
