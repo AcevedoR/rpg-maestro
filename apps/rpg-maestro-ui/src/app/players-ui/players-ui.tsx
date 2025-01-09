@@ -124,6 +124,7 @@ export function PlayersUi() {
             style={{
               width: '50vw',
               minWidth: '300px',
+              overflowWrap: 'break-word'
             }}
             header={<h3 style={{ textAlign: 'center' }}>{currentTrack?.name}</h3>}
             customIcons={{

@@ -128,29 +128,29 @@ export function MaestroSoundboard() {
             />
           </div>
         </div>
-        <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
-          <MaestroAudioPlayer sessionId={sessionId} onCurrentTrackEdit={requestEditTrackToPlay}/>
+        <div style={{ display: 'inline-flex', justifyContent: 'flex-start', minWidth: '330px' }}>
+          <MaestroAudioPlayer sessionId={sessionId} onCurrentTrackEdit={requestEditTrackToPlay} />
         </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <SearchTags
-              tags={trackFilters.tagsToFilterOn ?? []}
-              tracks={allTracks ?? []}
-              onTrackSearchByTagChange={onTrackSearchByTagChange}
-            />
-            <div>or</div>
-            <SearchSpecificTrack tracks={allTracks ?? []} onTrackSearchChange={onTrackSearchChange} />
-          </div>
-        </div>
-        <div>
-          <TracksTable
-            sessionId={sessionId}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <SearchTags
+            tags={trackFilters.tagsToFilterOn ?? []}
             tracks={allTracks ?? []}
-            onSetTrackToPlay={requestSetTrackToPlay}
-            filters={trackFilters}
-            onRefreshRequested={refreshTracks}
+            onTrackSearchByTagChange={onTrackSearchByTagChange}
           />
+          <div>or</div>
+          <SearchSpecificTrack tracks={allTracks ?? []} onTrackSearchChange={onTrackSearchChange} />
         </div>
-        <ToastContainer limit={5} />
       </div>
-      );
-      }
+      <div>
+        <TracksTable
+          sessionId={sessionId}
+          tracks={allTracks ?? []}
+          onSetTrackToPlay={requestSetTrackToPlay}
+          filters={trackFilters}
+          onRefreshRequested={refreshTracks}
+        />
+      </div>
+      <ToastContainer limit={5} />
+    </div>
+  );
+}
