@@ -26,11 +26,11 @@ export class PlayingTrack {
     this.trackStartTime = trackStartTime;
   }
 
-  getCurrentPlayTime(): number | null {
+  getCurrentPlayTime(): number {
     if (this.playTimestamp > Date.now()) {
       throw new Error('this.playTimestamp in the future are not handled');
     }
-    if(this.isPaused){
+    if (this.isPaused) {
       return this.trackStartTime;
     }
     const elapsedPlayTime = Date.now() - this.playTimestamp;
