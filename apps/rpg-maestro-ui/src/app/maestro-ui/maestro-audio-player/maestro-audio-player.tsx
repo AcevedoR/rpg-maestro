@@ -1,45 +1,61 @@
-import { PlayingTrack, TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
+import { PlayingTrack, SessionPlayingTracks, TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
 import AudioPlayer from 'react-h5-audio-player';
 import H5AudioPlayer from 'react-h5-audio-player';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { resyncCurrentTrackIfNeeded } from '../../track-sync/track-sync';
 import { displayError } from '../../error-utils';
 import './maestro-audio-player.css';
 
-export interface MaestroAudioPlayerProps {
-  sessionId: string;
-  onCurrentTrackEdit: (editedCurrentTrack: TrackToPlay) => void;
+export interface MaestroAudioPlayerRef {
+  dispatchTrackWasManuallyChanged: (newTracks: SessionPlayingTracks) => void;
 }
 
-export function MaestroAudioPlayer(props: MaestroAudioPlayerProps) {
+export interface MaestroAudioPlayerProps {
+  sessionId: string;
+  onCurrentTrackEdit: (editedCurrentTrack: TrackToPlay) => Promise<SessionPlayingTracks>;
+}
+
+export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, ref: Ref<MaestroAudioPlayerRef>) => {
   const { sessionId, onCurrentTrackEdit } = props;
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const isInResync = useRef(false);
   const audioPlayer = useRef<H5AudioPlayer>();
 
-  const resyncCurrentTrackOnUi = useCallback(async () => {
-    if (!isInResync.current) {
+  const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks) => {
+    resyncCurrentTrackOnUi(newTracks.currentTrack);
+  };
+  useImperativeHandle(ref, () => ({
+    dispatchTrackWasManuallyChanged,
+  }));
+
+  if (audioPlayer.current?.progressBar.current) {
+    audioPlayer.current.progressBar.current.onclick = (e) => {
+      onTrackTimecodeChange();
+    };
+    audioPlayer.current.progressBar.current.ontouchend = (e) => {
+      onTrackTimecodeChange();
+    };
+  }
+
+  const resyncCurrentTrackOnUi = useCallback(async (trackFromServer: PlayingTrack | null, forceRun?: boolean) => {
+    if (forceRun || !isInResync.current) {
       try {
-        const newerServerTrack = await resyncCurrentTrackIfNeeded(
-          sessionId,
-          audioPlayer.current?.audio?.current?.currentTime ?? null,
-          currentTrack
-        );
-        if (newerServerTrack) {
+        isInResync.current = true;
+        if (trackFromServer) {
           console.log('synchronizing track');
-          setCurrentTrack(newerServerTrack);
-          if (!newerServerTrack) {
+          setCurrentTrack(trackFromServer);
+          if (!trackFromServer) {
             throw new Error('Current track is not defined');
           }
           if (audioPlayer.current?.audio?.current) {
-            audioPlayer.current.audio.current.src = newerServerTrack.url;
-            audioPlayer.current.audio.current.title = newerServerTrack.name;
-            const currentPlayTime = newerServerTrack.getCurrentPlayTime();
+            audioPlayer.current.audio.current.src = trackFromServer.url;
+            audioPlayer.current.audio.current.title = trackFromServer.name;
+            const currentPlayTime = trackFromServer.getCurrentPlayTime();
             if (currentPlayTime) {
               audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
             }
-            if (newerServerTrack.isPaused) {
+            if (trackFromServer.isPaused) {
               // paused
               audioPlayer.current.audio.current.pause();
             } else {
@@ -60,6 +76,8 @@ export function MaestroAudioPlayer(props: MaestroAudioPlayerProps) {
           } else {
             console.warn('audio player not available yet');
           }
+        } else {
+          isInResync.current = false;
         }
       } catch (err) {
         console.error('An unexpected error occurred:', err);
@@ -67,19 +85,27 @@ export function MaestroAudioPlayer(props: MaestroAudioPlayerProps) {
         isInResync.current = false;
       }
     }
-  }, [currentTrack, sessionId]);
+  }, []);
+  const syncCurrentTrackOnUi = useCallback(async () => {
+    const newerServerTrack = await resyncCurrentTrackIfNeeded(
+      sessionId,
+      audioPlayer.current?.audio?.current?.currentTime ?? null,
+      currentTrack
+    );
+    await resyncCurrentTrackOnUi(newerServerTrack);
+  }, [currentTrack, sessionId, resyncCurrentTrackOnUi]);
 
   useEffect(() => {
-    resyncCurrentTrackOnUi();
+    syncCurrentTrackOnUi();
     const id = setInterval(() => {
-      resyncCurrentTrackOnUi();
-    }, 1000);
+      syncCurrentTrackOnUi();
+    }, 5000);
     setIntervalId(id);
     return () => clearInterval(id);
-  }, [resyncCurrentTrackOnUi, sessionId, currentTrack]);
+  }, [syncCurrentTrackOnUi, resyncCurrentTrackOnUi, sessionId, currentTrack]);
 
-  const changePlayingStatus = (playing: boolean): void => {
-    resyncCurrentTrackOnUi().then(() => {
+  const changePlayingStatus = async (playing: boolean): Promise<void> => {
+    if (!isInResync.current) {
       isInResync.current = true;
       if (!currentTrack) {
         throw new Error('this cannot happen');
@@ -89,18 +115,38 @@ export function MaestroAudioPlayer(props: MaestroAudioPlayerProps) {
         // trying to handle load edge cases
         console.log(`changePlayingStatus newPausedStatus: ${newPausedStatus}`);
         const stoppedTime = currentTrack.getCurrentPlayTime();
-        if (!stoppedTime) {
-          throw new Error('unhandled case yet');
-        }
-        onCurrentTrackEdit({
+        currentTrack.trackStartTime = stoppedTime;
+        currentTrack.isPaused = newPausedStatus;
+        const newTrack = await onCurrentTrackEdit({
           trackId: currentTrack.id,
           startTime: stoppedTime,
           paused: newPausedStatus,
         });
+        await resyncCurrentTrackOnUi(newTrack.currentTrack, true);
       }
-      isInResync.current = false;
-      resyncCurrentTrackOnUi();
-    });
+    } else {
+      console.warn('changePlayingStatus: unhandled concurrency case');
+    }
+  };
+
+  const onTrackTimecodeChange = async () => {
+    if (!isInResync.current) {
+      isInResync.current = true;
+      if (!audioPlayer.current?.audio.current || !currentTrack) {
+        throw new Error('should never happen');
+      }
+      const newTimecode = audioPlayer.current.audio.current.currentTime * 1000;
+      console.log('onTrackTimecodeChange', newTimecode);
+      currentTrack.trackStartTime = newTimecode;
+      const newTrack = await onCurrentTrackEdit({
+        trackId: currentTrack.id,
+        startTime: newTimecode,
+        paused: currentTrack.isPaused,
+      });
+      await resyncCurrentTrackOnUi(newTrack.currentTrack, true);
+    } else {
+      console.warn('onTrackTimecodeChange: unhandled concurrency case');
+    }
   };
 
   return (
@@ -111,16 +157,16 @@ export function MaestroAudioPlayer(props: MaestroAudioPlayerProps) {
       autoPlay={false}
       showJumpControls={false}
       showSkipControls={false}
-      customAdditionalControls={undefined}
       onPlay={() => changePlayingStatus(true)}
       onPause={() => changePlayingStatus(false)}
+      className={'maestro-audio-player'}
       style={{
         width: '50vw',
         minWidth: '300px',
-        overflowWrap: 'break-word'
+        overflowWrap: 'break-word',
       }}
       header={<h3 style={{ textAlign: 'center' }}>{currentTrack?.name}</h3>}
       customIcons={{}}
     />
   );
-}
+});

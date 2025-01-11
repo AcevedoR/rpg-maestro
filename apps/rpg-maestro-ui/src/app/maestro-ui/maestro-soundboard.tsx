@@ -1,6 +1,6 @@
 import { TrackFilters, TracksTable } from './tracks-table/tracks-table';
-import React, { useEffect, useState } from 'react';
-import { Tag, Track, TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
+import React, { useEffect, useRef, useState } from 'react';
+import { SessionPlayingTracks, Tag, Track, TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
@@ -16,7 +16,7 @@ import HikingIcon from '@mui/icons-material/Hiking';
 import { displayError } from '../error-utils';
 import { useParams } from 'react-router';
 import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
-import { MaestroAudioPlayer } from './maestro-audio-player/maestro-audio-player';
+import { MaestroAudioPlayer, MaestroAudioPlayerRef } from './maestro-audio-player/maestro-audio-player';
 
 export function MaestroSoundboard() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
@@ -38,10 +38,11 @@ export function MaestroSoundboard() {
   };
 
   const requestSetTrackToPlay = async (trackId: string) => {
-    await setTrackToPlay(sessionId, { currentTrack: { trackId } });
+    const changedTracks = await setTrackToPlay(sessionId, { currentTrack: { trackId } });
+    dispatchTrackWasManuallyChanged(changedTracks);
   };
-  const requestEditTrackToPlay = async (trackToPlay: TrackToPlay) => {
-    await setTrackToPlay(sessionId, { currentTrack: trackToPlay });
+  const requestEditTrackToPlay = async (trackToPlay: TrackToPlay): Promise<SessionPlayingTracks> => {
+    return await setTrackToPlay(sessionId, { currentTrack: trackToPlay });
   };
 
   const onTrackSearchChange = (track: Track | null) => {
@@ -61,6 +62,11 @@ export function MaestroSoundboard() {
   };
   const getURLToShareToPlayers = () => {
     return `${window.location.origin}/${sessionId}`;
+  };
+
+  const maestroAudioPlayerChildRef = useRef<MaestroAudioPlayerRef>(null);
+  const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks): void => {
+    maestroAudioPlayerChildRef?.current?.dispatchTrackWasManuallyChanged(newTracks);
   };
 
   return (
@@ -129,7 +135,11 @@ export function MaestroSoundboard() {
           </div>
         </div>
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', minWidth: '330px' }}>
-          <MaestroAudioPlayer sessionId={sessionId} onCurrentTrackEdit={requestEditTrackToPlay} />
+          <MaestroAudioPlayer
+            sessionId={sessionId}
+            onCurrentTrackEdit={requestEditTrackToPlay}
+            ref={maestroAudioPlayerChildRef}
+          />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <SearchTags

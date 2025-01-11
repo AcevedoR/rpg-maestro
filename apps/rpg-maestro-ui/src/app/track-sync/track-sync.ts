@@ -32,19 +32,23 @@ export const isCurrentTrackTooMuchDesynchronizedFromServer = (
   }
   const desyncTime = Math.abs(currentTrackPlayTime - serverPlayTime);
   if (desyncTime > 5000) {
-    console.log(`CurrentTrackTooMuchDesynchronizedFromServer by ${desyncTime}ms, current: ${currentTrackPlayTime} vs server: ${serverPlayTime}`);
+    console.log(
+      `CurrentTrackTooMuchDesynchronizedFromServer by ${desyncTime}ms, current: ${currentTrackPlayTime} vs server: ${serverPlayTime}`
+    );
     return true;
   } else {
     return false;
   }
 };
 export const isCurrentTrackOutOfDate = (currentTrack: PlayingTrack, serverTrack: PlayingTrack): boolean => {
-  if (
-    currentTrack.id !== serverTrack.id ||
-    currentTrack.isPaused !== serverTrack.isPaused ||
-    currentTrack.playTimestamp !== serverTrack.playTimestamp
-  ) {
-    console.log('CurrentTrackOutOfDate');
+  if (currentTrack.id !== serverTrack.id) {
+    console.log('CurrentTrackOutOfDate: track have changed');
+    return true;
+  } else if (currentTrack.isPaused !== serverTrack.isPaused) {
+    console.log('CurrentTrackOutOfDate: track paused status have changed');
+    return true;
+  } else if (currentTrack.playTimestamp !== serverTrack.playTimestamp) {
+    console.log('CurrentTrackOutOfDate: track playTimestamp have changed');
     return true;
   }
   return false;

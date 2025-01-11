@@ -1,6 +1,8 @@
 import { displayError } from '../error-utils';
 import {
   ChangeSessionPlayingTracksRequest,
+  PlayingTrack,
+  SessionPlayingTracks,
   Track,
   TrackCreation,
   TrackUpdate,
@@ -29,7 +31,7 @@ export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
 export const setTrackToPlay = async (
   sessionId: string,
   changeSessionPlayingTracksRequest: ChangeSessionPlayingTracksRequest
-): Promise<void> => {
+): Promise<SessionPlayingTracks> => {
   try {
     const response = await fetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/playing-tracks`, {
       method: 'PUT',
@@ -41,10 +43,24 @@ export const setTrackToPlay = async (
     if (!response.ok) {
       console.log(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
+    } else {
+      const rawSerialized = (await response.json()) as SessionPlayingTracks;
+      return {
+        currentTrack: new PlayingTrack(
+          rawSerialized.currentTrack.id,
+          rawSerialized.currentTrack.name,
+          rawSerialized.currentTrack.url,
+          rawSerialized.currentTrack.duration,
+          rawSerialized.currentTrack.isPaused,
+          rawSerialized.currentTrack.playTimestamp,
+          rawSerialized.currentTrack.trackStartTime
+        ),
+      };
     }
   } catch (error) {
     console.error(error);
     displayError(`Fetch /maestro/sessions/${sessionId}/playing-tracks error: ${JSON.stringify(error)}`);
+    return Promise.reject();
   }
 };
 
@@ -80,7 +96,7 @@ export const createTrackFromYoutube = async (sessionId: string, url: string): Pr
         Accept: 'application/json',
       },
       body: JSON.stringify(request),
-      signal: AbortSignal.timeout(60 * 60 * 1000)
+      signal: AbortSignal.timeout(60 * 60 * 1000),
     });
     if (!response.ok) {
       console.log(response.status, response.statusText);

@@ -38,9 +38,7 @@ export function PlayersUi() {
           audioPlayer.current.audio.current.src = newerServerTrack.url;
           audioPlayer.current.audio.current.title = newerServerTrack.name;
           const currentPlayTime = newerServerTrack.getCurrentPlayTime();
-          if (currentPlayTime) {
-            audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
-          }
+          audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
           if (newerServerTrack.isPaused) {
             // paused
             audioPlayer.current.audio.current.pause();
@@ -121,10 +119,11 @@ export function PlayersUi() {
             showJumpControls={false}
             showSkipControls={false}
             customAdditionalControls={undefined}
+            className={'audio-player-readonly'}
             style={{
               width: '50vw',
               minWidth: '300px',
-              overflowWrap: 'break-word'
+              overflowWrap: 'break-word',
             }}
             header={<h3 style={{ textAlign: 'center' }}>{currentTrack?.name}</h3>}
             customIcons={{
