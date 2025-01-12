@@ -6,10 +6,10 @@ import {
   ChangeSessionPlayingTracksRequest,
   SessionPlayingTracks,
   Track,
-  TrackCreation,
+  TrackCreation, TrackCreationFromYoutubeDto,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest,
+  UploadAndCreateTracksFromYoutubeRequest
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
@@ -53,7 +53,7 @@ export class AuthenticatedMaestroController {
   }
 
   @Get('/maestro/sessions/:sessionId/tracks/from-youtube')
-  getYoutubeTrackCreations(@Param('sessionId') sessionId: string): Promise<TrackCreationFromYoutubeJob[]> {
+  getYoutubeTrackCreations(@Param('sessionId') sessionId: string): Promise<TrackCreationFromYoutubeDto[]> {
     return this.trackService.getTrackFromYoutubeCreations(sessionId);
   }
 

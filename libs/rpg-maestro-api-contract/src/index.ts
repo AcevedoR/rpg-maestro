@@ -10,3 +10,5 @@ export * from './lib/SessionPlayingTracks';
 export * from './lib/ChangeSessionPlayingTracksRequest';
 export * from './lib/upload-track-from-youtube/UploadAndCreateTracksFromYoutubeRequest';
 export * from './lib/upload-track-from-youtube/UploadAndCreateTracksFromYoutubeResponse';
+export * from './lib/maestro-api/TrackCreationFromYoutubeDto';
+
