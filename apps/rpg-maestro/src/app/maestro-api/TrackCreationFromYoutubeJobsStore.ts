@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 export const DEFAULT_TTL = 60 * 60 * 1000;
 
 export interface TrackCreationFromYoutubeJobsStore {
@@ -9,6 +11,7 @@ export interface TrackCreationFromYoutubeJobsStore {
 
 export class TrackCreationFromYoutubeJob {
   constructor(sessionId: string, youtubeUrlToUpload: string) {
+    this.id = randomUUID();
     this.sessionId = sessionId;
     this.youtubeUrlToUpload = youtubeUrlToUpload;
     this.status = 'running';
@@ -17,6 +20,7 @@ export class TrackCreationFromYoutubeJob {
     this.updatedDate = new Date(this.createdDate);
   }
 
+  id: string;
   sessionId: string;
   status: 'running' | 'uploading' | 'creating' | 'failed' | 'success';
   youtubeUrlToUpload: string;

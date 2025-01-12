@@ -111,6 +111,43 @@ export const createTrackFromYoutube = async (sessionId: string, url: string): Pr
   }
 };
 
+export const getTrackCreationFromYoutube = async (sessionId: string): Promise<TrackCreationFromYoutubeDto[]> => {
+  try {
+    const response = await fetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/from-youtube`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+    if (!response.ok) {
+      console.log(response.status, response.statusText);
+      throw new Error('fetch failed for error: ' + response);
+    }
+    const rawDatas = (await response.json()) as TrackCreationFromYoutubeDto[];
+    return rawDatas.map(
+      (rawData) =>
+        new TrackCreationFromYoutubeDto(
+          rawData.id,
+          rawData.sessionId,
+          rawData.status,
+          rawData.youtubeUrlToUpload,
+          rawData.error,
+          rawData.uploadedFile,
+          rawData.uploadedFileLink,
+          rawData.trackName,
+          rawData.trackId,
+          new Date(rawData.createdDate),
+          new Date(rawData.updatedDate)
+        )
+    );
+  } catch (error) {
+    console.error(error);
+    displayError(`Fetch error: ${JSON.stringify(error)}`);
+    return Promise.reject();
+  }
+};
+
 export const updateTrack = async (sessionId: string, trackId: string, trackUpdate: TrackUpdate): Promise<Track> => {
   try {
     const response = await fetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/${trackId}`, {
@@ -126,39 +163,6 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
       throw new Error('fetch failed for error: ' + response);
     }
     return (await response.json()) as Track;
-  } catch (error) {
-    console.error(error);
-    displayError(`Fetch error: ${JSON.stringify(error)}`);
-    return Promise.reject();
-  }
-};
-
-export const getTrackCreationFromYoutube = async (sessionId: string): Promise<TrackCreationFromYoutubeDto> => {
-  try {
-    const response = await fetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/from-youtube`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-    });
-    if (!response.ok) {
-      console.log(response.status, response.statusText);
-      throw new Error('fetch failed for error: ' + response);
-    }
-    const rawData = (await response.json()) as TrackCreationFromYoutubeDto;
-    return new TrackCreationFromYoutubeDto(
-      rawData.sessionId,
-      rawData.status,
-      rawData.youtubeUrlToUpload,
-      rawData.error,
-      rawData.uploadedFile,
-      rawData.uploadedFileLink,
-      rawData.trackName,
-      rawData.trackId,
-      rawData.createdDate,
-      rawData.updatedDate
-    );
   } catch (error) {
     console.error(error);
     displayError(`Fetch error: ${JSON.stringify(error)}`);

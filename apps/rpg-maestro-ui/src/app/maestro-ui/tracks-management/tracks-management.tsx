@@ -1,5 +1,5 @@
 import { FileUpload } from './file-upload';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { TextLinkWithIconWrapper } from '../../ui-components/text-link-with-icon-wrapper';
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import { CreateTrackForm } from './create-track-form';
@@ -8,9 +8,13 @@ import { ToastContainer } from 'react-toastify';
 import { displayError } from '../../error-utils';
 import { useParams } from 'react-router';
 import { TrackCreationFromYoutubeTable } from './track-creation-from-youtube-table';
+import { getTrackCreationFromYoutube } from '../maestro-api';
+import { TrackCreationFromYoutubeDto } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export function TracksManagement() {
   const [onFileUploadedEvent, setOnFileUploadedEvent] = useState<string | null>(null);
+  const [trackCreationFromYoutube, setTrackCreationFromYoutube] = useState<TrackCreationFromYoutubeDto[]>([]);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const sessionId = useParams().sessionId ?? '';
   if (sessionId === '') {
     displayError('no session found in URL');
@@ -24,6 +28,21 @@ export function TracksManagement() {
     setOnFileUploadedEvent(null);
     return copy;
   };
+  const onTrackCreated = () => {
+    refreshTrackCreationFromYoutube();
+  };
+  const refreshTrackCreationFromYoutube = useCallback(async () => {
+    setTrackCreationFromYoutube(await getTrackCreationFromYoutube(sessionId));
+  }, [sessionId]);
+
+  useEffect(() => {
+    refreshTrackCreationFromYoutube();
+    const id = setInterval(() => {
+      refreshTrackCreationFromYoutube();
+    }, 5000);
+    setIntervalId(id);
+    return () => clearInterval(id);
+  }, [refreshTrackCreationFromYoutube]);
 
   return (
     <div>
@@ -55,10 +74,16 @@ export function TracksManagement() {
           <p>Then create it on the default playlist</p>
           <p>Or directly reference a track from a remote and public URL</p>
         </div>
-        <CreateTrackForm sessionId={sessionId} consumeFileUploadedEvent={consumeFileUploadedEvent} />
+        <CreateTrackForm
+          sessionId={sessionId}
+          consumeFileUploadedEvent={consumeFileUploadedEvent}
+          onSubmitted={onTrackCreated}
+        />
       </div>
       <div>
-        <TrackCreationFromYoutubeTable trackCreationsFromYoutube={trackCreationsFromYoutube}/>
+        {trackCreationFromYoutube.length > 0 && (
+          <TrackCreationFromYoutubeTable trackCreationsFromYoutube={trackCreationFromYoutube} />
+        )}
       </div>
       <ToastContainer limit={5} />
     </div>
