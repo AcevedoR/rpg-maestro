@@ -10,10 +10,11 @@ import { toastInfo, toastSuccess } from '../../ui-components/toast-popup';
 export interface CreateTrackFormProps {
   sessionId: string;
   consumeFileUploadedEvent: () => string | null;
+  onSubmitted: () => void;
 }
 
 export function CreateTrackForm(props: CreateTrackFormProps) {
-  const { sessionId, consumeFileUploadedEvent } = props;
+  const { sessionId, consumeFileUploadedEvent, onSubmitted } = props;
   const [inputUrl, setInputUrl] = useState<string | null | undefined>(undefined);
   const [inputUrlError, setInputUrlError] = useState<string | null>(null);
   const [inputName, setInputName] = useState<string | undefined>(undefined);
@@ -51,6 +52,7 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
           10000
         );
         resetform();
+        onSubmitted();
       });
     } else {
       createTrack(sessionId, {
@@ -62,6 +64,7 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
         toastSuccess(`Track created: ${track.name}`, 10000);
         resetform();
         setIsCreatingTrack(false);
+        onSubmitted();
       });
     }
   };
