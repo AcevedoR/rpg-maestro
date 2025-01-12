@@ -7,6 +7,7 @@ import { ArrowForward } from '@mui/icons-material';
 import { ToastContainer } from 'react-toastify';
 import { displayError } from '../../error-utils';
 import { useParams } from 'react-router';
+import { TrackCreationFromYoutubeTable } from './track-creation-from-youtube-table';
 
 export function TracksManagement() {
   const [onFileUploadedEvent, setOnFileUploadedEvent] = useState<string | null>(null);
@@ -55,6 +56,9 @@ export function TracksManagement() {
           <p>Or directly reference a track from a remote and public URL</p>
         </div>
         <CreateTrackForm sessionId={sessionId} consumeFileUploadedEvent={consumeFileUploadedEvent} />
+      </div>
+      <div>
+        <TrackCreationFromYoutubeTable trackCreationsFromYoutube={trackCreationsFromYoutube}/>
       </div>
       <ToastContainer limit={5} />
     </div>
