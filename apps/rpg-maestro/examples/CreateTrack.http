@@ -1,5 +1,5 @@
 ###
-POST localhost:3000/maestro/sessions/test-session/tracks
+POST localhost:3000/maestro/sessions/default-current-session/tracks
 Content-Type: application/json
 
 {

@@ -18,7 +18,7 @@ export function TextLinkWithIconWrapper(props: TextLinkWithIconProps) {
       style={{
         display: 'flex',
         textDecoration: 'none',
-        color: '#97723d',
+        color: 'var(--gold-color)',
         height: '100px',
         width: '170px',
         border: '1px solid',

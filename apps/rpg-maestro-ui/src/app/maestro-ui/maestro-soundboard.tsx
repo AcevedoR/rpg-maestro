@@ -17,6 +17,7 @@ import { displayError } from '../error-utils';
 import { useParams } from 'react-router';
 import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
 import { MaestroAudioPlayer, MaestroAudioPlayerRef } from './maestro-audio-player/maestro-audio-player';
+import './custom.datagrid.css';
 
 export function MaestroSoundboard() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
@@ -70,7 +71,7 @@ export function MaestroSoundboard() {
   };
 
   return (
-    <div>
+    <div style={{height:'100vh', padding:'1rem', display:'flex', flexDirection:'column', justifyContent:'space-around', gap:'1rem'}}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
@@ -91,9 +92,9 @@ export function MaestroSoundboard() {
           materialUiIcon={LyricsTwoTone}
         />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
-          <h5 style={{ textOrientation: 'upright', writingMode: 'vertical-rl', margin: '0' }}>QUICK TAGS</h5>
+          <h5 style={{ textOrientation: 'upright', writingMode: 'vertical-rl', margin: '0', color: 'var(--gold-color', textAlign: 'center' }}>QUICK TAGS</h5>
           <div
             style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', margin: '0' }}
           >
@@ -141,7 +142,7 @@ export function MaestroSoundboard() {
             ref={maestroAudioPlayerChildRef}
           />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--gold-color)' }}>
           <SearchTags
             tags={trackFilters.tagsToFilterOn ?? []}
             tracks={allTracks ?? []}
