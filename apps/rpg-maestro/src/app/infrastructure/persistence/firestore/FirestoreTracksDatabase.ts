@@ -1,40 +1,15 @@
 import { PlayingTrack, SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
-import { Database } from '../maestro-api/Database';
-import { cert, initializeApp } from 'firebase-admin/app';
-
-import { getFirestore } from 'firebase-admin/firestore';
+import { TracksDatabase } from '../../../maestro-api/TracksDatabase';
 import { firestore } from 'firebase-admin';
+import { FirestoreAuth } from './FirestoreAuth';
 import Firestore = firestore.Firestore;
 import Filter = firestore.Filter;
 
-export const DEFAULT_CURRENT_SESSION_ID = 'default-current-session';
-
-interface GCPServiceAccountJson {
-  project_id: string | undefined;
-  client_email: string | undefined;
-  private_key: string | undefined;
-}
-
-export class FirestoreDatabase implements Database {
+export class FirestoreTracksDatabase implements TracksDatabase {
   db: Firestore;
 
   constructor() {
-    const googleApplicationCredentials: string | undefined = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    if (!googleApplicationCredentials) {
-      throw new Error('GOOGLE_APPLICATION_CREDENTIALS env var is required when running with Firestore as database');
-    }
-    const serviceAccount: GCPServiceAccountJson = JSON.parse(googleApplicationCredentials) as GCPServiceAccountJson;
-    if (!serviceAccount || !serviceAccount.project_id) {
-      throw new Error('GOOGLE_APPLICATION_CREDENTIALS env var is required when running with Firestore as database');
-    }
-    initializeApp({
-      credential: cert({
-        projectId: serviceAccount.project_id,
-        privateKey: serviceAccount.private_key,
-        clientEmail: serviceAccount.client_email,
-      }),
-    });
-    this.db = getFirestore();
+    this.db = FirestoreAuth.getFirestoreInstance();
   }
 
   async save(track: Track): Promise<void> {

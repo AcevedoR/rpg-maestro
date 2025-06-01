@@ -7,10 +7,10 @@ export class PlayersService {
   constructor(private databaseWrapper: DatabaseWrapperConfiguration) {}
 
   async getTrack(id: string): Promise<Track> {
-    return this.databaseWrapper.get().getTrack(id);
+    return this.databaseWrapper.getTracksDB().getTrack(id);
   }
 
   async getSessionPlayingTracks(sessionId: string): Promise<SessionPlayingTracks> {
-    return this.databaseWrapper.get().getCurrentSession(sessionId);
+    return this.databaseWrapper.getTracksDB().getCurrentSession(sessionId);
   }
 }

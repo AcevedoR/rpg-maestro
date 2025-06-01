@@ -1,4 +1,4 @@
-import { Database } from './Database';
+import { TracksDatabase } from './TracksDatabase';
 import {
   ChangeSessionPlayingTracksRequest,
   PlayingTrack,
@@ -6,9 +6,9 @@ import {
 } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export class ManageCurrentlyPlayingTracks {
-  database: Database;
+  database: TracksDatabase;
 
-  constructor(database: Database) {
+  constructor(database: TracksDatabase) {
     this.database = database;
   }
 

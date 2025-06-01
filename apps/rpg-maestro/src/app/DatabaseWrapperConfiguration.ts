@@ -1,26 +1,35 @@
-import { Database } from './maestro-api/Database';
-import { Injectable, Logger } from '@nestjs/common';
-import { FirestoreDatabase } from './infrastructure/FirestoreDatabase';
-import { InMemoryDatabase } from './infrastructure/InMemoryDatabase';
+import { TracksDatabase } from './maestro-api/TracksDatabase';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { FirestoreTracksDatabase } from './infrastructure/persistence/firestore/FirestoreTracksDatabase';
+import { InMemoryTracksDatabase } from './infrastructure/persistence/in-memory/InMemoryTracksDatabase';
+import { UsersDatabase } from './maestro-api/UsersDatabase';
+import { InMemoryUsersDatabase } from './infrastructure/persistence/in-memory/InMemoryUsersDatabase';
 
 @Injectable()
 export class DatabaseWrapperConfiguration {
-  private databaseImplementation: Database;
+  private readonly tracksDBImpl: TracksDatabase;
+  private readonly usersDBImpl: UsersDatabase;
 
-  constructor() {
-    const databaseImpl: string | undefined = process.env.DATABASE;
+  constructor(@Inject('DatabaseWrapperConfiguration_DEFAULT_DATABASE_IMPL') private readonly databaseImplParam: string) {
+    const databaseImpl: string | undefined = databaseImplParam;
     if (databaseImpl === 'firestore') {
       Logger.log('using firestore as database');
-      this.databaseImplementation = new FirestoreDatabase();
+      this.tracksDBImpl = new FirestoreTracksDatabase();
+      this.usersDBImpl = new InMemoryUsersDatabase();
     } else if (databaseImpl === 'in-memory' || !databaseImpl) {
       Logger.log('using in-memory database');
-      this.databaseImplementation = new InMemoryDatabase();
+      this.tracksDBImpl = new InMemoryTracksDatabase();
+      this.usersDBImpl = new InMemoryUsersDatabase();
     } else {
       throw new Error(`database wanted implementation: "${process.env.DATABASE}" is not handled`);
     }
   }
 
-  get() {
-    return this.databaseImplementation;
+  public getTracksDB(): TracksDatabase {
+    return this.tracksDBImpl;
+  }
+
+  public getUsersDB(): UsersDatabase {
+    return this.usersDBImpl;
   }
 }

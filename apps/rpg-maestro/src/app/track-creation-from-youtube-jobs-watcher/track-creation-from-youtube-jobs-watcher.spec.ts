@@ -1,4 +1,4 @@
-import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/in-memory-create-track-from-youtube-jobs-database.service';
+import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/persistence/in-memory/InMemoryTrackCreationFromYoutubeJobsStore.service';
 import { TrackCreationFromYoutubeJob } from '../maestro-api/TrackCreationFromYoutubeJobsStore';
 import { randomUUID } from 'node:crypto';
 import { AudioFileUploaderClient } from './audio-file-uploader-client';
