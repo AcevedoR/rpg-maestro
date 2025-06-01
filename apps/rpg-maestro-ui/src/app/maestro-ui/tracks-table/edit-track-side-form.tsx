@@ -50,7 +50,7 @@ export function EditTrackSideForm(props: EditTrackSideFormProps) {
     });
   };
   return (
-    <div>
+    <div style={{   background: 'rgba(26, 11, 46, 0.5)'}}>
       <Drawer open={open} width={600} onClose={onClose}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '20px' }}>
           <h3>Update track: {trackToEdit.id}</h3>
@@ -70,7 +70,7 @@ export function EditTrackSideForm(props: EditTrackSideFormProps) {
             onChange={(event: React.SyntheticEvent, newValue: string[] | null) => setInputTags(newValue)}
             renderInput={(params) => <TextField {...params} label="Tags (optional)" placeholder="Favorites" />}
           />
-          <Button variant="contained" onClick={onSubmit} disabled={isThereAnErrorInTheForm() || waitingForTrackEdition}>
+          <Button variant="contained" onClick={onSubmit} disabled={isThereAnErrorInTheForm() || waitingForTrackEdition} style={{backgroundColor: 'var(--gold-color) !important'}}>
             Update track
           </Button>
         </div>

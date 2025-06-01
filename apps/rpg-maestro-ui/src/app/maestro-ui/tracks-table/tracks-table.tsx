@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
-import Paper from '@mui/material/Paper';
 import EditIcon from '@mui/icons-material/Edit';
 import { durationInMsToString } from '../../utils/time';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { EditTrackSideForm } from './edit-track-side-form';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const paginationModel = { page: 0, pageSize: 10 };
 
@@ -74,29 +74,35 @@ export function TracksTable(props: TracksTableProps) {
       onSetTrackToPlay(String(rowSelection[0]));
     }
   };
-
+  const theme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+  });
   return (
-    <Paper sx={{ height: 650, width: '100%' }}>
-      <DataGrid
-        rows={filter(tracks, filters)}
-        columns={columns}
-        initialState={{ pagination: { paginationModel } }}
-        pageSizeOptions={[10, 25, 50]}
-        sx={{ border: 0 }}
-        onRowSelectionModelChange={onRowSelection}
-      />
-      {selectedTrackToEdit ? (
-        <EditTrackSideForm
-          trackToEdit={selectedTrackToEdit}
-          sessionId={sessionId}
-          open={true}
-          onClose={onEditTrackSideFormClose}
-          onTrackUpdated={onTrackUpdated}
-        ></EditTrackSideForm>
-      ) : (
-        <></>
-      )}
-    </Paper>
+    <div className={'tracks-table'} style={{ height: 650, width: '100%' }}>
+      <ThemeProvider theme={theme}>
+        <DataGrid
+          rows={filter(tracks, filters)}
+          columns={columns}
+          initialState={{ pagination: { paginationModel } }}
+          pageSizeOptions={[10, 25, 50]}
+          sx={{ border: 0 }}
+          onRowSelectionModelChange={onRowSelection}
+        />
+        {selectedTrackToEdit ? (
+          <EditTrackSideForm
+            trackToEdit={selectedTrackToEdit}
+            sessionId={sessionId}
+            open={true}
+            onClose={onEditTrackSideFormClose}
+            onTrackUpdated={onTrackUpdated}
+          ></EditTrackSideForm>
+        ) : (
+          <></>
+        )}
+      </ThemeProvider>
+    </div>
   );
 }
 

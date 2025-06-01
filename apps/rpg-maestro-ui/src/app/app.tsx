@@ -6,6 +6,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import { MaestroSoundboard } from './maestro-ui/maestro-soundboard';
 import { PlayersUi } from './players-ui/players-ui';
 import { TracksManagement } from './maestro-ui/tracks-management/tracks-management';
+import './app.css';
+import './custom.datagrid.css';
+import './custom.autocomplete.css';
 
 const StyledApp = styled.div`
   //  Your style here
@@ -13,7 +16,7 @@ const StyledApp = styled.div`
 
 export function App() {
   return (
-    <StyledApp style={{ fontFamily: '"Roboto", "Helvetica", "Arial", "sans-serif"' }}>
+    <StyledApp style={{ fontFamily: '"Roboto", "Helvetica", "Arial", "sans-serif"', height: '100vh' }}>
       {/* START: routes */}
       {/* These routes and navigation have been generated for you */}
       {/* Feel free to move and update them to fit your needs */}

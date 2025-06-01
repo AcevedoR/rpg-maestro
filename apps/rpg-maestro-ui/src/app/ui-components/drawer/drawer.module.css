@@ -4,8 +4,7 @@
   top: 0;
   bottom: 0;
   box-shadow: -7px 0 15px rgba(0, 0, 0, 0.3);
-  border-left: 1px solid #bbb;
-  background-color: white;
+  background: rgba(26, 11, 46, 1);
   transition: right ease-in-out 0.5s;
 }
 

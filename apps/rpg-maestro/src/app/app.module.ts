@@ -8,6 +8,7 @@ import { PlayersController } from './PlayersController';
 import { DatabaseModule } from './infrastructure/database.module';
 import { PlayersService } from './players-api/players-service';
 import { MaestroApiModule } from './maestro-api/maestro-api.module';
+import { HealthModule } from './health.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MaestroApiModule } from './maestro-api/maestro-api.module';
     CacheModule.register(),
     DatabaseModule,
     MaestroApiModule,
+    HealthModule,
   ],
   controllers: [AuthenticatedMaestroController, PlayersController],
   providers: [PlayersService],
