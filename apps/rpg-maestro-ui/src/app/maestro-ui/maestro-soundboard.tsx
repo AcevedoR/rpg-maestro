@@ -17,7 +17,6 @@ import { displayError } from '../error-utils';
 import { useParams } from 'react-router';
 import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
 import { MaestroAudioPlayer, MaestroAudioPlayerRef } from './maestro-audio-player/maestro-audio-player';
-import './custom.datagrid.css';
 
 export function MaestroSoundboard() {
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
@@ -142,7 +141,7 @@ export function MaestroSoundboard() {
             ref={maestroAudioPlayerChildRef}
           />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--gold-color)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
           <SearchTags
             tags={trackFilters.tagsToFilterOn ?? []}
             tracks={allTracks ?? []}

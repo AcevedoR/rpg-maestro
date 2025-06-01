@@ -45,7 +45,7 @@ export function TracksManagement() {
   }, [refreshTrackCreationFromYoutube]);
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '5rem' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap:'1rem', padding:'1rem' }}>
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
         <TextLinkWithIconWrapper
           link={`/maestro/${sessionId}`}

@@ -43,16 +43,18 @@ export function TrackCreationFromYoutubeTable(props: TrackCreationFromYoutubeTab
     },
   });
   return (
-    <div style={{ height: 650, width: '100%' }}>
-      <ThemeProvider theme={theme}>
-        <DataGrid
-          rows={[...trackCreationsFromYoutube].sort((a, b) => b.updatedDate.getTime() - a.updatedDate.getTime())}
-          columns={columns}
-          initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[10, 25, 50]}
-          sx={{ border: 0 }}
-        />
-      </ThemeProvider>
+    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+      <div style={{ minHeight: 200, height: '40vh', width: '90%' }}>
+        <ThemeProvider theme={theme}>
+          <DataGrid
+            rows={[...trackCreationsFromYoutube].sort((a, b) => b.updatedDate.getTime() - a.updatedDate.getTime())}
+            columns={columns}
+            initialState={{ pagination: { paginationModel } }}
+            pageSizeOptions={[10, 25, 50]}
+            sx={{ border: 0 }}
+          />
+        </ThemeProvider>
+      </div>
     </div>
   );
 }

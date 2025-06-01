@@ -7,6 +7,8 @@ import { MaestroSoundboard } from './maestro-ui/maestro-soundboard';
 import { PlayersUi } from './players-ui/players-ui';
 import { TracksManagement } from './maestro-ui/tracks-management/tracks-management';
 import './app.css';
+import './custom.datagrid.css';
+import './custom.autocomplete.css';
 
 const StyledApp = styled.div`
   //  Your style here
