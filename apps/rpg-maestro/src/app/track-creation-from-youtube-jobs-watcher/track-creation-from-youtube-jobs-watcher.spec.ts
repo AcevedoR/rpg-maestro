@@ -77,7 +77,7 @@ function randomStr(): string {
 class AudioFileUploaderClientFake implements AudioFileUploaderClient {
   state: UploadAudioFromYoutubeJobDto[] = [];
 
-  uploadAudioFromYoutube(request: UploadAudioFromYoutubeRequest): Promise<void> {
+  uploadAudioFromYoutube(_request: UploadAudioFromYoutubeRequest): Promise<void> {
     return;
   }
 
@@ -87,7 +87,7 @@ class AudioFileUploaderClientFake implements AudioFileUploaderClient {
 }
 
 class TrackServicePartialFake {
-  async createTrack(sessionId: string, trackCreation: TrackCreation): Promise<Track> {
+  async createTrack(_sessionId: string, _trackCreation: TrackCreation): Promise<Track> {
     return Promise.resolve(<Track>{
       id: '1',
       url: 'someurl',

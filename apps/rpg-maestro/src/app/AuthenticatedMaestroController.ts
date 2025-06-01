@@ -15,7 +15,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { TrackCreationFromYoutubeJob } from './maestro-api/TrackCreationFromYoutubeJobsStore';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
