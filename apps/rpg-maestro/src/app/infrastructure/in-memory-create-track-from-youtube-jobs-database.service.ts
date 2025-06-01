@@ -26,7 +26,7 @@ export class InMemoryTrackCreationFromYoutubeJobsStore implements TrackCreationF
   getAllForSession(sessionId: string | null) {
     this.cleanupOldDataIfNecessary();
     const res: TrackCreationFromYoutubeJob[] = [];
-    for (const [key, val] of this.db) {
+    for (const [_key, val] of this.db) {
       if (val.sessionId === sessionId) {
         res.push(val);
       }
