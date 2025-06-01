@@ -2,10 +2,10 @@ import express, { Express } from 'express';
 import * as path from 'node:path';
 import http from 'http';
 import { TrackService } from './TrackService';
-import { InMemoryDatabase } from '../infrastructure/InMemoryDatabase';
+import { InMemoryTracksDatabase } from '../infrastructure/persistence/in-memory/InMemoryTracksDatabase';
 import { ManageCurrentlyPlayingTracks } from './ManageCurrentlyPlayingTracks';
 import { randomUUID } from 'node:crypto';
-import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/in-memory-create-track-from-youtube-jobs-database.service';
+import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/persistence/in-memory/InMemoryTrackCreationFromYoutubeJobsStore.service';
 import { AudioFileUploaderClient } from '../track-creation-from-youtube-jobs-watcher/audio-file-uploader-client';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import {
@@ -14,7 +14,7 @@ import {
 
 let createTrack: TrackService;
 let manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
-const database = new InMemoryDatabase();
+const database = new InMemoryTracksDatabase();
 
 let server: http.Server;
 const app: Express = express();
@@ -24,7 +24,7 @@ const CURRENT_DATE = Date.now();
 
 beforeAll(() => {
   createTrack = new TrackService(
-    {get: () => database} as unknown as DatabaseWrapperConfiguration,
+    new DatabaseWrapperConfiguration('in-memory'),
     new InMemoryTrackCreationFromYoutubeJobsStore(),
     null as TrackCreationFromYoutubeJobsWatcher,
     null as AudioFileUploaderClient

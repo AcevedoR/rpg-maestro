@@ -1,7 +1,7 @@
 import {
   TrackCreationFromYoutubeJob,
   TrackCreationFromYoutubeJobsStore,
-} from '../maestro-api/TrackCreationFromYoutubeJobsStore';
+} from '../../../maestro-api/TrackCreationFromYoutubeJobsStore';
 import { Injectable } from '@nestjs/common';
 
 // TODO fix this hack forbidding having more than one instance

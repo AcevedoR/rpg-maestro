@@ -1,8 +1,7 @@
-import { Database } from '../maestro-api/Database';
-import { InMemorySession } from './InMemorySession';
+import { TracksDatabase } from '../../../maestro-api/TracksDatabase';
 import { PlayingTrack, SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
-export class InMemoryDatabase implements Database {
+export class InMemoryTracksDatabase implements TracksDatabase {
   tracksDatabase: Track[] = [];
   sessionDatabase: { [name: string]: InMemorySession } = {};
 
@@ -41,4 +40,7 @@ export class InMemoryDatabase implements Database {
   getAllTracks(sessionId: string): Promise<Track[]> {
     return Promise.resolve(this.tracksDatabase.filter((x) => x.sessionId === sessionId));
   }
+}
+export interface InMemorySession {
+  currentTrack: PlayingTrack;
 }
