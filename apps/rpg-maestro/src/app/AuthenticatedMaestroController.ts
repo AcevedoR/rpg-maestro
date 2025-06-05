@@ -16,7 +16,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { getUser, decodeToken } from './AuthUtils';
+import { getUser } from './AuthUtils';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
@@ -97,15 +97,6 @@ export class AuthenticatedMaestroController {
   ): Promise<string> {
     Logger.warn("req: ", req);
     const userId = getUser(req);
-    return Promise.resolve(userId);
-  }
-  // TODO remove temporary
-  @Get('/maestro/decode')
-  async decode(
-    @Req() req: Request,
-  ): Promise<string> {
-    Logger.warn("req: ", req);
-    const userId = decodeToken(req);
     return Promise.resolve(userId);
   }
 }
