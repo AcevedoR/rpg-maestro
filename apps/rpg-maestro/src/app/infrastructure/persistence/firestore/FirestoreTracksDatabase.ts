@@ -1,4 +1,4 @@
-import { PlayingTrack, SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { PlayingTrack, SessionID, SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { TracksDatabase } from '../../../maestro-api/TracksDatabase';
 import { firestore } from 'firebase-admin';
 import { FirestoreAuth } from './FirestoreAuth';
@@ -12,20 +12,22 @@ export class FirestoreTracksDatabase implements TracksDatabase {
     this.db = FirestoreAuth.getFirestoreInstance();
   }
 
-  async save(track: Track): Promise<void> {
-    return this.db
-      .collection('rpg-maestro-tracks')
-      .doc(track.id)
-      .set(track)
-      .then(() => Promise.resolve());
+  async createSession(sessionId: SessionID): Promise<void> {
+    const newSession: SessionPlayingTrackEntity = {
+      id: sessionId,
+      currentTrack: null,
+    };
+    await this.db.collection('rpg-maestro-sessions').doc(sessionId).set(newSession);
+    return await Promise.resolve();
   }
 
-  async getCurrentSession(sessionId: string): Promise<SessionPlayingTracks> {
+  async getSession(sessionId: string): Promise<SessionPlayingTracks | null> {
     const sessionDoc = await this.db.collection('rpg-maestro-sessions').doc(sessionId).get();
     if (sessionDoc.exists) {
       const data = sessionDoc.data() as SessionPlayingTrackEntity;
       const currentTrackEntity = data.currentTrack;
       return {
+        sessionId: sessionId,
         currentTrack: new PlayingTrack(
           currentTrackEntity.id,
           currentTrackEntity.name,
@@ -37,8 +39,16 @@ export class FirestoreTracksDatabase implements TracksDatabase {
         ),
       };
     } else {
-      throw new Error('default session not found');
+      return Promise.resolve(null);
     }
+  }
+
+  async save(track: Track): Promise<void> {
+    return this.db
+      .collection('rpg-maestro-tracks')
+      .doc(track.id)
+      .set(track)
+      .then(() => Promise.resolve());
   }
 
   async upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<void> {
@@ -79,7 +89,7 @@ export class FirestoreTracksDatabase implements TracksDatabase {
 
 interface SessionPlayingTrackEntity {
   id: string;
-  currentTrack: PlayingTrackEntity;
+  currentTrack: PlayingTrackEntity | null;
 }
 
 interface PlayingTrackEntity {

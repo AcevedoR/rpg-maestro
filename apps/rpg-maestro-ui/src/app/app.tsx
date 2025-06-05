@@ -9,6 +9,9 @@ import { TracksManagement } from './maestro-ui/tracks-management/tracks-manageme
 import './app.css';
 import './custom.datagrid.css';
 import './custom.autocomplete.css';
+import { Onboarding } from './onboarding/onboarding';
+import { FakeIDPLoginPage } from './auth/FakeIDPLoginPage.fixture';
+import { SetupSession } from './onboarding/setup-session';
 
 const StyledApp = styled.div`
   //  Your style here
@@ -21,6 +24,9 @@ export function App() {
       {/* These routes and navigation have been generated for you */}
       {/* Feel free to move and update them to fit your needs */}
       <Routes>
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboarding/setup-session" element={<SetupSession />} />
+        <Route path="/dev/fake-idp-login-page" element={<FakeIDPLoginPage />} />
         <Route path="/:sessionId" element={<PlayersUi />} />
         <Route path="/" element={<Navigate to="/default-current-session" replace />} />
         <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />

@@ -13,9 +13,7 @@ import { HealthModule } from './health.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, 'assets'),
-      serveRoot: '/public',
-      serveStaticOptions: { redirect: false },
+      rootPath: join(__dirname, '../../../dist/apps/rpg-maestro-ui'),
     }),
     CacheModule.register(),
     DatabaseModule,
