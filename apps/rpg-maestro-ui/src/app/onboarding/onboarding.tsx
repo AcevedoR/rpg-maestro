@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import GoogleButton from 'react-google-button';
 import { useNavigate } from 'react-router-dom';
@@ -8,14 +8,14 @@ export function Onboarding() {
   const navigate = useNavigate();
 
   const goToLogin = () => {
-    if(isDevModeEnabled){
-      const params = new URLSearchParams({ routeToRedirectTo: '/onboarding/setup-session'});
+    if (isDevModeEnabled) {
+      const params = new URLSearchParams({ routeToRedirectTo: '/onboarding/setup-session' });
       navigate(`/dev/fake-idp-login-page?${params.toString()}`);
     } else {
-    // Cloudflare will redirect to the login page since the user is not authenticated yet
-    navigate('/onboarding/setup-session');
+      // Cloudflare will redirect to the login page since the user is not authenticated yet
+      navigate('/onboarding/setup-session');
     }
-  }
+  };
 
   return (
     <div
@@ -39,10 +39,7 @@ export function Onboarding() {
         <p>There is no ads, no tracking and no data collection.</p>
       </div>
       <div>
-        <GoogleButton onClick={goToLogin}>
-          Sign in with your Google account
-        </GoogleButton>
-
+        <GoogleButton onClick={goToLogin}>Sign in with your Google account</GoogleButton>
       </div>
       <ToastContainer limit={5} />
     </div>

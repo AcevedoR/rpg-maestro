@@ -47,7 +47,8 @@ export const setTrackToPlay = async (
     } else {
       const rawSerialized = (await response.json()) as SessionPlayingTracks;
       return {
-        currentTrack: new PlayingTrack(
+        sessionId: rawSerialized.sessionId,
+        currentTrack: !rawSerialized.currentTrack ? null : new PlayingTrack(
           rawSerialized.currentTrack.id,
           rawSerialized.currentTrack.name,
           rawSerialized.currentTrack.url,
@@ -163,6 +164,28 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
       throw new Error('fetch failed for error: ' + response);
     }
     return (await response.json()) as Track;
+  } catch (error) {
+    console.error(error);
+    displayError(`Fetch error: ${JSON.stringify(error)}`);
+    return Promise.reject();
+  }
+};
+// TODO handle 409
+// then change the E2E setup: the backend should serve the front to avoid any cors and cookie issue
+export const onboard = async (): Promise<SessionPlayingTracks> => {
+  try {
+    const response = await fetch(`${rpgmaestroapiurl}/maestro/onboard`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+    if (!response.ok) {
+      console.log(response.status, response.statusText);
+      throw new Error('fetch failed for error: ' + response);
+    }
+    return (await response.json()) as SessionPlayingTracks;
   } catch (error) {
     console.error(error);
     displayError(`Fetch error: ${JSON.stringify(error)}`);

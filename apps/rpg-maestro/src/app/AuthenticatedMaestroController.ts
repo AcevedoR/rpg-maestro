@@ -1,16 +1,18 @@
 import { Request } from 'express';
 import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Logger, Param, Post, Put, Req } from '@nestjs/common';
 import { TrackService } from './maestro-api/TrackService';
+import { OnboardingService } from './maestro-api/onboarding.service';
 import { TracksDatabase } from './maestro-api/TracksDatabase';
 import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
 import {
   ChangeSessionPlayingTracksRequest,
   SessionPlayingTracks,
   Track,
-  TrackCreation, TrackCreationFromYoutubeDto,
+  TrackCreation,
+  TrackCreationFromYoutubeDto,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest, UserID
+  UploadAndCreateTracksFromYoutubeRequest,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
@@ -29,7 +31,8 @@ export class AuthenticatedMaestroController {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private databaseWrapper: DatabaseWrapperConfiguration,
-    @Inject() private trackService: TrackService
+    @Inject() private trackService: TrackService,
+    @Inject() private onboardingService: OnboardingService
   ) {
     this.database = databaseWrapper.getTracksDB();
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
@@ -90,13 +93,9 @@ export class AuthenticatedMaestroController {
     return playingTrack;
   }
 
-  // TODO remove temporary
-  @Get('/maestro/try-auth')
-  async tryAuth(
-    @Req() req: Request,
-  ): Promise<string> {
-    Logger.warn("req: ", req);
+  @Post('/maestro/onboard')
+  async createSession(@Req() req: Request): Promise<SessionPlayingTracks> {
     const userId = getUser(req);
-    return Promise.resolve(userId);
+    return Promise.resolve(this.onboardingService.createSession(userId));
   }
 }

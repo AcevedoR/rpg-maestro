@@ -34,6 +34,6 @@ export class ManageCurrentlyPlayingTracks {
       changeSessionPlayingTracksRequest.currentTrack.startTime ?? 0
     );
     await this.database.upsertCurrentTrack(sessionId, playingTrack);
-    return Promise.resolve({ currentTrack: playingTrack });
+    return Promise.resolve({ sessionId: sessionId, currentTrack: playingTrack });
   }
 }

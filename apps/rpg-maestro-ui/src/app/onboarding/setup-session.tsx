@@ -1,7 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
+import { SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
+import { onboard } from '../maestro-ui/maestro-api';
+import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
+import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
+import SpatialAudioOffIcon from '@mui/icons-material/SpatialAudioOff';
+import styled from 'styled-components';
 
 export function SetupSession() {
+  const [newlyCreatedSession, setNewlyCreatedSession] = useState<SessionPlayingTracks | null>(null);
+
+  const sendOnboardRequest = () => {
+    onboard().then((newSession) => {
+      setNewlyCreatedSession(newSession);
+    });
+  };
+  const getURLToShareToPlayers = () => {
+    return `${window.location.origin}/${newlyCreatedSession}`;
+  };
+
+  useEffect(() => {
+    sendOnboardRequest();
+  }, []);
+
+  const MaestroLink = styled.div`
+    width: 30%;
+    min-width: 170px;
+    display: flex;
+    justify-content: flex-end;
+  `;
+
   return (
     <div
       style={{
@@ -19,10 +47,23 @@ export function SetupSession() {
         <h4>Onboarding almost finished</h4>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <p>TODO a soon as landing on the page, create a session backend side for this Maestro</p>
-        <p>if the Maestro already have a session, dont do that API call but display a message</p>
-        <p>then display the Copy URL</p>
-        <p>and a button to go to the session</p>
+        {newlyCreatedSession ? (
+          <div>
+            <p>
+              Share this link to your Players so then can join your session:
+              <ContentToCopy content={getURLToShareToPlayers()} />
+            </p>
+            <MaestroLink>
+              <TextLinkWithIconWrapper
+                link={`/maestro/${newlyCreatedSession.sessionId}`}
+                text={'Enter your Maestro Session'}
+                materialUiIcon={SpatialAudioOffIcon}
+              />
+            </MaestroLink>
+          </div>
+        ) : (
+          <div>Loading your new session</div>
+        )}
       </div>
       <div></div>
       <ToastContainer limit={5} />
