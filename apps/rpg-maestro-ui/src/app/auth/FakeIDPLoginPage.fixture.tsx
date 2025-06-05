@@ -65,7 +65,6 @@ export function FakeIDPLoginPage() {
         <Button
           onClick={onLogin}
           component="label"
-          role={undefined}
           variant="contained"
           tabIndex={-1}
           startIcon={<CloudUploadIcon />}

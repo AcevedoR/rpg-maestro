@@ -40,7 +40,7 @@ export function Onboarding() {
       </div>
       <div>
         <GoogleButton onClick={goToLogin}>
-          Login with your Google account
+          Sign in with your Google account
         </GoogleButton>
 
       </div>
