@@ -7,14 +7,16 @@ import {
   TrackCreation,
   TrackCreationFromYoutubeDto,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest,
+  UploadAndCreateTracksFromYoutubeRequest, User
 } from '@rpg-maestro/rpg-maestro-api-contract';
 
 const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL; // TODO centralize
 
 export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
   try {
-    const response = await fetch(rpgmaestroapiurl + `/maestro/sessions/${sessionId}/tracks`);
+    const response = await fetch(rpgmaestroapiurl + `/maestro/sessions/${sessionId}/tracks`, {
+      credentials: 'include',
+    });
     if (response.ok) {
       return (await response.json()) as Track[];
     } else {
@@ -40,6 +42,7 @@ export const setTrackToPlay = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(changeSessionPlayingTracksRequest),
+      credentials: 'include',
     });
     if (!response.ok) {
       console.log(response.status, response.statusText);
@@ -75,6 +78,7 @@ export const createTrack = async (sessionId: string, trackCreation: TrackCreatio
         Accept: 'application/json',
       },
       body: JSON.stringify(trackCreation),
+      credentials: 'include',
     });
     if (!response.ok) {
       console.log(response.status, response.statusText);
@@ -98,6 +102,7 @@ export const createTrackFromYoutube = async (sessionId: string, url: string): Pr
         Accept: 'application/json',
       },
       body: JSON.stringify(request),
+      credentials: 'include',
       signal: AbortSignal.timeout(60 * 60 * 1000),
     });
     if (!response.ok) {
@@ -120,6 +125,7 @@ export const getTrackCreationFromYoutube = async (sessionId: string): Promise<Tr
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      credentials: 'include',
     });
     if (!response.ok) {
       console.log(response.status, response.statusText);
@@ -158,6 +164,7 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
         Accept: 'application/json',
       },
       body: JSON.stringify(trackUpdate),
+      credentials: 'include',
     });
     if (!response.ok) {
       console.log(response.status, response.statusText);
@@ -170,9 +177,10 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
     return Promise.reject();
   }
 };
-// TODO handle 409
-// then change the E2E setup: the backend should serve the front to avoid any cors and cookie issue
-export const onboard = async (): Promise<SessionPlayingTracks> => {
+
+
+export type UserAlreadyExistsError = "UserAlreadyExistsError";
+export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExistsError > => {
   try {
     const response = await fetch(`${rpgmaestroapiurl}/maestro/onboard`, {
       method: 'POST',
@@ -180,8 +188,12 @@ export const onboard = async (): Promise<SessionPlayingTracks> => {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      credentials: 'include',
     });
     if (!response.ok) {
+      if(response.status === 409){
+        return 'UserAlreadyExistsError';
+      }
       console.log(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     }
@@ -192,3 +204,20 @@ export const onboard = async (): Promise<SessionPlayingTracks> => {
     return Promise.reject();
   }
 };
+
+export const getMaestroInfos = async(): Promise<User> => {
+  try {
+    const response = await fetch(`${rpgmaestroapiurl}/maestro`, {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      console.log(response.status, response.statusText);
+      throw new Error('fetch failed for error: ' + response);
+    }
+    return (await response.json()) as User;
+  } catch (error) {
+    console.error(error);
+    displayError(`Fetch error: ${JSON.stringify(error)}`);
+    return Promise.reject();
+  }
+}

@@ -1,5 +1,18 @@
 import { Request } from 'express';
-import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Logger, Param, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Logger,
+  Param,
+  Post,
+  Put,
+  Req
+} from '@nestjs/common';
 import { TrackService } from './maestro-api/TrackService';
 import { OnboardingService } from './maestro-api/onboarding.service';
 import { TracksDatabase } from './maestro-api/TracksDatabase';
@@ -12,13 +25,14 @@ import {
   TrackCreationFromYoutubeDto,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest,
+  UploadAndCreateTracksFromYoutubeRequest, User
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
 import { getUser } from './AuthUtils';
+import { UsersService } from './maestro-api/user.service';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
@@ -32,10 +46,23 @@ export class AuthenticatedMaestroController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private databaseWrapper: DatabaseWrapperConfiguration,
     @Inject() private trackService: TrackService,
-    @Inject() private onboardingService: OnboardingService
+    @Inject() private onboardingService: OnboardingService,
+    @Inject() private userService: UsersService,
   ) {
     this.database = databaseWrapper.getTracksDB();
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
+  }
+
+  @Get('/maestro')
+  async getMaestroInfos(
+    @Req() req: Request
+  ): Promise<User> {
+    const userId = getUser(req);
+    const user = await this.userService.get(userId);
+    if(!user){
+      throw new HttpException(`Current user ${userId} not found in db`, HttpStatus.CONFLICT);
+    }
+    return user;
   }
 
   @Post('/maestro/sessions/:sessionId/tracks/from-directory')

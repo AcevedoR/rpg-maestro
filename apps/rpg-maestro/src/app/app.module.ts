@@ -9,6 +9,7 @@ import { DatabaseModule } from './infrastructure/database.module';
 import { PlayersService } from './players-api/players-service';
 import { MaestroApiModule } from './maestro-api/maestro-api.module';
 import { HealthModule } from './health.module';
+import { NetworkingConfiguration } from './NetworkingConfiguration';
 
 @Module({
   imports: [
@@ -21,6 +22,13 @@ import { HealthModule } from './health.module';
     HealthModule,
   ],
   controllers: [AuthenticatedMaestroController, PlayersController],
-  providers: [PlayersService],
+  providers: [
+    PlayersService,
+    NetworkingConfiguration,
+    {
+      provide: 'NetworkingConfiguration_DEFAULT_FRONTEND_DOMAIN',
+      useValue: process.env.DEFAULT_FRONTEND_DOMAIN,
+    },
+  ],
 })
 export class AppModule {}

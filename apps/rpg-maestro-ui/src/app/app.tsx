@@ -12,6 +12,7 @@ import './custom.autocomplete.css';
 import { Onboarding } from './onboarding/onboarding';
 import { FakeIDPLoginPage } from './auth/FakeIDPLoginPage.fixture';
 import { SetupSession } from './onboarding/setup-session';
+import { WelcomePage } from './welcome-page';
 
 const StyledApp = styled.div`
   //  Your style here
@@ -28,10 +29,9 @@ export function App() {
         <Route path="/onboarding/setup-session" element={<SetupSession />} />
         <Route path="/dev/fake-idp-login-page" element={<FakeIDPLoginPage />} />
         <Route path="/:sessionId" element={<PlayersUi />} />
-        <Route path="/" element={<Navigate to="/default-current-session" replace />} />
+        <Route path="/" element={<WelcomePage/>} />
         <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
         <Route path="/maestro/manage/:sessionId" element={<TracksManagement />} />
-        <Route path="/maestro" element={<Navigate to="/maestro/default-current-session" replace />} />
         <Route path="/admin" element={<Navigate to="/maestro" replace />} />
       </Routes>
       {/* END: routes */}

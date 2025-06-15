@@ -9,6 +9,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import { NetworkingConfiguration } from './app/NetworkingConfiguration';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -29,7 +30,15 @@ async function bootstrap() {
     );
   SwaggerModule.setup('api', app, documentFactory);
 
-  app.enableCors({ origin: '*', allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'], credentials: true }); // TODO fix this
+  app.enableCors(
+    {
+      credentials: true,
+      origin: async (requestOrigin: string, next: (err: Error | null, origin?: string[]) => void) => {
+        const origin = app.get(NetworkingConfiguration).getDefaultFrontEndDomain();
+        next(null, [origin]);
+      },
+    }
+  );
   const globalPrefix = '';
   app.setGlobalPrefix(globalPrefix);
   const port = process.env.PORT || 3000;

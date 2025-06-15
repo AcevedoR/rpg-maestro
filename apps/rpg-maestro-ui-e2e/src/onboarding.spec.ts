@@ -19,7 +19,7 @@ test('a new User can become a Maestro and have his own session', async ({ page }
 
   await test.step('get redirected to session setup page after IDP auth', async () => {
     await page.getByRole('button').click();
-    await expect(page.getByRole('heading', { name: 'Account created' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Account created!' })).toBeVisible();
     //   // have your id display
     //   // have your session link displayed
   });
