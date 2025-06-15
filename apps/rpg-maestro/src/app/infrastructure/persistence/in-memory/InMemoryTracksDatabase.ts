@@ -1,23 +1,32 @@
 import { TracksDatabase } from '../../../maestro-api/TracksDatabase';
-import { PlayingTrack, SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { PlayingTrack, SessionID, SessionPlayingTracks, Track, UserID } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export class InMemoryTracksDatabase implements TracksDatabase {
   tracksDatabase: Track[] = [];
-  sessionDatabase: { [name: string]: InMemorySession } = {};
+  sessionDatabase: { [name: SessionID]: InMemorySession } = {};
+
+  createSession(sessionId: SessionID): Promise<void> {
+    this.sessionDatabase[sessionId] = { currentTrack: null };
+    return Promise.resolve();
+  }
+
+  getSession(sessionId: SessionID): Promise<SessionPlayingTracks | null> {
+    if (!this.sessionDatabase || !this.sessionDatabase[sessionId]) {
+      console.log("return null")
+      return Promise.resolve(null);
+    }
+    console.log("return session")
+
+    return Promise.resolve({
+      sessionId: sessionId,
+      currentTrack: this.sessionDatabase[sessionId]?.currentTrack,
+    });
+  }
 
   async save(track: Track): Promise<void> {
     this.tracksDatabase = this.tracksDatabase.filter((item) => item.id !== track.id); // remove before update
     this.tracksDatabase.push({ ...track });
     return Promise.resolve(undefined);
-  }
-
-  getCurrentSession(sessionId: string): Promise<SessionPlayingTracks> {
-    if (!this.sessionDatabase || !this.sessionDatabase[sessionId]) {
-      throw new Error('no session is playing');
-    }
-    return Promise.resolve({
-      currentTrack: this.sessionDatabase[sessionId].currentTrack,
-    });
   }
 
   upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<void> {

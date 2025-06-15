@@ -11,7 +11,7 @@ export class InMemoryUsersDatabase implements UsersDatabase {
     return Promise.resolve();
   };
 
-  get(userId: UserID): Promise<User> {
+  get(userId: UserID): Promise<User | null> {
     return Promise.resolve(this.db.get(userId));
   }
 }

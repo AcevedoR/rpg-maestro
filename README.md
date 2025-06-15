@@ -27,6 +27,9 @@
 - add a local Redis (or equivalent) !
 - create a (CI/)CD
     - handle multienv (prod vs preprod-rpg-maestro.fourgate.cloud)
+- note on cloudflare auth vs maestro onboarding, what I could do
+  - cloudflare atuh is only for auth
+  - maestro onboarding is for creating a Masestro linked to a session Id
 
 ## run tests
 

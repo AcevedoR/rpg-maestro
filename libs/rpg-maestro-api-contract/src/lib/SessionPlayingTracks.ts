@@ -1,5 +1,8 @@
 import { PlayingTrack } from './PlayingTrack';
 
 export interface SessionPlayingTracks {
-  currentTrack: PlayingTrack;
+  sessionId: SessionID;
+  currentTrack: PlayingTrack | null;
 }
+
+export type SessionID = string;

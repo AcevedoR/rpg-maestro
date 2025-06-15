@@ -1,9 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
-
-async function goToMaestroPage(page: Page, sessionId: string) {
-  await page.goto(`/maestro/${sessionId}`);
-  expect(await page.locator('h1').innerText()).toContain('Maestro UI');
-}
+import { iniTracksFromFileServerFixture } from './fixtures';
+import { goToMaestroPage } from './navigation';
 
 async function goToTracksManagement(page: Page, sessionId: string) {
   await page.goto(`/maestro/manage/${sessionId}`);
@@ -13,26 +10,8 @@ async function goToTracksManagement(page: Page, sessionId: string) {
 const A_SESSION_ID = 'a-session';
 
 test('a Maestro can load (via API) and play a current track for its players', async ({ page }) => {
-  await test.step('init tracks from fileserver using api', async () => {
-    try {
-      const res = await fetch(`http://localhost:8099/maestro/sessions/${A_SESSION_ID}/tracks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: 'http://localhost:8099/public/race1.ogg',
-        }),
-      });
-      if (!res.ok) {
-        console.error(res);
-        test.fail();
-      }
-    } catch (err) {
-      console.error(err);
-      test.fail();
-    }
-  });
+
+  await iniTracksFromFileServerFixture(A_SESSION_ID)
 
   await test.step('go to maestro page, and list available tracks', async () => {
     await goToMaestroPage(page, A_SESSION_ID);
