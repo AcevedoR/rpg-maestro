@@ -10,13 +10,21 @@
       "options": {
         "commands": [
           {
-            "command": "nx run rpg-maestro:serve"
+            "command": "nx run rpg-maestro:serve --no-cloud"
           },
           {
-            "command": "npx wait-on http://localhost:3000/health --timeout 5000 && nx run rpg-maestro:setup-dev-env"
+            "command": "npx wait-on http://localhost:8089/health --timeout 5000 && nx run rpg-maestro:setup-dev-env"
           }
         ],
         "parallel": true
+      },
+      "configurations": {
+        "e2e-tests": {
+          "envFile": "apps/rpg-maestro/.env.e2e-tests"
+        },
+        "production": {
+          "envFile": "apps/rpg-maestro/.env.production"
+        }
       }
     },
     "setup-dev-env": {
@@ -47,16 +55,6 @@
     "rpg-maestro:build": {
       "configurations": {
         "production": {}
-      }
-    },
-    "rpg-maestro:preview:e2e-tests": {
-      "configurations": {
-        "e2e-tests": {}
-      }
-    },
-    "rpg-maestro:dev": {
-      "configurations": {
-        "dev": {}
       }
     },
     "semantic-release": {

@@ -4,8 +4,7 @@ import { iniTracksFromFileServerFixture } from './fixtures';
 const A_SESSION_ID = 'a-new-session';
 
 test('a new User can become a Maestro and have his own session', async ({ page }) => {
-
-  await iniTracksFromFileServerFixture(A_SESSION_ID)
+  await iniTracksFromFileServerFixture(A_SESSION_ID);
 
   await test.step('go to onboarding page, and read onboarding instructions', async () => {
     await page.goto(`/onboarding`);
@@ -20,10 +19,13 @@ test('a new User can become a Maestro and have his own session', async ({ page }
   await test.step('get redirected to session setup page after IDP auth', async () => {
     await page.getByRole('button').click();
     await expect(page.getByRole('heading', { name: 'Account created!' })).toBeVisible();
-    //   // have your id display
-    //   // have your session link displayed
+    await expect(page.getByText('Share this link to your Players so they can join your session')).toBeVisible();
+    await page.getByRole('link', { name: 'Enter your Maestro Session' }).click();
+    await expect(page.getByRole('heading', { name: 'Maestro UI' })).toBeVisible();
   });
-  
+
+  //todo: this test, autocreation of a song and/or default load OSS track collection
+
   // await test.step('go to Maestro page, and list available tracks', async () => {
   // });
   // await test.step('set "race1" track to current track', async () => {

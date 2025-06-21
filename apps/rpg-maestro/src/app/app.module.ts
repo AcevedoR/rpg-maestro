@@ -14,7 +14,9 @@ import { NetworkingConfiguration } from './NetworkingConfiguration';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '../../../dist/apps/rpg-maestro-ui'),
+      rootPath: join(__dirname, 'assets'),
+      serveRoot: '/public',
+      serveStaticOptions: { redirect: false },
     }),
     CacheModule.register(),
     DatabaseModule,

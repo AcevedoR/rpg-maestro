@@ -10,8 +10,9 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "PORT=8099 npx nx run rpg-maestro:dev --configuration=e2e-tests --no-cloud",
-          "PORT=8098 npx nx run audio-file-uploader:dev --configuration=e2e-tests --no-cloud",
+          "npx nx run rpg-maestro:dev --configuration=e2e-tests --no-cloud  --verbose | tee e2e-tests.rpg-maestro.log &",
+          "npx wait-on http://localhost:8089/health --timeout 5000",
+          "PORT=8098 npx nx run audio-file-uploader:dev --configuration=e2e-tests --no-cloud  --verbose | tee e2e-tests.audio-file-uploader.log &",
           "npx nx run rpg-maestro-ui:preview --configuration=e2e-tests --no-cloud"
         ]
       }

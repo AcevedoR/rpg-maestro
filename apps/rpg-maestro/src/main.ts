@@ -12,6 +12,10 @@ import cookieParser from 'cookie-parser';
 import { NetworkingConfiguration } from './app/NetworkingConfiguration';
 
 async function bootstrap() {
+  const env = process.env['NODE'+'_ENV'] || 'development';
+  const configurationEnv = process.env['CONFIGURATION_ENV'] || 'development';
+  Logger.log(`starting app in env: ${env} or ${configurationEnv}`)
+
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'fatal'],
   });
