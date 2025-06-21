@@ -13,7 +13,7 @@
             "command": "nx run rpg-maestro:serve --no-cloud"
           },
           {
-            "command": "npx wait-on http://localhost:8089/health --timeout 5000 && nx run rpg-maestro:setup-dev-env"
+            "command": "npx wait-on http://localhost:${PORT}/health --timeout 5000 && nx run rpg-maestro:setup-dev-env"
           }
         ],
         "parallel": true
