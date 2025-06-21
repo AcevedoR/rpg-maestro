@@ -11,6 +11,6 @@ describe('App', () => {
         <App />
       </BrowserRouter>
     );
-    expect(getByText(/RPG-Maestro player UI/gi)).toBeTruthy();
+    expect(getByText(/Welcome to RPG-MAESTRO/gi)).toBeTruthy();
   });
 });

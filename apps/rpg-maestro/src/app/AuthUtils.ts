@@ -5,12 +5,12 @@ import { Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtPayload } from 'jsonwebtoken';
 
 export function getUser(req: Request): UserID {
-  const token = req.cookies['CF_AUTHORIZATION'];
+  const token = req.cookies['CF_Authorization'];
   if (!token) {
-    throw new UnauthorizedException('No CF_AUTHORIZATION cookie');
+    throw new UnauthorizedException('No CF_Authorization cookie');
   }
 
-  Logger.warn("req.cookies['CF_AUTHORIZATION']: ", req.cookies['CF_AUTHORIZATION']);
+  Logger.warn("req.cookies['CF_Authorization']: ", req.cookies['CF_Authorization']);
 
   let decoded: null | JwtPayload | string;
   try {
@@ -31,22 +31,6 @@ export function getUser(req: Request): UserID {
   return decoded.email as UserID;
 }
 
-export function decodeToken(req: Request): any {// TODO delete
-  const token = req.cookies['CF_AUTHORIZATION'];
-  if (!token) {
-    throw new UnauthorizedException('No CF_AUTHORIZATION cookie');
-  }
-
-  Logger.warn("req.cookies['CF_AUTHORIZATION']: ", req.cookies['CF_AUTHORIZATION']);
-
-  let decoded: null | JwtPayload | string;
-  try {
-    decoded = jwt.decode(token) as { email?: string };
-  } catch (err) {
-    throw new UnauthorizedException(`Invalid token, err when decoding jwt: '${err}'`);
-  }
-  return decoded;
-}
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }

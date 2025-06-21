@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, Inject, Param } from '@nestjs/common';
 import { SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
@@ -24,6 +24,9 @@ export class PlayersController {
       return Promise.resolve(cachedValue);
     }
     const dbValue = await this.playerService.getSessionPlayingTracks(sessionId);
+    if (!dbValue) {
+      throw new HttpException(`Session '${sessionId}' not found`, HttpStatus.NOT_FOUND);
+    }
     await this.cacheManager.set(sessionId, dbValue, ONE_DAY_TTL);
     return dbValue;
   }

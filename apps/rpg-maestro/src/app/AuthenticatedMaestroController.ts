@@ -1,22 +1,38 @@
 import { Request } from 'express';
-import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Logger, Param, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Logger,
+  Param,
+  Post,
+  Put,
+  Req
+} from '@nestjs/common';
 import { TrackService } from './maestro-api/TrackService';
+import { OnboardingService } from './maestro-api/onboarding.service';
 import { TracksDatabase } from './maestro-api/TracksDatabase';
 import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
 import {
   ChangeSessionPlayingTracksRequest,
   SessionPlayingTracks,
   Track,
-  TrackCreation, TrackCreationFromYoutubeDto,
+  TrackCreation,
+  TrackCreationFromYoutubeDto,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest, UserID
+  UploadAndCreateTracksFromYoutubeRequest, User
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { getUser, decodeToken } from './AuthUtils';
+import { getUser } from './AuthUtils';
+import { UsersService } from './maestro-api/user.service';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
@@ -29,10 +45,24 @@ export class AuthenticatedMaestroController {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private databaseWrapper: DatabaseWrapperConfiguration,
-    @Inject() private trackService: TrackService
+    @Inject() private trackService: TrackService,
+    @Inject() private onboardingService: OnboardingService,
+    @Inject() private userService: UsersService,
   ) {
     this.database = databaseWrapper.getTracksDB();
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
+  }
+
+  @Get('/maestro')
+  async getMaestroInfos(
+    @Req() req: Request
+  ): Promise<User> {
+    const userId = getUser(req);
+    const user = await this.userService.get(userId);
+    if(!user){
+      throw new HttpException(`Current user ${userId} not found in db`, HttpStatus.CONFLICT);
+    }
+    return user;
   }
 
   @Post('/maestro/sessions/:sessionId/tracks/from-directory')
@@ -90,22 +120,9 @@ export class AuthenticatedMaestroController {
     return playingTrack;
   }
 
-  // TODO remove temporary
-  @Get('/maestro/try-auth')
-  async tryAuth(
-    @Req() req: Request,
-  ): Promise<string> {
-    Logger.warn("req: ", req);
+  @Post('/maestro/onboard')
+  async createSession(@Req() req: Request): Promise<SessionPlayingTracks> {
     const userId = getUser(req);
-    return Promise.resolve(userId);
-  }
-  // TODO remove temporary
-  @Get('/maestro/decode')
-  async decode(
-    @Req() req: Request,
-  ): Promise<string> {
-    Logger.warn("req: ", req);
-    const userId = decodeToken(req);
-    return Promise.resolve(userId);
+    return Promise.resolve(this.onboardingService.createSession(userId));
   }
 }

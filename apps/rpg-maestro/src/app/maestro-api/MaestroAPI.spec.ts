@@ -95,7 +95,7 @@ describe('ManageCurrentlyPlaying track API', () => {
       },
     });
 
-    const res = await database.getCurrentSession(session);
+    const res = await database.getSession(session);
     expect(res).toHaveProperty('currentTrack');
     expect(res.currentTrack.id).toEqual('track-1');
     expect(res.currentTrack.isPaused).toBeFalsy();
