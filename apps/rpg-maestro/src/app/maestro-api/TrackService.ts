@@ -3,11 +3,11 @@ import path from 'path';
 import { TracksDatabase } from './TracksDatabase';
 import { getTrackDuration } from './audio/AudioHelper';
 import {
-  Track,
+  Track, TrackCollection,
   TrackCreation,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest,
+  UploadAndCreateTracksFromYoutubeRequest
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/audio-file-uploader-client/FetchCaddyDirectory';
 import { TrackCreationFromYoutubeJob, TrackCreationFromYoutubeJobsStore } from './TrackCreationFromYoutubeJobsStore';
@@ -30,7 +30,6 @@ export class TrackService {
     trackCreationFromYoutubeJobsWatcher1: TrackCreationFromYoutubeJobsWatcher,
     @Inject(AudioFileUploaderClient) audioFileUploaderClient: AudioFileUploaderClient
   ) {
-    console.log(databaseWrapper)
     this.database = databaseWrapper.getTracksDB();
     this.trackCreationFromYoutubeJobsStore = trackCreationFromYoutubeJobsStore;
     this.trackCreationFromYoutubeJobsWatcher = trackCreationFromYoutubeJobsWatcher1;
@@ -40,10 +39,7 @@ export class TrackService {
   async createTrack(sessionId: string, trackCreation: TrackCreation): Promise<Track> {
     const now = Date.now();
 
-    const url = new URL(trackCreation.url);
-    const fileName = getFileName(url);
-    await checkFileIfActuallyUsable(trackCreation.url);
-    const duration = await getTrackDuration(url);
+    const { fileName, duration } = await getTrackFileMetadata(trackCreation.url);
 
     const track: Track = {
       id: uuid(),
@@ -120,9 +116,22 @@ export class TrackService {
     this.trackCreationFromYoutubeJobsWatcher.wakeUp();
   }
 
+  async importTracksFromTrackCollection(trackCollection: TrackCollection): Promise<void> {
+    // TODO
+    // need to set the trackID an name in each track
+  }
+
   async getTrackFromYoutubeCreations(sessionId: string) {
     return this.trackCreationFromYoutubeJobsStore.getAllForSession(sessionId);
   }
+}
+
+export async function getTrackFileMetadata(trackUrl: string): Promise<{fileName: string, duration: number}> {
+  const url = new URL(trackUrl);
+  const fileName = getFileName(url);
+  await checkFileIfActuallyUsable(trackUrl);
+  const duration = await getTrackDuration(url);
+  return { fileName, duration };
 }
 
 async function checkFileIfActuallyUsable(url: string) {
@@ -130,7 +139,7 @@ async function checkFileIfActuallyUsable(url: string) {
     const response = await fetch(url);
     if (!response.ok || response.status != 200) {
       const shortError = `httpStatus: ${response.status}, statusText: ${response.statusText}`;
-      console.log(`checkFileIfActuallyUsable failed with error: ${shortError}`, response);
+      Logger.error(`checkFileIfActuallyUsable failed with error: ${shortError}`, response);
       throw new Error(
         `Cannot create track, file not reachable, fetch error: ${shortError}, full error: ${await response.text()}`
       );

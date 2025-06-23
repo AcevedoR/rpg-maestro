@@ -10,6 +10,8 @@ import { PlayersService } from './players-api/players-service';
 import { MaestroApiModule } from './maestro-api/maestro-api.module';
 import { HealthModule } from './health.module';
 import { NetworkingConfiguration } from './NetworkingConfiguration';
+import { isDevOrTestEnv } from './config';
+import { TrackCollectionModule } from './track-collection/track-collection.module';
 
 @Module({
   imports: [
@@ -21,7 +23,9 @@ import { NetworkingConfiguration } from './NetworkingConfiguration';
     CacheModule.register(),
     DatabaseModule,
     MaestroApiModule,
+    TrackCollectionModule,
     HealthModule,
+    ...(isDevOrTestEnv() ? [require('./test-utils/tests-utils.module').TestsUtilsModule] : []),
   ],
   controllers: [AuthenticatedMaestroController, PlayersController],
   providers: [

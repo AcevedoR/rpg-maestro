@@ -1,16 +1,32 @@
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
+import { JwtPayload } from 'jsonwebtoken';
 import { Request } from 'express';
 import { UserID } from '@rpg-maestro/rpg-maestro-api-contract';
-import { Logger, UnauthorizedException } from '@nestjs/common';
-import { JwtPayload } from 'jsonwebtoken';
 
-export function getUser(req: Request): UserID {
+export interface AuthenticatedUser {
+  id: string;
+}
+
+@Injectable()
+export class JwtAuthGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const req = context.switchToHttp().getRequest<Request>();
+
+    const userId = getUser(req);
+
+    // Attach user info to request for later use
+    const user: AuthenticatedUser = { id: userId };
+    req['user'] = user;
+    return true;
+  }
+}
+
+function getUser(req: Request): UserID {
   const token = req.cookies['CF_Authorization'];
   if (!token) {
     throw new UnauthorizedException('No CF_Authorization cookie');
   }
-
-  Logger.warn("req.cookies['CF_Authorization']: ", req.cookies['CF_Authorization']);
 
   let decoded: null | JwtPayload | string;
   try {
@@ -18,7 +34,6 @@ export function getUser(req: Request): UserID {
   } catch (err) {
     throw new UnauthorizedException(`Invalid token, err when decoding jwt: '${err}'`);
   }
-  Logger.warn("decoded: ", decoded);
 
   if (!decoded?.email) {
     throw new UnauthorizedException('Email not found in token');

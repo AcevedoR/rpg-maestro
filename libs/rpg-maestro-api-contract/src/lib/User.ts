@@ -18,4 +18,4 @@ export interface SessionAccess {
 export type SessionAccessLevel = 'OWNER';
 
 export type UserID = string;
-export type Role = 'MINSTREL' | 'MAESTRO';
+export type Role = 'MINSTREL' | 'MAESTRO' | 'ADMIN';

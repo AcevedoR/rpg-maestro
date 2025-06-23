@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import {
   Body,
   Controller,
@@ -11,7 +10,8 @@ import {
   Param,
   Post,
   Put,
-  Req
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { TrackService } from './maestro-api/TrackService';
 import { OnboardingService } from './maestro-api/onboarding.service';
@@ -31,12 +31,13 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { getUser } from './AuthUtils';
 import { UsersService } from './maestro-api/user.service';
+import { AuthenticatedUser, JwtAuthGuard } from './jwt-auth-guard';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
 @ApiCookieAuth()
+@UseGuards(JwtAuthGuard)
 @Controller()
 export class AuthenticatedMaestroController {
   private readonly database: TracksDatabase;
@@ -47,20 +48,17 @@ export class AuthenticatedMaestroController {
     private databaseWrapper: DatabaseWrapperConfiguration,
     @Inject() private trackService: TrackService,
     @Inject() private onboardingService: OnboardingService,
-    @Inject() private userService: UsersService,
+    @Inject() private userService: UsersService
   ) {
     this.database = databaseWrapper.getTracksDB();
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
   }
 
   @Get('/maestro')
-  async getMaestroInfos(
-    @Req() req: Request
-  ): Promise<User> {
-    const userId = getUser(req);
-    const user = await this.userService.get(userId);
-    if(!user){
-      throw new HttpException(`Current user ${userId} not found in db`, HttpStatus.CONFLICT);
+  async getMaestroInfos(@Request() req: {user: AuthenticatedUser}): Promise<User> {
+    const user = await this.userService.get(req.user.id);
+    if (!user) {
+      throw new HttpException(`Current user ${req.user.id} not found in db`, HttpStatus.CONFLICT);
     }
     return user;
   }
@@ -121,8 +119,7 @@ export class AuthenticatedMaestroController {
   }
 
   @Post('/maestro/onboard')
-  async createSession(@Req() req: Request): Promise<SessionPlayingTracks> {
-    const userId = getUser(req);
-    return Promise.resolve(this.onboardingService.createSession(userId));
+  async createSession(@Request() req: {user: AuthenticatedUser}): Promise<SessionPlayingTracks> {
+    return Promise.resolve(this.onboardingService.createSession(req.user.id));
   }
 }
