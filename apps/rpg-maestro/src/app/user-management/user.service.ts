@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { UsersDatabase } from './UsersDatabase';
 import { User, UserID } from '@rpg-maestro/rpg-maestro-api-contract';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
+import { UsersDatabase } from './users-database';
 
 @Injectable()
 export class UsersService {

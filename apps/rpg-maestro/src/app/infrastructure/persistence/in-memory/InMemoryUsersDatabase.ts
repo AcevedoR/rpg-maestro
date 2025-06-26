@@ -1,6 +1,6 @@
 import { User, UserID } from '@rpg-maestro/rpg-maestro-api-contract';
-import { UsersDatabase } from '../../../maestro-api/UsersDatabase';
 import { Injectable } from '@nestjs/common';
+import { UsersDatabase } from '../../../user-management/users-database';
 
 @Injectable()
 export class InMemoryUsersDatabase implements UsersDatabase {

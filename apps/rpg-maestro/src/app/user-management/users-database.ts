@@ -4,3 +4,4 @@ export interface UsersDatabase {
   save: (user: User) => Promise<void>;
   get(userId: UserID): Promise<User | null>;
 }
+

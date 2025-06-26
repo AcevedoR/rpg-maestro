@@ -6,7 +6,6 @@ export interface FakeJwtToken {
   token: string;
   email: string;
 }
-
 export function generateFakeJwtToken(userId : string): FakeJwtToken {
   // Cloudflare-like JWT payload
   const email = userId;

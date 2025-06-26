@@ -1,14 +1,13 @@
-import express, { Express } from 'express';
-
 process.env.DATABASE = 'in-memory';
 process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL = 'http://localhost:8098/not-used-in-this-test';
 process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-test';
 process.env.PORT = '3012';
 process.env.NODE_ENV = 'unit-tests';
 process.env.CONFIGURATION_ENV = 'unit-tests';
-process.env.LOG_LEVEL = 'WARN';
+process.env.LOG_LEVEL = 'DEBUG';
 // keep env var first
 
+import express, { Express } from 'express';
 import { FakeJwtToken } from '../test-utils/auth';
 import { TrackCollection, TrackCollectionCreation } from '@rpg-maestro/rpg-maestro-api-contract';
 import { bootstrap } from '../../app-bootstrap';
@@ -17,6 +16,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import path from 'node:path';
 import http from 'http';
+import { TestUsersFixture } from '../test-utils/tests-utils.controller';
 
 const staticServerPort = 3013;
 const createRequest: TrackCollectionCreation = {
@@ -36,6 +36,10 @@ describe('TrackCollection', () => {
   let app: INestApplication;
   let staticServer: http.Server;
   const staticServerApp: Express = express();
+
+  let AN_ADMIN_USER: FakeJwtToken;
+  let A_MAESTRO_USER: FakeJwtToken;
+
   beforeAll(async () => {
     staticServerApp.use('/public', express.static(path.join(__dirname, '../../assets')));
     staticServer = staticServerApp.listen(staticServerPort, () => {
@@ -44,16 +48,20 @@ describe('TrackCollection', () => {
   })
   beforeEach(async () => {
     app = await bootstrap();
+    const users = await request(app.getHttpServer())
+      .post('/test-utils/create-test-users-fixtures')
+      .expect(201)
+      .then((httpResponse) => httpResponse.body as TestUsersFixture);
+    AN_ADMIN_USER = users.an_admin_user;
+    A_MAESTRO_USER = users.a_maestro_user;
   });
 
   it('an Admin can create a TrackCollection', async () => {
-    const adminUserToken = await getAdminToken(app);
-
     await request(app.getHttpServer())
       .post('/track-collections')
       .send(createRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${adminUserToken}`)
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(201)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
@@ -69,7 +77,7 @@ describe('TrackCollection', () => {
 
     await request(app.getHttpServer())
       .get('/track-collections/' + createRequest.id)
-      .set('Cookie', `CF_Authorization=${adminUserToken}`)
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(200)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
@@ -77,51 +85,58 @@ describe('TrackCollection', () => {
       });
   });
   it('a Maestro can get TrackCollections', async () => {
-    // TODO
-    fail('to implement');
+    await request(app.getHttpServer())
+      .post('/track-collections')
+      .send(createRequest)
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .expect(201)
+      .then((httpResponse) => {
+        const res = httpResponse.body as TrackCollection;
+        expect(res.id).toEqual(createRequest.id);
+      });
+
+    await request(app.getHttpServer())
+      .get('/track-collections/' + createRequest.id)
+      .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+      .expect(200)
+      .then((httpResponse) => {
+        const res = httpResponse.body as TrackCollection;
+        expect(res.id).toEqual(createRequest.id);
+      });
   });
   it('cannot create when not Admin', async () => {
-    // TODO
-    fail('to implement');
-  });
-  it('cannot create with already existing id', async () => {
-    const adminUserToken = await getAdminToken(app);
 
     await request(app.getHttpServer())
       .post('/track-collections')
       .send(createRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${adminUserToken}`)
+      .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+      .expect(403);
+  });
+  it('cannot create with already existing id', async () => {
+    await request(app.getHttpServer())
+      .post('/track-collections')
+      .send(createRequest)
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(201);
 
     await request(app.getHttpServer())
       .post('/track-collections')
       .send(createRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${adminUserToken}`)
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(409)
       .then((httpResponse) => {
         expect(httpResponse.body.message).toContain('already exists');
       });
   });
-  it('cannot create with no id in request body', async () => {
-    // TODO
-    fail('to implement');
-  });
-  it('can create without optional field description', async () => {
-    // TODO
-    fail('to implement');
-  });
 
   afterEach(async () => {
     await app.close();
-    staticServer.close();
   });
+  afterAll(() => {
+    staticServer.close();
+  })
 });
-async function getAdminToken(app: INestApplication<any>) {
-  const adminUserToken = await request(app.getHttpServer())
-    .post('/test-utils/create-test-users-fixtures')
-    .expect(201)
-    .then((httpResponse) => httpResponse.body.token as FakeJwtToken);
-  return adminUserToken;
-}

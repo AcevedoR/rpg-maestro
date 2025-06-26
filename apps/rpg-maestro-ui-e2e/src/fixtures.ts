@@ -62,3 +62,33 @@ export async function iniTracksFromFileServerFixture(sessionId: string): Promise
     }
   });
 }
+
+export interface FakeJwtToken {
+  token: string;
+  email: string;
+}
+export interface TestUsersFixture{
+  an_admin_user: FakeJwtToken,
+  a_maestro_user: FakeJwtToken,
+}
+export async function initUsersFixture(): Promise<TestUsersFixture>{
+  return await test.step('init tracks from fileserver using api', async () => {
+    try {
+      const res = await fetch(`http://localhost:8099/test-utils/create-test-users-fixtures`, {
+        method: 'GET',
+      });
+      if (!res.ok) {
+        const error = new Error(`Failed to initialize users: ${res.status} ${res.statusText}`);
+        console.error(error.message);
+        throw error;
+      } else {
+        console.log("init users using api ok ")
+        return (await res.json()) as TestUsersFixture;
+      }
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  });
+
+}

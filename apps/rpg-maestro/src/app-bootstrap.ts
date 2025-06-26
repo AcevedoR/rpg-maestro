@@ -1,4 +1,4 @@
-import { INestApplication, Logger } from '@nestjs/common';
+import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app/app.module';
@@ -31,6 +31,7 @@ export async function bootstrap(): Promise<INestApplication> {
     logger: configuredLogLevel ?? ['log', 'error', 'warn', 'fatal'],
   });
   app.use(cookieParser());
+  app.useGlobalPipes(new ValidationPipe());
 
   const documentFactory = () =>
     SwaggerModule.createDocument(

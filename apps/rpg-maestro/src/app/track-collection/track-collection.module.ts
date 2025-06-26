@@ -3,9 +3,10 @@ import { DatabaseModule } from '../infrastructure/database.module';
 import { TrackCollectionService } from './track-collection.service';
 import { TrackCollectionController } from './track-collection.controller';
 import { MaestroApiModule } from '../maestro-api/maestro-api.module';
+import { UserManagementModule } from '../user-management/user-management.module';
 
 @Module({
-  imports: [DatabaseModule, MaestroApiModule],
+  imports: [DatabaseModule, MaestroApiModule, UserManagementModule],
   controllers: [TrackCollectionController],
   providers: [TrackCollectionService],
   exports: [TrackCollectionService],

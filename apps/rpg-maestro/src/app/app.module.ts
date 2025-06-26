@@ -12,6 +12,7 @@ import { HealthModule } from './health.module';
 import { NetworkingConfiguration } from './NetworkingConfiguration';
 import { isDevOrTestEnv } from './config';
 import { TrackCollectionModule } from './track-collection/track-collection.module';
+import { AuthGuardsModule } from './auth/auth-guards.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TrackCollectionModule } from './track-collection/track-collection.modul
     MaestroApiModule,
     TrackCollectionModule,
     HealthModule,
+    AuthGuardsModule,
     ...(isDevOrTestEnv() ? [require('./test-utils/tests-utils.module').TestsUtilsModule] : []),
   ],
   controllers: [AuthenticatedMaestroController, PlayersController],

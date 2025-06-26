@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { UsersDatabase } from './UsersDatabase';
+import { UsersDatabase } from '../user-management/users-database';
 import { TracksDatabase } from './TracksDatabase';
 import { SessionAccess, SessionID, SessionPlayingTracks, User, UserID } from '@rpg-maestro/rpg-maestro-api-contract';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';

@@ -31,13 +31,16 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { UsersService } from './maestro-api/user.service';
-import { AuthenticatedUser, JwtAuthGuard } from './jwt-auth-guard';
+import { UsersService } from './user-management/user.service';
+import { AuthenticatedUser, JwtAuthGuard } from './auth/jwt-auth.guard';
+import { RolesGuard } from './auth/roles.guard';
+import { Roles } from './auth/roles.decorator';
+import { Role } from './auth/role.enum';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
 @ApiCookieAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller()
 export class AuthenticatedMaestroController {
   private readonly database: TracksDatabase;
@@ -55,6 +58,7 @@ export class AuthenticatedMaestroController {
   }
 
   @Get('/maestro')
+  @Roles([Role.MAESTRO, Role.MINSTREL])
   async getMaestroInfos(@Request() req: {user: AuthenticatedUser}): Promise<User> {
     const user = await this.userService.get(req.user.id);
     if (!user) {
@@ -64,6 +68,7 @@ export class AuthenticatedMaestroController {
   }
 
   @Post('/maestro/sessions/:sessionId/tracks/from-directory')
+  @Roles([Role.MAESTRO])
   createAllTracksFromDirectory(
     @Param('sessionId') sessionId: string,
     @Body() tracksFromDirectoryCreation: TracksFromDirectoryCreation
@@ -73,6 +78,7 @@ export class AuthenticatedMaestroController {
   }
 
   @Post('/maestro/sessions/:sessionId/tracks/from-youtube')
+  @Roles([Role.MAESTRO])
   @HttpCode(HttpStatus.ACCEPTED)
   uploadAndCreateTracksFromYoutube(
     @Param('sessionId') sessionId: string,
@@ -82,16 +88,19 @@ export class AuthenticatedMaestroController {
   }
 
   @Get('/maestro/sessions/:sessionId/tracks/from-youtube')
+  @Roles([Role.MAESTRO])
   getYoutubeTrackCreations(@Param('sessionId') sessionId: string): Promise<TrackCreationFromYoutubeDto[]> {
     return this.trackService.getTrackFromYoutubeCreations(sessionId);
   }
 
   @Post('/maestro/sessions/:sessionId/tracks')
+  @Roles([Role.MAESTRO, Role.MINSTREL])
   postTrack(@Param('sessionId') sessionId: string, @Body() trackCreation: TrackCreation): Promise<Track> {
     return this.trackService.createTrack(sessionId, trackCreation);
   }
 
   @Put('/maestro/sessions/:sessionId/tracks/:trackId')
+  @Roles([Role.MAESTRO, Role.MINSTREL])
   updateTrack(
     @Param('sessionId') sessionId: string,
     @Param('trackId') id: string,
@@ -101,11 +110,13 @@ export class AuthenticatedMaestroController {
   }
 
   @Get('/maestro/sessions/:sessionId/tracks')
+  @Roles([Role.MAESTRO, Role.MINSTREL])
   getAllTracks(@Param('sessionId') sessionId: string): Promise<Track[]> {
     return this.trackService.getAll(sessionId);
   }
 
   @Put('/maestro/sessions/:sessionId/playing-tracks')
+  @Roles([Role.MAESTRO, Role.MINSTREL])
   async changeCurrentTrack(
     @Param('sessionId') sessionId: string,
     @Body() changeSessionPlayingTracks: ChangeSessionPlayingTracksRequest

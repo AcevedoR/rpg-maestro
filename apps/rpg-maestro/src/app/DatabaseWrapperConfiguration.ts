@@ -2,7 +2,7 @@ import { TracksDatabase } from './maestro-api/TracksDatabase';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { FirestoreTracksDatabase } from './infrastructure/persistence/firestore/FirestoreTracksDatabase';
 import { InMemoryTracksDatabase } from './infrastructure/persistence/in-memory/InMemoryTracksDatabase';
-import { UsersDatabase } from './maestro-api/UsersDatabase';
+import { UsersDatabase } from './user-management/users-database';
 import { InMemoryUsersDatabase } from './infrastructure/persistence/in-memory/InMemoryUsersDatabase';
 import { InMemoryTrackCollectionDatabase } from './infrastructure/persistence/in-memory/InMemoryTrackCollectionDatabase';
 import { TrackCollectionDatabase } from './track-collection/track-collection-database';
