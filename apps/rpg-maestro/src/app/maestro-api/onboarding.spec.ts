@@ -25,7 +25,7 @@ beforeEach(() => {
 describe('Onboarding', () => {
   it('onboarding should create a Maestro and its new Session', async () => {
     const userId = 'new-maestro-1';
-    const newSessionTracks = await onboardingService.createSession(userId);
+    const newSessionTracks = await onboardingService.createNewUserWithSession(userId);
 
     expect(newSessionTracks.sessionId).toBeDefined();
     expect(newSessionTracks.sessionId.length).toBeGreaterThan(0);
@@ -41,13 +41,13 @@ describe('Onboarding', () => {
   });
   it('cannot onboard twice', async () => {
     const userId = 'new-maestro-1';
-    await onboardingService.createSession(userId);
+    await onboardingService.createNewUserWithSession(userId);
 
-    await expect(onboardingService.createSession(userId)).rejects.toThrow('already exists');
+    await expect(onboardingService.createNewUserWithSession(userId)).rejects.toThrow('already exists');
   });
   it('can onboard different users', async () => {
-    await onboardingService.createSession('new-maestro-1');
-    await onboardingService.createSession('new-maestro-2');
+    await onboardingService.createNewUserWithSession('new-maestro-1');
+    await onboardingService.createNewUserWithSession('new-maestro-2');
   });
 });
 

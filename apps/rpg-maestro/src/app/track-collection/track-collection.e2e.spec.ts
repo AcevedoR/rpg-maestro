@@ -1,14 +1,13 @@
-import { FakeJwtToken } from '@rpg-maestro/test-utils';
-
 process.env.DATABASE = 'in-memory';
 process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL = 'http://localhost:8098/not-used-in-this-test';
 process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-test';
-process.env.PORT = '3012';
+process.env.PORT = '3015';
 process.env.NODE_ENV = 'unit-tests';
 process.env.CONFIGURATION_ENV = 'unit-tests';
 process.env.LOG_LEVEL = 'DEBUG';
 // keep env var first
 
+import { FakeJwtToken } from '@rpg-maestro/test-utils';
 import express, { Express } from 'express';
 import { TrackCollection, TrackCollectionCreation } from '@rpg-maestro/rpg-maestro-api-contract';
 import { bootstrap } from '../../app-bootstrap';
