@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from './role.enum';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
@@ -28,7 +28,8 @@ export class RolesGuard implements CanActivate {
     }
     const dbUser = await this.usersDatabase.get(user.id); // FIXME TODO cache this
     if (!dbUser || !dbUser.role) {
-      throw new ForbiddenException('Forbidden. Insufficient privileges');
+      Logger.log(`RolesGuard unhandled case: dbUser for id: ${user.id} not found or no role: `, dbUser);
+      throw new ForbiddenException('Forbidden. User roles not found');
     }
     if (dbUser.role === 'ADMIN') {
       return true;

@@ -1,3 +1,5 @@
+import { FakeJwtToken } from '@rpg-maestro/test-utils';
+
 process.env.DATABASE = 'in-memory';
 process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL = 'http://localhost:8098/not-used-in-this-test';
 process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-test';
@@ -8,7 +10,6 @@ process.env.LOG_LEVEL = 'DEBUG';
 // keep env var first
 
 import express, { Express } from 'express';
-import { FakeJwtToken } from '../test-utils/auth';
 import { TrackCollection, TrackCollectionCreation } from '@rpg-maestro/rpg-maestro-api-contract';
 import { bootstrap } from '../../app-bootstrap';
 import { INestApplication } from '@nestjs/common';
@@ -43,7 +44,7 @@ describe('TrackCollection', () => {
   beforeAll(async () => {
     staticServerApp.use('/public', express.static(path.join(__dirname, '../../assets')));
     staticServer = staticServerApp.listen(staticServerPort, () => {
-      console.log(`[server]: Server serving static files is running at http://localhost:${staticServerPort}`);
+      console.info(`[server]: Server serving static files is running at http://localhost:${staticServerPort}`);
     });
   })
   beforeEach(async () => {

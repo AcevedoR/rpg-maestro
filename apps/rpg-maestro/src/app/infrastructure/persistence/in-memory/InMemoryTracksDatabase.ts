@@ -7,15 +7,12 @@ export class InMemoryTracksDatabase implements TracksDatabase {
 
   createSession(sessionId: SessionID): Promise<void> {
     this.sessionDatabase[sessionId] = { currentTrack: null };
-    return Promise.resolve();
-  }
+    return Promise.resolve();}
 
   getSession(sessionId: SessionID): Promise<SessionPlayingTracks | null> {
     if (!this.sessionDatabase || !this.sessionDatabase[sessionId]) {
-      console.log("return null")
       return Promise.resolve(null);
     }
-    console.log("return session")
 
     return Promise.resolve({
       sessionId: sessionId,

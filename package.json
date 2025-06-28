@@ -2,7 +2,9 @@
   "name": "@rpg-maestro/source",
   "version": "0.1.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "precommit": "npx nx run-many --target=lint --all --maxParallel=100"
+  },
   "private": true,
   "dependencies": {
     "@distube/ytdl-core": "^4.16.10",

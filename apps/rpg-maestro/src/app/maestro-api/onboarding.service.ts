@@ -16,7 +16,7 @@ export class OnboardingService {
     this.tracksDatabase = databaseWrapper.getTracksDB();
   }
 
-  async createSession(userId: UserID): Promise<SessionPlayingTracks> {
+  async createNewUserWithSession(userId: UserID): Promise<SessionPlayingTracks> {
     const alreadyExistingUser = await this.usersDatabase.get(userId);
     if (alreadyExistingUser) {
       throw new HttpException(`User ${userId} already exists`, HttpStatus.CONFLICT);
@@ -30,6 +30,18 @@ export class OnboardingService {
     };
     await this.usersDatabase.save(user);
 
+    return this.createSessionInternal(user);
+  }
+
+  async createSession(userId: UserID): Promise<SessionPlayingTracks> {
+    const user = await this.usersDatabase.get(userId);
+    if (!user) {
+      throw new HttpException(`User ${userId} does not exists`, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    return this.createSessionInternal(user);
+  }
+
+  private async createSessionInternal(user: User): Promise<SessionPlayingTracks> {
     const sessionId = await this.generateSessionId();
     await this.tracksDatabase.createSession(sessionId);
     await this.giveUserAccessToSession(user, sessionId);

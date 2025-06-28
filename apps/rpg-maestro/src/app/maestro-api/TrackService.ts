@@ -146,7 +146,7 @@ async function checkFileIfActuallyUsable(url: string) {
     }
   } catch (error) {
     if (error instanceof TypeError) {
-      console.debug(error);
+      console.error(error);
       if (error.message && error.message === 'fetch failed') {
         throw new Error(`Fetch network error: ${error}`);
       } else {

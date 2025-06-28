@@ -99,7 +99,7 @@ export function PlayersUi() {
         currentTrack
       );
       if (newerServerTrack) {
-        console.log('synchronizing track');
+        console.info('synchronizing track');
         setCurrentTrack(newerServerTrack);
         if (!newerServerTrack) {
           throw new Error('Current track is not defined');

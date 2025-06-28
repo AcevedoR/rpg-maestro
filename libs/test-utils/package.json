@@ -1,0 +1,15 @@
+{
+  "name": "@rpg-maestro/test-utils",
+  "version": "0.0.1",
+  "main": "./index.js",
+  "module": "./index.mjs",
+  "typings": "./index.d.ts",
+  "private": true,
+  "devDependencies": {
+    "@types/uuid": "^10.0.0"
+  },
+  "dependencies": {
+    "jose": "4.15.9",
+    "uuid": "8.3.2"
+  }
+}

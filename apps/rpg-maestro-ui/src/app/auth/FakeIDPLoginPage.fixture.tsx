@@ -4,6 +4,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { displayError } from '../error-utils';
+import { generateFakeJwtTokenAndNewUser } from '@rpg-maestro/test-utils';
 
 export function FakeIDPLoginPage() {
   const location = useLocation();
@@ -17,16 +18,15 @@ export function FakeIDPLoginPage() {
   const { setUserFixture } = useAuth();
   const navigate = useNavigate();
 
-  const onLogin = () => {
+  const onLogin = async () => {
     // simulate Cloudflare login
-    const fakeToken =
-      'eyJhbGciOiJSUzI1NiIsImtpZCI6IjUyMWQyNDEyZTkyNmZlZThiNGVjOWZjZjVhNGY2ZDQxYTY3MGFjYjYxNTE4YmYxNjEyNGRjMjFhZGJmMzcxZDUifQ.eyJhdWQiOlsiMmEyMDdhZGI2YWYwYWUyMWQ1MmJmM2JkMTk4OTA1MjNhMDk3ZTU3MTgwZDBmMGM4NDI2M2UyOTRjNWMxNmFiZiJdLCJlbWFpbCI6InJvbWFuLmFjZXZlZG82MkBnbWFpbC5jb20iLCJleHAiOjE3NDg4NDIxMTQsImlhdCI6MTc0ODc5ODkxNCwibmJmIjoxNzQ4Nzk4OTE0LCJpc3MiOiJodHRwczovL2ZvdXJnYXRlLmNsb3VkZmxhcmVhY2Nlc3MuY29tIiwidHlwZSI6ImFwcCIsImlkZW50aXR5X25vbmNlIjoiTkZORmp0RVZubkJicUxmcSIsInN1YiI6IjA5OWQxMDFkLTJjOGYtNWZiMC1iYmExLTBiYjZmMDQ5NDBjYyIsImNvdW50cnkiOiJGUiJ9.YufQvMN4cCBnDQPLzwOK5RA1MNoJFACx1U53I_RaRqv_MolOZuWBki8puBibE7C717XFir0VEYqGf07UZKLN_xDrp2K305g9MxjT8zBV3fcD-VXdKiIDwNWe0Fb6qeAAhOwj4zgklvI1-3fi0JzceoOYydoHdC1BJc9I6-boeX78deFLMrk7bcA86ILsyLtmcnKIostPANu668Goqoda98WLr1dMWQhfzwX1TX74aWstieDUq-x-QTS5UcyH8TLE1wTw4qY-iZmzNodaJrnSBwV4h4sn1WWD0ERPs6DTYw9-GSUoNSCcJXz42ntcRcY2tE50dcIwWVCCsWaSCGKHRQ';
-    const appSession = `2333221`;
-    document.cookie = `CF_Authorization=${fakeToken}; CF_AppSession=${appSession}; path=/;`;
+    const fakeJwtToken = await generateFakeJwtTokenAndNewUser();
+    const appSession = Math.floor(Math.random() * 1_000_000_000).toString();
+    document.cookie = `CF_Authorization=${fakeJwtToken.token}; CF_AppSession=${appSession}; path=/;`;
     setUserFixture({
       id: '114081282294683862431',
       name: 'Dev User',
-      email: 'dev-user@example.com',
+      email: fakeJwtToken.email,
       idp: { id: '1232434-8030-43e0-b180-5bd546775945', type: 'google' },
       geo: { country: 'FR' },
       user_uuid: '44444444-2c8f-5fb0-bba1-0bb6f04940cc',

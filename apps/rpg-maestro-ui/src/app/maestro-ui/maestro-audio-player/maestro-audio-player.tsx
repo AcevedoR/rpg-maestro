@@ -43,7 +43,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
       try {
         isInResync.current = true;
         if (trackFromServer) {
-          console.log('synchronizing track');
+          console.info('synchronizing track');
           setCurrentTrack(trackFromServer);
           if (!trackFromServer) {
             throw new Error('Current track is not defined');
@@ -113,7 +113,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
       const newPausedStatus = !playing;
       if (currentTrack.isPaused !== newPausedStatus) {
         // trying to handle load edge cases
-        console.log(`changePlayingStatus newPausedStatus: ${newPausedStatus}`);
+        console.info(`changePlayingStatus newPausedStatus: ${newPausedStatus}`);
         const stoppedTime = currentTrack.getCurrentPlayTime();
         currentTrack.trackStartTime = stoppedTime;
         currentTrack.isPaused = newPausedStatus;
@@ -136,7 +136,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
         throw new Error('should never happen');
       }
       const newTimecode = audioPlayer.current.audio.current.currentTime * 1000;
-      console.log('onTrackTimecodeChange', newTimecode);
+      console.info('onTrackTimecodeChange', newTimecode);
       currentTrack.trackStartTime = newTimecode;
       const newTrack = await onCurrentTrackEdit({
         trackId: currentTrack.id,

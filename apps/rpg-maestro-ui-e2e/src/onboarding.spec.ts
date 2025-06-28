@@ -1,12 +1,17 @@
 import { expect, test } from '@playwright/test';
-import { iniTracksFromFileServerFixture } from './fixtures';
 
-const A_SESSION_ID = 'a-new-session';
+test.use({
+  storageState: undefined,
+  httpCredentials: undefined,
+  contextOptions: {
+    storageState: undefined,
+  },
+});
 
 test('a new User can become a Maestro and have his own session', async ({ page }) => {
-  await iniTracksFromFileServerFixture(A_SESSION_ID);
 
   await test.step('go to onboarding page, and read onboarding instructions', async () => {
+
     await page.goto(`/onboarding`);
     await expect(page.getByRole('heading', { name: 'Welcome to RPG-MAESTRO!' })).toBeVisible();
   });

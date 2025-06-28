@@ -46,7 +46,6 @@ export function SetupSession() {
         if (newSession === 'UserAlreadyExistsError') {
           fetchMaestroInfos();
         } else {
-          console.log(newSession);
           setNewlyCreatedSession(newSession);
         }
       });

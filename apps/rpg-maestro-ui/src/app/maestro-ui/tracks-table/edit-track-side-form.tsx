@@ -44,7 +44,7 @@ export function EditTrackSideForm(props: EditTrackSideFormProps) {
       name: inputName,
       tags: inputTags ?? [],
     }).then((track: Track) => {
-      console.log(`track updated: ${JSON.stringify(track)}`);
+      console.info(`track updated: ${JSON.stringify(track)}`);
       setIsWaitingForTrackEdition(false);
       onTrackUpdated();
     });

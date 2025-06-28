@@ -16,7 +16,6 @@
             "command": "npx wait-on http://localhost:${PORT}/health --timeout 5000 && nx run rpg-maestro:setup-dev-env"
           }
         ],
-        "parallel": true
       },
       "configurations": {
         "e2e-tests": {

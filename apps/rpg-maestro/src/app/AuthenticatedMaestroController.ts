@@ -25,7 +25,8 @@ import {
   TrackCreationFromYoutubeDto,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest, User
+  UploadAndCreateTracksFromYoutubeRequest,
+  User,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
@@ -129,8 +130,19 @@ export class AuthenticatedMaestroController {
     return playingTrack;
   }
 
+  @Post('/maestro/sessions')
+  @Roles([Role.MAESTRO])
+  async createNewSession(
+    @Request() req: { user: AuthenticatedUser },
+    @Body() _session: { todo: string }
+  ): Promise<SessionPlayingTracks> {
+    const session = await this.onboardingService.createSession(req.user.id);
+    await this.cacheManager.set(session.sessionId, session, ONE_DAY_TTL);
+    return session;
+  }
+
   @Post('/maestro/onboard')
   async createSession(@Request() req: {user: AuthenticatedUser}): Promise<SessionPlayingTracks> {
-    return Promise.resolve(this.onboardingService.createSession(req.user.id));
+    return Promise.resolve(this.onboardingService.createNewUserWithSession(req.user.id));
   }
 }

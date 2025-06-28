@@ -20,8 +20,8 @@ export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
     if (response.ok) {
       return (await response.json()) as Track[];
     } else {
-      console.log(response.status, response.statusText);
-      console.debug(response);
+      console.error(response.status, response.statusText);
+      console.error(response);
       throw new Error('fetch failed for error: ' + response);
     }
   } catch (error) {
@@ -45,7 +45,7 @@ export const setTrackToPlay = async (
       credentials: 'include',
     });
     if (!response.ok) {
-      console.log(response.status, response.statusText);
+      console.error(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     } else {
       const rawSerialized = (await response.json()) as SessionPlayingTracks;
@@ -81,7 +81,7 @@ export const createTrack = async (sessionId: string, trackCreation: TrackCreatio
       credentials: 'include',
     });
     if (!response.ok) {
-      console.log(response.status, response.statusText);
+      console.error(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     }
     return (await response.json()) as Track;
@@ -106,7 +106,7 @@ export const createTrackFromYoutube = async (sessionId: string, url: string): Pr
       signal: AbortSignal.timeout(60 * 60 * 1000),
     });
     if (!response.ok) {
-      console.log(response.status, response.statusText);
+      console.error(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     }
     return;
@@ -128,7 +128,7 @@ export const getTrackCreationFromYoutube = async (sessionId: string): Promise<Tr
       credentials: 'include',
     });
     if (!response.ok) {
-      console.log(response.status, response.statusText);
+      console.error(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     }
     const rawDatas = (await response.json()) as TrackCreationFromYoutubeDto[];
@@ -167,7 +167,7 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
       credentials: 'include',
     });
     if (!response.ok) {
-      console.log(response.status, response.statusText);
+      console.error(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     }
     return (await response.json()) as Track;
@@ -194,7 +194,7 @@ export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExist
       if(response.status === 409){
         return 'UserAlreadyExistsError';
       }
-      console.log(response.status, response.statusText);
+      console.error(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     }
     return (await response.json()) as SessionPlayingTracks;
@@ -211,7 +211,7 @@ export const getMaestroInfos = async(): Promise<User> => {
       credentials: 'include',
     });
     if (!response.ok) {
-      console.log(response.status, response.statusText);
+      console.error(response.status, response.statusText);
       throw new Error('fetch failed for error: ' + response);
     }
     return (await response.json()) as User;

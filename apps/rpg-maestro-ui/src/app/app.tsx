@@ -13,6 +13,8 @@ import { Onboarding } from './onboarding/onboarding';
 import { FakeIDPLoginPage } from './auth/FakeIDPLoginPage.fixture';
 import { SetupSession } from './onboarding/setup-session';
 import { WelcomePage } from './welcome-page';
+import { isDevModeEnabled } from '../FeaturesConfiguration';
+import { HealthStatus } from './misc/health-status';
 
 const StyledApp = styled.div`
   //  Your style here
@@ -25,10 +27,11 @@ export function App() {
       {/* These routes and navigation have been generated for you */}
       {/* Feel free to move and update them to fit your needs */}
       <Routes>
+        <Route path="/health" element={<HealthStatus />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/onboarding/setup-session" element={<SetupSession />} />
-        <Route path="/dev/fake-idp-login-page" element={<FakeIDPLoginPage />} />
-        <Route path="/:sessionId" element={<PlayersUi />} />
+        {isDevModeEnabled && <Route path="/dev/fake-idp-login-page" element={<FakeIDPLoginPage />} />}
+        <Route path=":sessionId" element={<PlayersUi />} />
         <Route path="/" element={<WelcomePage/>} />
         <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
         <Route path="/maestro/manage/:sessionId" element={<TracksManagement />} />

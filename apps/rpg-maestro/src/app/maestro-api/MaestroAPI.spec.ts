@@ -33,7 +33,7 @@ beforeAll(() => {
 
   app.use('/public', express.static(path.join(__dirname, '../../assets')));
   server = app.listen(port, () => {
-    console.log(`[server]: Server serving static files is running at http://localhost:${port}`);
+    console.info(`[server]: Server serving static files is running at http://localhost:${port}`);
   });
 });
 beforeEach(() => {
