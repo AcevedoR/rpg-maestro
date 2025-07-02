@@ -15,7 +15,7 @@
           {
             "command": "npx wait-on http://localhost:${PORT}/health --timeout 5000 && nx run rpg-maestro:setup-dev-env"
           }
-        ],
+        ]
       },
       "configurations": {
         "e2e-tests": {
@@ -75,6 +75,24 @@
       },
       "dependsOn": [
         "docker-build"
+      ]
+    },
+    "docker-build-preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker build . -f ./apps/rpg-maestro/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:preview --platform linux/amd64"
+      },
+      "dependsOn": [
+        "build", "test"
+      ]
+    },
+    "deploy-preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker push acevedor/$NX_TASK_TARGET_PROJECT:preview"
+      },
+      "dependsOn": [
+        "docker-build-preview"
       ]
     }
   }

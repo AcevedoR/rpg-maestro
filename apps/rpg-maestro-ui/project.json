@@ -19,7 +19,8 @@
     },
     "build":{
       "configurations": {
-        "e2e-tests": {}
+        "e2e-tests": {},
+        "preview": {}
       }
     },
     "semantic-release": {
@@ -41,6 +42,22 @@
       },
       "dependsOn": [
         "docker-build"
+      ]
+    },
+    "docker-build-preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx nx run rpg-maestro-ui:build --configuration=preview && docker build . -f ./apps/rpg-maestro-ui/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:preview --platform linux/amd64"
+      },
+      "dependsOn": ["test"]
+    },
+    "deploy-preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker push acevedor/$NX_TASK_TARGET_PROJECT:preview"
+      },
+      "dependsOn": [
+        "docker-build-preview"
       ]
     }
   }

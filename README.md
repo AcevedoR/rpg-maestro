@@ -10,26 +10,14 @@
             - crossOrigin={'use-credentials'} ?
             - or add a token in
               url -> https://github.com/icidasset/diffuse/blob/6837490c25ec5a534fffdeb3abc818dea9386665/src/Javascript/Workers/service.js#L104
-- demo env vs my personal use !
-    - this will be done by implementing Maestro User auth feature
-        - there could be 2 two of users: Maestro and AdminMaestro
-            - a Maestro can only use existing tracks
-            - an AdminMaestro can upload tracks, and already have free TrackCatalogs loaded
-        - reminder: set a random Current song for every new sessions !
-    - TODO: think about possibility of having multiple maestro
-      - idea: maybe a quick hack would be for the gm to allow for others to modify its session with a simple button
-        and then, all Players with the URL can modify it
-        I will need to check userId or email vs the sessionOwner
-        I could simply add a list of additional Maestro on the session infos !!!!!!
-    - I need to think about Maestros enrollment
-- soundboard
-- quick tags
-- add a local Redis (or equivalent) !
+- reminder: set a random Current song for every new sessions !
+- TODO: think about possibility of having multiple maestro
+  - idea: maybe a quick hack would be for the gm to allow for others to modify its session with a simple button
+    and then, all Players with the URL can modify it
+    I will need to check userId or email vs the sessionOwner
+    I could simply add a list of additional Maestro on the session infos !!!!!!
 - create a (CI/)CD
     - handle multienv (prod vs preprod-rpg-maestro.fourgate.cloud)
-- note on cloudflare auth vs maestro onboarding, what I could do
-  - cloudflare atuh is only for auth
-  - maestro onboarding is for creating a Masestro linked to a session Id
 
 ## run tests
 
@@ -59,3 +47,4 @@ docker build . -t acevedor/rpg-maestro -f apps/rpg-maestro/Dockerfile --platform
 docker push acevedor/rpg-maestro
 docker run -e -p 3000:3000 rpg-maestro:latest
 ```
+

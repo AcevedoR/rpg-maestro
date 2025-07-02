@@ -57,6 +57,9 @@
     }
   ],
   "targetDefaults": {
+    "lint": {
+      "dependsOn": ["build"]
+    },
     "test": {
       "dependsOn": ["lint"]
     },
