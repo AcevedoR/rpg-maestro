@@ -40,7 +40,7 @@ export async function getAllFilesFromCaddyFileServerDirectory(url: string): Prom
         throw new Error(`Fetch unhandled error: ${error}`);
       }
     } else {
-      throw error;
+      throw new Error(error);
     }
   }
 }

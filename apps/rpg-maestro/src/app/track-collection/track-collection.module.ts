@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { DatabaseModule } from '../infrastructure/database.module';
 import { TrackCollectionService } from './track-collection.service';
 import { TrackCollectionController } from './track-collection.controller';
@@ -6,7 +6,7 @@ import { MaestroApiModule } from '../maestro-api/maestro-api.module';
 import { UserManagementModule } from '../user-management/user-management.module';
 
 @Module({
-  imports: [DatabaseModule, MaestroApiModule, UserManagementModule],
+  imports: [DatabaseModule, forwardRef(() => MaestroApiModule), UserManagementModule],
   controllers: [TrackCollectionController],
   providers: [TrackCollectionService],
   exports: [TrackCollectionService],

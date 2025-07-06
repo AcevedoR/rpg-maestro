@@ -9,7 +9,13 @@ process.env.LOG_LEVEL = 'DEBUG';
 
 import { FakeJwtToken } from '@rpg-maestro/test-utils';
 import express, { Express } from 'express';
-import { SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
+import {
+  CreateSession,
+  parseAndValidateDto,
+  SessionPlayingTracks,
+  Track,
+  TrackCollectionCreation
+} from '@rpg-maestro/rpg-maestro-api-contract';
 import { bootstrap } from '../../app-bootstrap';
 import { INestApplication } from '@nestjs/common';
 
@@ -25,6 +31,7 @@ describe('Onboarding API e2e', () => {
   let staticServer: http.Server;
   const staticServerApp: Express = express();
 
+  let AN_ADMIN_USER: FakeJwtToken;
   let A_MAESTRO_USER: FakeJwtToken;
   let A_MINSTREL_USER: FakeJwtToken;
 
@@ -44,6 +51,7 @@ describe('Onboarding API e2e', () => {
       .then((httpResponse) => httpResponse.body as TestUsersFixture);
     A_MAESTRO_USER = users.a_maestro_user;
     A_MINSTREL_USER = users.a_minstrel_user;
+    AN_ADMIN_USER = users.an_admin_user;
   });
 
   it('an Maestro can create a session', async () => {
@@ -75,6 +83,64 @@ describe('Onboarding API e2e', () => {
       .set('Content-Type', 'application/json')
       .set('Cookie', `CF_Authorization=${A_MINSTREL_USER.token}`)
       .expect(403)
+  });
+
+  it('a Maestro can create a session with a default collection', async () => {
+    const trackCollectionCreateRequest: TrackCollectionCreation = {
+      id: 'test-collection',
+      name: 'Test Collection',
+      description: 'A collection for testing purposes',
+      tracks: [
+        {
+          url: 'http://localhost:'+staticServerPort+'/public/light-switch-sound-198508.mp3',
+          name: 'Track 1',
+          tags: ['tag1', 'tag2'],
+          source: {
+            origin_media: "same-server",
+            origin_name: "origin name",
+            origin_url: 'http://localhost:'+staticServerPort+'/public/light-switch-sound-198508.mp3'
+          }
+        },
+      ],
+    };
+    await request(app.getHttpServer())
+      .put('/track-collections/default')
+      .send(trackCollectionCreateRequest)
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .expect(200);
+
+    const createSessionRequest: CreateSession = await parseAndValidateDto(CreateSession, {
+      withTrackCollections: [trackCollectionCreateRequest.id]
+    });
+
+    const created = (
+      await request(app.getHttpServer())
+        .post('/maestro/sessions')
+        .send(createSessionRequest)
+        .set('Content-Type', 'application/json')
+        .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+        .expect(201)
+    ).body as SessionPlayingTracks;
+
+    expect(created.sessionId).toBeDefined();
+    expect(created.sessionId.length).toBeGreaterThan(1);
+
+    const sessionTracks = (
+      await request(app.getHttpServer())
+        .get('/maestro/sessions/:sessionId/tracks'.replace(':sessionId', created.sessionId))
+        .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+        .expect(200)
+    ).body as Track[];
+    expect(sessionTracks).toBeDefined();
+    expect(sessionTracks.length).toEqual(trackCollectionCreateRequest.tracks.length);
+    expect(sessionTracks[0].sessionId).toEqual(created.sessionId);
+    expect(sessionTracks[0].url).toEqual(trackCollectionCreateRequest.tracks[0].url);
+    expect(sessionTracks[0].name).toEqual(trackCollectionCreateRequest.tracks[0].name);
+    expect(sessionTracks[0].tags).toEqual(trackCollectionCreateRequest.tracks[0].tags);
+    expect(sessionTracks[0].source).toEqual(trackCollectionCreateRequest.tracks[0].source);
+
+    expect(created.currentTrack).toBeDefined();
   });
 
   afterEach(async () => {

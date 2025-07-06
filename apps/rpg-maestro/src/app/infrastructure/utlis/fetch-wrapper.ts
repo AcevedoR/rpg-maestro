@@ -44,7 +44,7 @@ export async function jsonFetch(
         throw new Error(`Fetch unhandled error: ${error}`);
       }
     } else {
-      throw error;
+      throw new Error(error);
     }
   }
 }

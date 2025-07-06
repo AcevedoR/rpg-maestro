@@ -18,7 +18,7 @@ import { OnboardingService } from './maestro-api/onboarding.service';
 import { TracksDatabase } from './maestro-api/TracksDatabase';
 import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
 import {
-  ChangeSessionPlayingTracksRequest,
+  ChangeSessionPlayingTracksRequest, CreateSession,
   SessionPlayingTracks,
   Track,
   TrackCreation,
@@ -26,7 +26,7 @@ import {
   TracksFromDirectoryCreation,
   TrackUpdate,
   UploadAndCreateTracksFromYoutubeRequest,
-  User,
+  User
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
@@ -134,9 +134,9 @@ export class AuthenticatedMaestroController {
   @Roles([Role.MAESTRO])
   async createNewSession(
     @Request() req: { user: AuthenticatedUser },
-    @Body() _session: { todo: string }
+    @Body() createSession: CreateSession
   ): Promise<SessionPlayingTracks> {
-    const session = await this.onboardingService.createSession(req.user.id);
+    const session = await this.onboardingService.createSession(createSession, req.user.id);
     await this.cacheManager.set(session.sessionId, session, ONE_DAY_TTL);
     return session;
   }

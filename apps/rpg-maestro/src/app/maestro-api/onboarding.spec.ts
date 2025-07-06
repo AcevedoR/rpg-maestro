@@ -3,6 +3,11 @@ import * as path from 'node:path';
 import http from 'http';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import { OnboardingService } from './onboarding.service';
+import { TrackService } from './TrackService';
+import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/persistence/in-memory/InMemoryTrackCreationFromYoutubeJobsStore.service';
+import { TrackCreationFromYoutubeJobsWatcher } from '../track-creation-from-youtube-jobs-watcher/track-creation-from-youtube-jobs-watcher.service';
+import { AudioFileUploaderClient } from '../track-creation-from-youtube-jobs-watcher/audio-file-uploader-client';
+import { TrackCollectionService } from '../track-collection/track-collection.service';
 
 let onboardingService: OnboardingService;
 let databases: DatabaseWrapperConfiguration;
@@ -19,13 +24,22 @@ beforeAll(async () => {
 });
 beforeEach(() => {
   databases = new DatabaseWrapperConfiguration('in-memory');
-  onboardingService = new OnboardingService(databases);
+  onboardingService = new OnboardingService(
+    databases,
+    new TrackService(
+      new DatabaseWrapperConfiguration('in-memory'),
+      new InMemoryTrackCreationFromYoutubeJobsStore(),
+      null as TrackCreationFromYoutubeJobsWatcher,
+      null as AudioFileUploaderClient
+    ),
+    new TrackCollectionService(databases)
+  );
 });
 
 describe('Onboarding', () => {
   it('onboarding should create a Maestro and its new Session', async () => {
     const userId = 'new-maestro-1';
-    const newSessionTracks = await onboardingService.createNewUserWithSession(userId);
+    const newSessionTracks = await onboardingService.createNewUserWithSession(userId, {noCollections: true});
 
     expect(newSessionTracks.sessionId).toBeDefined();
     expect(newSessionTracks.sessionId.length).toBeGreaterThan(0);
@@ -41,13 +55,13 @@ describe('Onboarding', () => {
   });
   it('cannot onboard twice', async () => {
     const userId = 'new-maestro-1';
-    await onboardingService.createNewUserWithSession(userId);
+    await onboardingService.createNewUserWithSession(userId, {noCollections: true});
 
-    await expect(onboardingService.createNewUserWithSession(userId)).rejects.toThrow('already exists');
+    await expect(onboardingService.createNewUserWithSession(userId, {noCollections: true})).rejects.toThrow('already exists');
   });
   it('can onboard different users', async () => {
-    await onboardingService.createNewUserWithSession('new-maestro-1');
-    await onboardingService.createNewUserWithSession('new-maestro-2');
+    await onboardingService.createNewUserWithSession('new-maestro-1', {noCollections: true});
+    await onboardingService.createNewUserWithSession('new-maestro-2', {noCollections: true});
   });
 });
 

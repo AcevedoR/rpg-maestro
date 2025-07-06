@@ -13,3 +13,5 @@ export * from './lib/upload-track-from-youtube/UploadAndCreateTracksFromYoutubeR
 export * from './lib/maestro-api/TrackCreationFromYoutubeDto';
 export * from './lib/User';
 export * from './lib/TrackCollection';
+
+export * from './lib/type-utils';

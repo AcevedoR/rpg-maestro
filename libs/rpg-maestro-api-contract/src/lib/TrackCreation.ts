@@ -5,4 +5,5 @@ export interface TrackCreation {
 
   originUrl? :string;
   originMedia?: string;
+  originName?: string;
 }

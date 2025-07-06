@@ -1,5 +1,6 @@
-import { ForbiddenException, HttpException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
+  CollectionTrack,
   TrackCollection,
   TrackCollectionCreation,
   TrackCollectionImportFromSession,
@@ -9,6 +10,7 @@ import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import { getTrackFileMetadata } from '../maestro-api/TrackService';
 import { TrackCollectionDatabase } from './track-collection-database';
 import { TracksDatabase } from '../maestro-api/TracksDatabase';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class TrackCollectionService {
@@ -21,18 +23,39 @@ export class TrackCollectionService {
   }
 
   async create(creation: TrackCollectionCreation, userId: string): Promise<TrackCollection> {
-    // todo make if failsafe
     if ((await this.trackCollectionDatabase.get(creation.id)) !== null) {
       throw new HttpException(
         `Cannot create Track collection, a collection with id: ${creation.id} already exists`,
         409
       );
     }
+    return await this.upsert(creation, userId);
+  }
+
+  private async upsert(creation: TrackCollectionCreation, userId: string) {
+    const tracks: CollectionTrack[] = [];
     for (const track of creation.tracks) {
       await getTrackFileMetadata(track.url);
+      tracks.push({
+        id: uuid(),
+        source: track.source,
+        name: track.name,
+        url: track.url,
+        tags: track.tags ?? [],
+      });
     }
-    const collection = await this.trackCollectionDatabase.upsert(creation, userId);
-    return collection;
+
+    const now = Date.now();
+    const newTrackCollection: TrackCollection = {
+      id: creation.id,
+      name: creation.name,
+      description: creation.description,
+      created_at: now,
+      updated_at: now,
+      created_by: userId,
+      tracks: tracks,
+    };
+    return await this.trackCollectionDatabase.upsert(newTrackCollection);
   }
 
   async importFromSession(
@@ -59,18 +82,29 @@ export class TrackCollectionService {
         422
       );
     }
+    const tracks: CollectionTrack[] = [];
     for (const track of tracksToImport) {
       await getTrackFileMetadata(track.url);
+      tracks.push({
+        id: uuid(),
+        source: track.source,
+        name: track.name,
+        url: track.url,
+        tags: track.tags ?? [],
+      });
     }
-    return await this.trackCollectionDatabase.upsert(
-      {
-        id: importFromSessionRequest.id,
-        name: importFromSessionRequest.name,
-        description: importFromSessionRequest.description,
-        tracks: tracksToImport,
-      },
-      userId
-    );
+
+    const now = Date.now();
+    const newTrackCollection: TrackCollection = {
+      id: importFromSessionRequest.id,
+      name: importFromSessionRequest.name,
+      description: importFromSessionRequest.description,
+      created_at: now,
+      updated_at: now,
+      created_by: userId,
+      tracks: tracks,
+    };
+    return await this.trackCollectionDatabase.upsert(newTrackCollection);
   }
 
   async get(id: string): Promise<TrackCollection> {
@@ -86,19 +120,14 @@ export class TrackCollectionService {
   }
 
   async update(id: string, update: TrackCollectionUpdate, userId: string): Promise<TrackCollection> {
-    const existing = await this.get(id);
-
-    return;
+    return this.upsert(update, userId)
   }
 
   async delete(id: string, userId: string): Promise<void> {
     const existing = await this.get(id);
-
-    // Only the creator can delete the collection
-    if (existing.created_by !== userId) {
-      throw new ForbiddenException('Only the creator can delete this collection');
+    if (!existing) {
+      throw new NotFoundException(`Cannot delete TrackCollection with id ${id} it was not found`);
     }
-
     await this.trackCollectionDatabase.delete(id);
   }
 }

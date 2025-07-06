@@ -24,7 +24,7 @@ import http from 'http';
 import { TestUsersFixture } from '../test-utils/tests-utils.controller';
 
 const staticServerPort = 3013;
-const createRequest: TrackCollectionCreation = {
+export const trackCollectionCreateRequest: TrackCollectionCreation = {
   id: 'test-collection',
   name: 'Test Collection',
   description: 'A collection for testing purposes',
@@ -33,6 +33,11 @@ const createRequest: TrackCollectionCreation = {
       url: 'http://localhost:'+staticServerPort+'/public/light-switch-sound-198508.mp3',
       name: 'Track 1',
       tags: ['tag1', 'tag2'],
+      source: {
+        origin_media: "same-server",
+        origin_name: "origin name",
+        origin_url: 'http://localhost:'+staticServerPort+'/public/light-switch-sound-198508.mp3'
+      }
     },
   ],
 };
@@ -64,50 +69,50 @@ describe('TrackCollection', () => {
   it('an Admin can create a TrackCollection', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')
-      .send(createRequest)
+      .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
       .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(201)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
-        expect(res.id).toEqual(createRequest.id);
-        expect(res.name).toEqual(createRequest.name);
-        expect(res.description).toEqual(createRequest.description);
+        expect(res.id).toEqual(trackCollectionCreateRequest.id);
+        expect(res.name).toEqual(trackCollectionCreateRequest.name);
+        expect(res.description).toEqual(trackCollectionCreateRequest.description);
         expect(res.tracks).toBeDefined();
         expect(res.tracks.length).toEqual(1);
-        expect(res.tracks[0].url).toEqual(createRequest.tracks[0].url);
-        expect(res.tracks[0].name).toEqual(createRequest.tracks[0].name);
-        expect(res.tracks[0].tags).toEqual(createRequest.tracks[0].tags);
+        expect(res.tracks[0].url).toEqual(trackCollectionCreateRequest.tracks[0].url);
+        expect(res.tracks[0].name).toEqual(trackCollectionCreateRequest.tracks[0].name);
+        expect(res.tracks[0].tags).toEqual(trackCollectionCreateRequest.tracks[0].tags);
       });
 
     await request(app.getHttpServer())
-      .get('/track-collections/' + createRequest.id)
+      .get('/track-collections/' + trackCollectionCreateRequest.id)
       .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(200)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
-        expect(res.id).toEqual(createRequest.id);
+        expect(res.id).toEqual(trackCollectionCreateRequest.id);
       });
   });
   it('a Maestro can get TrackCollections', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')
-      .send(createRequest)
+      .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
       .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(201)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
-        expect(res.id).toEqual(createRequest.id);
+        expect(res.id).toEqual(trackCollectionCreateRequest.id);
       });
 
     await request(app.getHttpServer())
-      .get('/track-collections/' + createRequest.id)
+      .get('/track-collections/' + trackCollectionCreateRequest.id)
       .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
       .expect(200)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
-        expect(res.id).toEqual(createRequest.id);
+        expect(res.id).toEqual(trackCollectionCreateRequest.id);
       });
   });
   it('an Admin can import a TrackCollection from an existing session', async () => {
@@ -166,7 +171,7 @@ describe('TrackCollection', () => {
   it('cannot create when not Admin', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')
-      .send(createRequest)
+      .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
       .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
       .expect(403);
@@ -174,14 +179,14 @@ describe('TrackCollection', () => {
   it('cannot create with already existing id', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')
-      .send(createRequest)
+      .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
       .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(201);
 
     await request(app.getHttpServer())
       .post('/track-collections')
-      .send(createRequest)
+      .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
       .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
       .expect(409)

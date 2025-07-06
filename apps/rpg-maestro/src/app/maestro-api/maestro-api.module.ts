@@ -4,9 +4,14 @@ import { TrackCreationFromYoutubeJobsWatcherModule } from '../track-creation-fro
 import { DatabaseModule } from '../infrastructure/database.module';
 import { OnboardingService } from './onboarding.service';
 import { UsersService } from '../user-management/user.service';
+import { TrackCollectionModule } from '../track-collection/track-collection.module';
 
 @Module({
-  imports: [forwardRef(() => TrackCreationFromYoutubeJobsWatcherModule), DatabaseModule],
+  imports: [
+    forwardRef(() => TrackCreationFromYoutubeJobsWatcherModule),
+    DatabaseModule,
+    forwardRef(() => TrackCollectionModule),
+  ],
   providers: [TrackService, OnboardingService, UsersService],
   exports: [TrackService, OnboardingService, UsersService],
 })

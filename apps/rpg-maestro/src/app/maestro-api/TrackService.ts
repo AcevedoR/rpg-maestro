@@ -3,11 +3,12 @@ import path from 'path';
 import { TracksDatabase } from './TracksDatabase';
 import { getTrackDuration } from './audio/AudioHelper';
 import {
-  Track, TrackCollection,
+  Track,
+  TrackCollection,
   TrackCreation,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest
+  UploadAndCreateTracksFromYoutubeRequest,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/audio-file-uploader-client/FetchCaddyDirectory';
 import { TrackCreationFromYoutubeJob, TrackCreationFromYoutubeJobsStore } from './TrackCreationFromYoutubeJobsStore';
@@ -50,7 +51,7 @@ export class TrackService {
       source: {
         origin_media: trackCreation.originMedia ?? 'same-server',
         origin_url: trackCreation.originUrl ?? trackCreation.url,
-        origin_name: fileName,
+        origin_name: trackCreation.originName ?? fileName,
       },
 
       name: trackCreation.name ?? fileName,
@@ -116,9 +117,23 @@ export class TrackService {
     this.trackCreationFromYoutubeJobsWatcher.wakeUp();
   }
 
-  async importTracksFromTrackCollection(trackCollection: TrackCollection): Promise<void> {
-    // TODO
-    // need to set the trackID an name in each track
+  async importTracksFromTrackCollection(sessionId: string, trackCollection: TrackCollection): Promise<Track[]> {
+    const importedTracks: Track[] = [];
+    for (const track of trackCollection.tracks) {
+      importedTracks.push(await this.createTrack(
+        sessionId,
+        {
+          url: track.url,
+          name: track.name,
+          tags: track.tags,
+
+          originUrl: track.source.origin_url,
+          originMedia: track.source.origin_media,
+          originName: track.source.origin_name
+        }
+      ));
+    }
+    return importedTracks;
   }
 
   async getTrackFromYoutubeCreations(sessionId: string) {
@@ -146,14 +161,15 @@ async function checkFileIfActuallyUsable(url: string) {
     }
   } catch (error) {
     if (error instanceof TypeError) {
-      console.error(error);
+      Logger.error(error);
       if (error.message && error.message === 'fetch failed') {
         throw new Error(`Fetch network error: ${error}`);
       } else {
         throw new Error(`Fetch unhandled error: ${error}`);
       }
     } else {
-      throw error;
+      Logger.error(error);
+      throw new Error(error);
     }
   }
 }

@@ -29,14 +29,17 @@ test('a new User can become a Maestro and have his own session', async ({ page }
     await expect(page.getByRole('heading', { name: 'Maestro UI' })).toBeVisible();
   });
 
-  //todo: this test, autocreation of a song and/or default load OSS track collection
+  await test.step('a track should be playing', async () => {
+    await expect(page.getByText('No tracks selected to play')).toBeHidden();
+    const audio = page.locator('audio');
+    // Wait until the audio element is ready and has a source
+    await expect.poll(async () => {
+      return await audio.evaluate((el: HTMLAudioElement) => el.readyState >= 2 && el.src !== '');
+    }, {
+      timeout: 5000
+    }).toBe(true);
+  });
 
-  // await test.step('go to Maestro page, and list available tracks', async () => {
-  // });
-  // await test.step('set "race1" track to current track', async () => {
-  // });
-  // await test.step('go to players page, current track should be displayed', async () => {
-  // });
 });
 
 // test('cannot access maestro page if not logged', async ({ page }) => {
