@@ -9,7 +9,12 @@ process.env.LOG_LEVEL = 'DEBUG';
 
 import { FakeJwtToken } from '@rpg-maestro/test-utils';
 import express, { Express } from 'express';
-import { TrackCollection, TrackCollectionCreation } from '@rpg-maestro/rpg-maestro-api-contract';
+import {
+  SessionPlayingTracks, Track,
+  TrackCollection,
+  TrackCollectionCreation,
+  TrackCollectionImportFromSession, TrackCreation
+} from '@rpg-maestro/rpg-maestro-api-contract';
 import { bootstrap } from '../../app-bootstrap';
 import { INestApplication } from '@nestjs/common';
 
@@ -105,8 +110,60 @@ describe('TrackCollection', () => {
         expect(res.id).toEqual(createRequest.id);
       });
   });
-  it('cannot create when not Admin', async () => {
+  it('an Admin can import a TrackCollection from an existing session', async () => {
+    // given a session
+    const session = (await request(app.getHttpServer())
+      .post('/maestro/sessions')
+      .send({})
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .expect(201)).body as SessionPlayingTracks;
 
+    const trackCreationRequest: TrackCreation = {
+      url: 'http://localhost:'+staticServerPort+'/public/light-switch-sound-198508.mp3',
+      name: 'Track 1 from session',
+      tags: ['tag1', 'tag2'],
+    }
+
+    const createdTrack = (await request(app.getHttpServer())
+      .post('/maestro/sessions/:sessionId/tracks'.replace(':sessionId', session.sessionId))
+      .send(trackCreationRequest)
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .expect(201)).body as Track;
+
+    const importRequest: TrackCollectionImportFromSession = {
+      sessionId: session.sessionId,
+      id: 'my-new-track-collection',
+      name: 'my new track collection'
+    };
+    await request(app.getHttpServer())
+      .post('/track-collections/import-from/session')
+      .send(importRequest)
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .expect(201)
+      .then((httpResponse) => {
+        const res = httpResponse.body as TrackCollection;
+        expect(res.id).toEqual(importRequest.id);
+        expect(res.name).toEqual(importRequest.name);
+        expect(res.tracks).toBeDefined();
+        expect(res.tracks.length).toEqual(1);
+        expect(res.tracks[0].url).toEqual(createdTrack.url);
+        expect(res.tracks[0].name).toEqual(createdTrack.name);
+        expect(res.tracks[0].tags).toEqual(createdTrack.tags);
+      });
+
+    await request(app.getHttpServer())
+      .get('/track-collections/' + importRequest.id)
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .expect(200)
+      .then((httpResponse) => {
+        const res = httpResponse.body as TrackCollection;
+        expect(res.id).toEqual(importRequest.id);
+      });
+  });
+  it('cannot create when not Admin', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')
       .send(createRequest)

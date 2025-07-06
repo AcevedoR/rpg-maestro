@@ -1,7 +1,7 @@
-import { PlayingTrack, SessionID, SessionPlayingTracks, Track, UserID } from '@rpg-maestro/rpg-maestro-api-contract';
+import { PlayingTrack, SessionID, SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export interface TracksDatabase {
-  getSession: (sessionId: string) => Promise<SessionPlayingTracks>;
+  getSession: (sessionId: string) => Promise<SessionPlayingTracks | null>;
 
   createSession(sessionId: SessionID): Promise<void>;
 

@@ -19,6 +19,13 @@ export interface TrackCollectionCreation {
   tracks: TrackCreation[];
 }
 
+export interface TrackCollectionImportFromSession {
+  sessionId: string
+  id: string;
+  name: string;
+  description?: string;
+}
+
 export interface TrackCollectionUpdate {
   id: string;
   name: string;

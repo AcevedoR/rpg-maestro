@@ -49,7 +49,7 @@ test('a Maestro can add a new track located on a remote server', async ({ page }
   await test.step('track should be available on Maestro UI', async () => {
     await goToMaestroPage(page, user.sessionId);
     await expect(page.locator('.MuiDataGrid-row', { hasText: 'light-switch-sound-198508' })).toBeVisible();
-  });
+  })
 });
 
 async function goToTracksManagement(page: Page, sessionId: string) {
