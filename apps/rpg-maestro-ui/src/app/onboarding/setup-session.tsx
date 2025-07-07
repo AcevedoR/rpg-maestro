@@ -38,16 +38,19 @@ export function SetupSession() {
   const [newlyCreatedSession, setNewlyCreatedSession] = useState<SessionPlayingTracks | UserAlreadyExistsError | null>(
     null
   );
+  const [onboardRequestLoading, setOnboardRequestLoading] = useState<boolean>(false);
   const [maestroInfos, setMaestroInfos] = useState<User | undefined>(undefined);
 
   const sendOnboardRequest = () => {
     if (!newlyCreatedSession) {
+      setOnboardRequestLoading(true);
       onboard().then((newSession) => {
         if (newSession === 'UserAlreadyExistsError') {
           fetchMaestroInfos();
         } else {
           setNewlyCreatedSession(newSession);
         }
+        setOnboardRequestLoading(false);
       });
     }
   };
@@ -63,6 +66,13 @@ export function SetupSession() {
   }, []);
 
   const getMainContent = () => {
+    if(onboardRequestLoading){
+      return (
+        <div>
+          Your session is loading
+        </div>
+      )
+    }
     if (maestroInfos) {
       if (!maestroInfos.sessions || Object.keys(maestroInfos.sessions).length === 0) {
         toastError('You have no sessions this should never happen, please contact an admin', 10000);
