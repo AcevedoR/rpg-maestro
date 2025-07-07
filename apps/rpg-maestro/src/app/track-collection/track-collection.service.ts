@@ -8,13 +8,13 @@ import {
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import { getTrackFileMetadata } from '../maestro-api/TrackService';
-import { TrackCollectionDatabase } from './track-collection-database';
+import { TrackCollectionsDatabase } from './track-collections-database';
 import { TracksDatabase } from '../maestro-api/TracksDatabase';
 import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class TrackCollectionService {
-  trackCollectionDatabase: TrackCollectionDatabase;
+  trackCollectionDatabase: TrackCollectionsDatabase;
   tracksDatabase: TracksDatabase;
 
   constructor(@Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration) {

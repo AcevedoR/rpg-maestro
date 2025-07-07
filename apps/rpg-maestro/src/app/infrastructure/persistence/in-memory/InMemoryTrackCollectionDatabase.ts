@@ -1,10 +1,9 @@
 import { TrackCollection } from '@rpg-maestro/rpg-maestro-api-contract';
 import { Injectable } from '@nestjs/common';
-import { TrackCollectionDatabase } from '../../../track-collection/track-collection-database';
+import { TrackCollectionsDatabase } from '../../../track-collection/track-collections-database';
 
-// FIXME create firestore equivalent
 @Injectable()
-export class InMemoryTrackCollectionDatabase implements TrackCollectionDatabase {
+export class InMemoryTrackCollectionDatabase implements TrackCollectionsDatabase {
   private collections: Map<string, TrackCollection> = new Map([
     [
       'default',
