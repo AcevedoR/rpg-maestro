@@ -18,7 +18,8 @@ import { OnboardingService } from './maestro-api/onboarding.service';
 import { TracksDatabase } from './maestro-api/TracksDatabase';
 import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
 import {
-  ChangeSessionPlayingTracksRequest, CreateSession,
+  ChangeSessionPlayingTracksRequest,
+  CreateSession,
   SessionPlayingTracks,
   Track,
   TrackCreation,
@@ -26,13 +27,13 @@ import {
   TracksFromDirectoryCreation,
   TrackUpdate,
   UploadAndCreateTracksFromYoutubeRequest,
-  User
+  User,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { UsersService } from './user-management/user.service';
+import { UsersService } from './users-management/users.service';
 import { AuthenticatedUser, JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import { Roles } from './auth/roles.decorator';

@@ -2,13 +2,11 @@ import { TracksDatabase } from './maestro-api/TracksDatabase';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { FirestoreTracksDatabase } from './infrastructure/persistence/firestore/FirestoreTracksDatabase';
 import { InMemoryTracksDatabase } from './infrastructure/persistence/in-memory/InMemoryTracksDatabase';
-import { UsersDatabase } from './user-management/users-database';
+import { UsersDatabase } from './users-management/users-database';
 import { InMemoryUsersDatabase } from './infrastructure/persistence/in-memory/InMemoryUsersDatabase';
 import { InMemoryTrackCollectionDatabase } from './infrastructure/persistence/in-memory/InMemoryTrackCollectionDatabase';
 import { TrackCollectionsDatabase } from './track-collection/track-collections-database';
-import {
-  FirestoreTrackCollectionsDatabase
-} from './infrastructure/persistence/firestore/FirestoreTrackCollectionsDatabase';
+import { FirestoreTrackCollectionsDatabase } from './infrastructure/persistence/firestore/FirestoreTrackCollectionsDatabase';
 import { FirestoreUsersDatabase } from './infrastructure/persistence/firestore/FirestoreUsersDatabase';
 
 @Injectable()
@@ -17,7 +15,9 @@ export class DatabaseWrapperConfiguration {
   private readonly usersDBImpl: UsersDatabase;
   private readonly trackCollectionDBImpl: TrackCollectionsDatabase;
 
-  constructor(@Inject('DatabaseWrapperConfiguration_DEFAULT_DATABASE_IMPL') private readonly databaseImplParam: string) {
+  constructor(
+    @Inject('DatabaseWrapperConfiguration_DEFAULT_DATABASE_IMPL') private readonly databaseImplParam: string
+  ) {
     const databaseImpl: string | undefined = databaseImplParam;
     if (databaseImpl === 'firestore') {
       Logger.log('using firestore as database');

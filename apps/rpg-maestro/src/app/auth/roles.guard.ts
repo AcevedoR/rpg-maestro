@@ -1,20 +1,12 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from './role.enum';
-import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
-import { UsersDatabase } from '../user-management/users-database';
 import { Roles } from './roles.decorator';
+import { UsersService } from '../users-management/users.service';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  usersDatabase: UsersDatabase;
-
-  constructor(
-    private reflector: Reflector,
-    @Inject(DatabaseWrapperConfiguration) private databaseWrapper: DatabaseWrapperConfiguration
-  ) {
-    this.usersDatabase = databaseWrapper.getUsersDB();
-  }
+  constructor(private reflector: Reflector, private usersService: UsersService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.get(Roles, context.getHandler());
@@ -26,9 +18,9 @@ export class RolesGuard implements CanActivate {
     if (!user || !user.id) {
       throw new ForbiddenException('Forbidden. User not authenticated.');
     }
-    const dbUser = await this.usersDatabase.get(user.id); // FIXME TODO cache this
+    const dbUser = await this.usersService.get(user.id);
     if (!dbUser || !dbUser.role) {
-      Logger.log(`RolesGuard unhandled case: dbUser for id: ${user.id} not found or no role: `, dbUser);
+      Logger.log(`RolesGuard unhandled case: dbUser for id: ${user.id} not found or no role: ${dbUser?.role}`);
       throw new ForbiddenException('Forbidden. User roles not found');
     }
     if (dbUser.role === 'ADMIN') {

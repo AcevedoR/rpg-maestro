@@ -1,7 +1,7 @@
 import { User, UserID } from '@rpg-maestro/rpg-maestro-api-contract';
 import { firestore } from 'firebase-admin';
 import { FirestoreAuth } from './FirestoreAuth';
-import { UsersDatabase } from '../../../user-management/users-database';
+import { UsersDatabase } from '../../../users-management/users-database';
 import Firestore = firestore.Firestore;
 
 const USERS_DATABASE = 'rpg-maestro-users';

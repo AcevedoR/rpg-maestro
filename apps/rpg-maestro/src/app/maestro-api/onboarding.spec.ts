@@ -8,6 +8,7 @@ import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/per
 import { TrackCreationFromYoutubeJobsWatcher } from '../track-creation-from-youtube-jobs-watcher/track-creation-from-youtube-jobs-watcher.service';
 import { AudioFileUploaderClient } from '../track-creation-from-youtube-jobs-watcher/audio-file-uploader-client';
 import { TrackCollectionService } from '../track-collection/track-collection.service';
+import { UsersService } from '../users-management/users.service';
 
 let onboardingService: OnboardingService;
 let databases: DatabaseWrapperConfiguration;
@@ -32,7 +33,8 @@ beforeEach(() => {
       null as TrackCreationFromYoutubeJobsWatcher,
       null as AudioFileUploaderClient
     ),
-    new TrackCollectionService(databases)
+    new TrackCollectionService(databases),
+    new UsersService(databases)
   );
 });
 

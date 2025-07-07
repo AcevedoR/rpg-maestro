@@ -1,5 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
-import { UsersDatabase } from '../user-management/users-database';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { TracksDatabase } from './TracksDatabase';
 import {
   CreateSession,
@@ -15,29 +14,25 @@ import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import { TrackService } from './TrackService';
 import { TrackCollectionService } from '../track-collection/track-collection.service';
 import { ManageCurrentlyPlayingTracks } from './ManageCurrentlyPlayingTracks';
+import { UsersService } from '../users-management/users.service';
 
 @Injectable()
 export class OnboardingService {
-  usersDatabase: UsersDatabase;
-  tracksDatabase: TracksDatabase;
-  trackService: TrackService;
-  trackCollectionService: TrackCollectionService;
-  manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
+  private tracksDatabase: TracksDatabase;
+  private manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
   constructor(
     @Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration,
-    trackService: TrackService,
-    trackCollectionService: TrackCollectionService
+    private trackService: TrackService,
+    private trackCollectionService: TrackCollectionService,
+    private usersService: UsersService
   ) {
-    this.usersDatabase = databaseWrapper.getUsersDB();
     this.tracksDatabase = databaseWrapper.getTracksDB();
-    this.trackService = trackService;
-    this.trackCollectionService = trackCollectionService;
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(databaseWrapper.getTracksDB());
   }
 
-  async createNewUserWithSession(userId: UserID, options?: {noCollections: boolean}): Promise<SessionPlayingTracks> {
-    const alreadyExistingUser = await this.usersDatabase.get(userId);
+  async createNewUserWithSession(userId: UserID, options?: { noCollections: boolean }): Promise<SessionPlayingTracks> {
+    const alreadyExistingUser = await this.usersService.get(userId);
     if (alreadyExistingUser) {
       throw new HttpException(`User ${userId} already exists`, HttpStatus.CONFLICT);
     }
@@ -49,13 +44,16 @@ export class OnboardingService {
       updated_at: now,
       role: 'MINSTREL',
     };
-    await this.usersDatabase.save(user);
+    await this.usersService.save(user);
 
-    return this.createSessionInternal(await parseAndValidateDto(CreateSession, options?.noCollections ? {} : {withTrackCollections: ['default'] }), user);
+    return this.createSessionInternal(
+      await parseAndValidateDto(CreateSession, options?.noCollections ? {} : { withTrackCollections: ['default'] }),
+      user
+    );
   }
 
   async createSession(createSession: CreateSession, userId: UserID): Promise<SessionPlayingTracks> {
-    const user = await this.usersDatabase.get(userId);
+    const user = await this.usersService.get(userId);
     if (!user) {
       throw new HttpException(`User ${userId} does not exists`, HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -95,7 +93,7 @@ export class OnboardingService {
       user.sessions = {};
     }
     user.sessions[sessionId] = newSessionAccess;
-    await this.usersDatabase.save(user);
+    await this.usersService.save(user);
   }
 
   private async generateSessionId(): Promise<string> {

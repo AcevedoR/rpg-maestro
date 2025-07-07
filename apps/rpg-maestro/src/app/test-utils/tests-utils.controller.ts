@@ -2,7 +2,7 @@ import { Controller, HttpException, Inject, Post } from '@nestjs/common';
 import { isProductionEnv } from '../config';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import { User } from '@rpg-maestro/rpg-maestro-api-contract';
-import { UsersDatabase } from '../user-management/users-database';
+import { UsersDatabase } from '../users-management/users-database';
 import { FakeJwtToken, generateFakeJwtToken } from '@rpg-maestro/test-utils';
 import { TrackService } from '../maestro-api/TrackService';
 

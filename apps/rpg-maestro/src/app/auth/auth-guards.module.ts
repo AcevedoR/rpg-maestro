@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { Reflector } from '@nestjs/core';
 import { RolesGuard } from './roles.guard';
-import { DatabaseModule } from '../infrastructure/database.module';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { UsersManagementModule } from '../users-management/users-management.module';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [UsersManagementModule],
   providers: [
     Reflector,
     {
