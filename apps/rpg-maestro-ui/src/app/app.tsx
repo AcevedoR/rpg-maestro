@@ -15,8 +15,6 @@ import { WelcomePage } from './welcome-page';
 import { isDevModeEnabled } from '../FeaturesConfiguration';
 import { HealthStatus } from './misc/health-status';
 import { UserInfos } from './onboarding/user-infos';
-import { useEffect } from 'react';
-import { getUser } from './cache/user.cache';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const StyledApp = styled.div`
@@ -35,9 +33,6 @@ const theme = createTheme({
   },
 });
 export function App() {
-  useEffect(() => {
-    getUser();
-  }, []);
   return (
     <StyledApp style={{ fontFamily: '"Roboto", "Helvetica", "Arial", "sans-serif"', height: '100vh' }}>
       <ThemeProvider theme={theme}>
