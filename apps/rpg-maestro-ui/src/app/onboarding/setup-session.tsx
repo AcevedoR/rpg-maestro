@@ -6,10 +6,11 @@ import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wr
 import SpatialAudioOffIcon from '@mui/icons-material/SpatialAudioOff';
 import styled from 'styled-components';
 import Button from '@mui/material/Button';
-import { toastError } from '../ui-components/toast-popup';
 import { ToastContainer } from 'react-toastify';
-import { Box, Divider, Grid2, List, ListItem, ListItemButton, Typography } from '@mui/material';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
+import { StyledBox } from './sytled-box';
+import { useNavigate } from 'react-router-dom';
+import { getUserAndForceRefresh } from '../cache/user.cache';
 
 const MaestroLink = styled.div`
   width: 30%;
@@ -18,100 +19,71 @@ const MaestroLink = styled.div`
   justify-content: flex-end;
 `;
 
-const StyledBox = styled(Box)`
-    min-width: 300px;
-    max-width: 500px;
-    width: 50vw;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
-  transition: all 0.3s ease;
-  background: rgba(26, 11, 46, 0.6);
-  border: 1px solid rgba(218, 165, 32, 0.3);
-  border-radius: 24px;
-  padding: 24px;
-  display: flex;
-  align-content: center;
-  justify-content: center;
-  margin: 0;
-`;
-
+export const getURLToShareToPlayers = (sessionId: string): string => {
+  return `${window.location.origin}/${sessionId}`;
+};
 export function SetupSession() {
   const [newlyCreatedSession, setNewlyCreatedSession] = useState<SessionPlayingTracks | UserAlreadyExistsError | null>(
     null
   );
   const [onboardRequestLoading, setOnboardRequestLoading] = useState<boolean>(false);
   const [maestroInfos, setMaestroInfos] = useState<User | undefined>(undefined);
+  const navigate = useNavigate();
 
-  const sendOnboardRequest = () => {
+  const sendOnboardRequest = async () => {
     if (!newlyCreatedSession) {
       setOnboardRequestLoading(true);
-      onboard().then((newSession) => {
-        if (newSession === 'UserAlreadyExistsError') {
-          fetchMaestroInfos();
-        } else {
-          setNewlyCreatedSession(newSession);
-        }
-        setOnboardRequestLoading(false);
-      });
+      const newSession = await onboard();
+      await getUserAndForceRefresh();
+      if (newSession === 'UserAlreadyExistsError') {
+        fetchMaestroInfos();
+      } else {
+        setNewlyCreatedSession(newSession);
+      }
+      setOnboardRequestLoading(false);
     }
   };
   const fetchMaestroInfos = () => {
     getMaestroInfos().then(setMaestroInfos);
-  };
-  const getURLToShareToPlayers = (sessionId: string): string => {
-    return `${window.location.origin}/${sessionId}`;
   };
 
   useEffect(() => {
     sendOnboardRequest();
   }, []);
 
+  useEffect(() => {
+    if (maestroInfos) {
+      navigate('/account/infos');
+    }
+  }, [maestroInfos, navigate]);
+
   const getMainContent = () => {
-    if(onboardRequestLoading){
-      return (
-        <div>
-          Your session is loading
-        </div>
-      )
+    if (onboardRequestLoading) {
+      return <div>Your session is loading</div>;
     }
     if (maestroInfos) {
-      if (!maestroInfos.sessions || Object.keys(maestroInfos.sessions).length === 0) {
-        toastError('You have no sessions this should never happen, please contact an admin', 10000);
-        return <div>No sessions</div>;
-      }
-      return (
-        <div>
-          <StyledBox>
-            <Grid2>
-              <Typography variant="h6" component="div" style={{ textAlign: 'center' }}>
-                Your sessions
-              </Typography>
-              <Divider style={{ borderColor: 'var(--gold-color)' }} />
-              <List dense={true}>
-                {Object.entries(maestroInfos.sessions).map(([sessionId, session]) => (
-                  <ListItem key={sessionId}>
-                    <ListItemButton key={sessionId} href={`${window.location.origin}/${sessionId}`}>
-                      {sessionId}
-                    </ListItemButton>
-                    <div>
-                      <ContentToCopy content={getURLToShareToPlayers(sessionId)} />
-                    </div>
-                  </ListItem>
-                ))}
-              </List>
-            </Grid2>
-          </StyledBox>
-        </div>
-      );
+      return null; // Navigation handled by useEffect
     } else if (newlyCreatedSession && newlyCreatedSession !== 'UserAlreadyExistsError') {
       return (
-        <div style={{ height: '50vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1rem' }}>
+        <div
+          style={{
+            height: '50vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem',
+          }}
+        >
           <StyledBox>
             <div style={{ textAlign: 'center' }}>
               <p>Share this link to your Players so they can join your session:</p>
-              <p><ContentToCopy content={getURLToShareToPlayers(newlyCreatedSession.sessionId)} /></p>
+              <p>
+                <ContentToCopy content={getURLToShareToPlayers(newlyCreatedSession.sessionId)} />
+              </p>
             </div>
           </StyledBox>
-          <ArrowCircleDownIcon style={{color: 'var(--gold-color)'}} fontSize={'large'}/>
+          <ArrowCircleDownIcon style={{ color: 'var(--gold-color)' }} fontSize={'large'} />
           <StyledBox>
             <MaestroLink>
               <TextLinkWithIconWrapper

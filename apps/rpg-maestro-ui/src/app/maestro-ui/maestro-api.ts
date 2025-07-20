@@ -221,3 +221,20 @@ export const getMaestroInfos = async(): Promise<User> => {
     return Promise.reject();
   }
 }
+
+export const getUserFromAPI = async(): Promise<User> => {
+  try {
+    const response = await fetch(`${rpgmaestroapiurl}/users/me`, {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      console.error(response.status, response.statusText);
+      throw new Error('fetch failed for error: ' + response);
+    }
+    return (await response.json()) as User;
+  } catch (error) {
+    console.error(error);
+    displayError(`Fetch error: ${JSON.stringify(error)}`);
+    return Promise.reject();
+  }
+}
