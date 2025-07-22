@@ -16,4 +16,3 @@ FIXME do not commit TODO
   - detect when we just reconnected with cloudflare redirect and fetch user
   - add a way to promote a maestro from UI?
 - default collection on prod -> almost okay, just need to import it :)
-- list other things to do for prod
