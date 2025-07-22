@@ -32,7 +32,7 @@ export default defineConfig({
     stderr: 'pipe',
     stdout: 'pipe',
   },
-  reporter: [['html', { open: 'never' }], ['list'], process.env.CI ? ['github'] : ['null']],
+  reporter: [['html', { open: 'never' }], process.env.CI ? ['github'] : ['list']],
   projects: [
     {
       name: 'chromium',
