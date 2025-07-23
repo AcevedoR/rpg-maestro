@@ -35,12 +35,13 @@ export class TrackCollectionService {
   private async upsert(creation: TrackCollectionCreation, userId: string) {
     const tracks: CollectionTrack[] = [];
     for (const track of creation.tracks) {
-      await getTrackFileMetadata(track.url);
+      const {duration} = await getTrackFileMetadata(track.url);
       tracks.push({
         id: uuid(),
         source: track.source,
         name: track.name,
         url: track.url,
+        duration: duration,
         tags: track.tags ?? [],
       });
     }
@@ -62,9 +63,9 @@ export class TrackCollectionService {
     importFromSessionRequest: TrackCollectionImportFromSession,
     userId: string
   ): Promise<TrackCollection> {
-    if ((await this.trackCollectionDatabase.get(importFromSessionRequest.id)) !== null) {
+    if (!importFromSessionRequest.override && (await this.trackCollectionDatabase.get(importFromSessionRequest.id)) !== null) {
       throw new HttpException(
-        `Cannot import Track collection from session, a collection with id: ${importFromSessionRequest.id} already exists`,
+        `Cannot import Track collection from session, a collection with id: ${importFromSessionRequest.id} already exists. You can replace it by passing 'override: true'`,
         409
       );
     }
@@ -84,12 +85,13 @@ export class TrackCollectionService {
     }
     const tracks: CollectionTrack[] = [];
     for (const track of tracksToImport) {
-      await getTrackFileMetadata(track.url);
+      const {duration} = await getTrackFileMetadata(track.url);
       tracks.push({
         id: uuid(),
         source: track.source,
         name: track.name,
         url: track.url,
+        duration: duration,
         tags: track.tags ?? [],
       });
     }

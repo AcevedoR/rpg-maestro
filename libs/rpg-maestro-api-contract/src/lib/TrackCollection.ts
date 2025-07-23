@@ -18,6 +18,7 @@ export interface CollectionTrack {
   name: string;
   tags: string[];
   url: string;
+  duration: number;
 }
 
 export interface CollectionTrackCreation {
@@ -39,6 +40,8 @@ export interface TrackCollectionImportFromSession {
   id: string;
   name: string;
   description?: string;
+
+  override?: boolean;
 }
 
 export interface TrackCollectionUpdate {

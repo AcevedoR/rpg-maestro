@@ -3,12 +3,13 @@ import path from 'path';
 import { TracksDatabase } from './TracksDatabase';
 import { getTrackDuration } from './audio/AudioHelper';
 import {
+  CollectionTrack,
   Track,
   TrackCollection,
   TrackCreation,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest,
+  UploadAndCreateTracksFromYoutubeRequest
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/audio-file-uploader-client/FetchCaddyDirectory';
 import { TrackCreationFromYoutubeJob, TrackCreationFromYoutubeJobsStore } from './TrackCreationFromYoutubeJobsStore';
@@ -57,6 +58,32 @@ export class TrackService {
       name: trackCreation.name ?? fileName,
       url: trackCreation.url,
       duration: duration,
+      tags: trackCreation.tags ?? [],
+    };
+
+    await this.database.save(track);
+
+    return track;
+  }
+
+  async createTrackFromCollection(sessionId: string, trackCreation: CollectionTrack): Promise<Track> {
+    const now = Date.now();
+
+    const track: Track = {
+      id: uuid(),
+      sessionId: sessionId,
+      created_at: now,
+      updated_at: now,
+
+      source: {
+        origin_media: trackCreation.source.origin_media ?? 'same-server',
+        origin_url: trackCreation.source.origin_url ?? trackCreation.url,
+        origin_name: trackCreation.source.origin_name,
+      },
+
+      name: trackCreation.name,
+      url: trackCreation.url,
+      duration: trackCreation.duration,
       tags: trackCreation.tags ?? [],
     };
 
@@ -120,17 +147,9 @@ export class TrackService {
   async importTracksFromTrackCollection(sessionId: string, trackCollection: TrackCollection): Promise<Track[]> {
     const importedTracks: Track[] = [];
     for (const track of trackCollection.tracks) {
-      importedTracks.push(await this.createTrack(
+      importedTracks.push(await this.createTrackFromCollection(
         sessionId,
-        {
-          url: track.url,
-          name: track.name,
-          tags: track.tags,
-
-          originUrl: track.source.origin_url,
-          originMedia: track.source.origin_media,
-          originName: track.source.origin_name
-        }
+        track
       ));
     }
     return importedTracks;
