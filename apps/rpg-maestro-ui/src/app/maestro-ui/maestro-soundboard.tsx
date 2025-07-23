@@ -34,13 +34,15 @@ export function MaestroSoundboard() {
     if (allTracks === undefined) {
       refreshTracks();
     }
-    getUser().then((user) => {
-      if (user === null) {
-        toastError('unauthenticated', 5000);
-      } else {
-        setUser(user);
-      }
-    });
+    if (user === undefined){
+      getUser().then((user) => {
+        if (user === null) {
+          toastError('unauthenticated', 5000);
+        } else {
+          setUser(user);
+        }
+      });
+    }
   });
 
   const refreshTracks = () => {
