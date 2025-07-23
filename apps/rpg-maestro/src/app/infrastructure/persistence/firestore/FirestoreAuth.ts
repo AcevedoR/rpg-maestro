@@ -30,6 +30,7 @@ export class FirestoreAuth {
       }),
     });
     this.firestoreInstance = getFirestore();
+    this.firestoreInstance.settings({ ignoreUndefinedProperties: true })
   }
 
   public static getFirestoreInstance():Firestore {
