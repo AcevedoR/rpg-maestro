@@ -1,4 +1,4 @@
-import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/in-memory-create-track-from-youtube-jobs-database.service';
+import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/persistence/in-memory/InMemoryTrackCreationFromYoutubeJobsStore.service';
 import { TrackCreationFromYoutubeJob } from '../maestro-api/TrackCreationFromYoutubeJobsStore';
 import { randomUUID } from 'node:crypto';
 import { AudioFileUploaderClient } from './audio-file-uploader-client';
@@ -77,7 +77,7 @@ function randomStr(): string {
 class AudioFileUploaderClientFake implements AudioFileUploaderClient {
   state: UploadAudioFromYoutubeJobDto[] = [];
 
-  uploadAudioFromYoutube(request: UploadAudioFromYoutubeRequest): Promise<void> {
+  uploadAudioFromYoutube(_request: UploadAudioFromYoutubeRequest): Promise<void> {
     return;
   }
 
@@ -87,7 +87,7 @@ class AudioFileUploaderClientFake implements AudioFileUploaderClient {
 }
 
 class TrackServicePartialFake {
-  async createTrack(sessionId: string, trackCreation: TrackCreation): Promise<Track> {
+  async createTrack(_sessionId: string, _trackCreation: TrackCreation): Promise<Track> {
     return Promise.resolve(<Track>{
       id: '1',
       url: 'someurl',

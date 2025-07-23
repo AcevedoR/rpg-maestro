@@ -8,6 +8,7 @@ type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
 type HEX = `#${string}`;
 
 export type Color = RGB | RGBA | HEX;
+// export type Color = RGB
 
 export interface QuickTagSelectionProps {
   text: string;
@@ -29,7 +30,9 @@ export function QuickTagSelection(props: QuickTagSelectionProps) {
         height: '60px',
         width: '110px',
         border: '1px solid',
-        fontSize: '10px',
+        fontSize: '11px',
+        fontWeight: '500',
+        backgroundColor: 'rgba(57,57,57,0.15)',
       }}
       onClick={() => onQuickTagSelection(tags)}
     >

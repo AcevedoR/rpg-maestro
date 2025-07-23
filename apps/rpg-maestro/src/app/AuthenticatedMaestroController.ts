@@ -1,6 +1,7 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Logger, Param, Post, Put } from '@nestjs/common';
+import { Request } from 'express';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Logger, Param, Post, Put, Req } from '@nestjs/common';
 import { TrackService } from './maestro-api/TrackService';
-import { Database } from './maestro-api/Database';
+import { TracksDatabase } from './maestro-api/TracksDatabase';
 import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
 import {
   ChangeSessionPlayingTracksRequest,
@@ -9,20 +10,20 @@ import {
   TrackCreation, TrackCreationFromYoutubeDto,
   TracksFromDirectoryCreation,
   TrackUpdate,
-  UploadAndCreateTracksFromYoutubeRequest
+  UploadAndCreateTracksFromYoutubeRequest, UserID
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
-import { TrackCreationFromYoutubeJob } from './maestro-api/TrackCreationFromYoutubeJobsStore';
+import { getUser, decodeToken } from './AuthUtils';
 
 const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
 
 @ApiCookieAuth()
 @Controller()
 export class AuthenticatedMaestroController {
-  private readonly database: Database;
+  private readonly database: TracksDatabase;
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
   constructor(
@@ -30,7 +31,7 @@ export class AuthenticatedMaestroController {
     private databaseWrapper: DatabaseWrapperConfiguration,
     @Inject() private trackService: TrackService
   ) {
-    this.database = databaseWrapper.get();
+    this.database = databaseWrapper.getTracksDB();
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
   }
 
@@ -87,5 +88,24 @@ export class AuthenticatedMaestroController {
     );
     await this.cacheManager.set(sessionId, playingTrack, ONE_DAY_TTL);
     return playingTrack;
+  }
+
+  // TODO remove temporary
+  @Get('/maestro/try-auth')
+  async tryAuth(
+    @Req() req: Request,
+  ): Promise<string> {
+    Logger.warn("req: ", req);
+    const userId = getUser(req);
+    return Promise.resolve(userId);
+  }
+  // TODO remove temporary
+  @Get('/maestro/decode')
+  async decode(
+    @Req() req: Request,
+  ): Promise<string> {
+    Logger.warn("req: ", req);
+    const userId = decodeToken(req);
+    return Promise.resolve(userId);
   }
 }

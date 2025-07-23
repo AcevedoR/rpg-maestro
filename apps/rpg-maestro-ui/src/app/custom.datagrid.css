@@ -1,0 +1,16 @@
+/*TODO remove this leaking css*/
+.MuiDataGrid-root {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+    transition: all 0.3s ease;
+    background: rgba(26, 11, 46, 0.2);
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    color: var(--text-primary);
+}
+
+.MuiDataGrid-root .MuiDataGrid-columnHeaders [role="row"] {
+    background: rgba(26, 11, 46, 0.5) !important;
+}
+
+.MuiButton-root {
+    background: rgba(26, 11, 46, 0.5) !important;
+}

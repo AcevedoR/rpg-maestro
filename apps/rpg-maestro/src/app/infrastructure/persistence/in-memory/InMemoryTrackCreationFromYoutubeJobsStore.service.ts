@@ -1,7 +1,7 @@
 import {
   TrackCreationFromYoutubeJob,
   TrackCreationFromYoutubeJobsStore,
-} from '../maestro-api/TrackCreationFromYoutubeJobsStore';
+} from '../../../maestro-api/TrackCreationFromYoutubeJobsStore';
 import { Injectable } from '@nestjs/common';
 
 // TODO fix this hack forbidding having more than one instance
@@ -26,7 +26,7 @@ export class InMemoryTrackCreationFromYoutubeJobsStore implements TrackCreationF
   getAllForSession(sessionId: string | null) {
     this.cleanupOldDataIfNecessary();
     const res: TrackCreationFromYoutubeJob[] = [];
-    for (const [key, val] of this.db) {
+    for (const [_key, val] of this.db) {
       if (val.sessionId === sessionId) {
         res.push(val);
       }

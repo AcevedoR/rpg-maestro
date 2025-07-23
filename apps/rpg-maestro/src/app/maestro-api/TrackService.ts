@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import path from 'path';
-import { Database } from './Database';
+import { TracksDatabase } from './TracksDatabase';
 import { getTrackDuration } from './audio/AudioHelper';
 import {
   Track,
@@ -9,7 +9,7 @@ import {
   TrackUpdate,
   UploadAndCreateTracksFromYoutubeRequest,
 } from '@rpg-maestro/rpg-maestro-api-contract';
-import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/FetchCaddyDirectory';
+import { getAllFilesFromCaddyFileServerDirectory } from '../infrastructure/audio-file-uploader-client/FetchCaddyDirectory';
 import { TrackCreationFromYoutubeJob, TrackCreationFromYoutubeJobsStore } from './TrackCreationFromYoutubeJobsStore';
 import { AudioFileUploaderClient } from '../track-creation-from-youtube-jobs-watcher/audio-file-uploader-client';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
@@ -18,7 +18,7 @@ import { TrackCreationFromYoutubeJobsWatcher } from '../track-creation-from-yout
 
 @Injectable()
 export class TrackService {
-  database: Database;
+  database: TracksDatabase;
   trackCreationFromYoutubeJobsStore: TrackCreationFromYoutubeJobsStore;
   trackCreationFromYoutubeJobsWatcher: TrackCreationFromYoutubeJobsWatcher;
   audioFileUploaderClient: AudioFileUploaderClient;
@@ -30,7 +30,8 @@ export class TrackService {
     trackCreationFromYoutubeJobsWatcher1: TrackCreationFromYoutubeJobsWatcher,
     @Inject(AudioFileUploaderClient) audioFileUploaderClient: AudioFileUploaderClient
   ) {
-    this.database = databaseWrapper.get();
+    console.log(databaseWrapper)
+    this.database = databaseWrapper.getTracksDB();
     this.trackCreationFromYoutubeJobsStore = trackCreationFromYoutubeJobsStore;
     this.trackCreationFromYoutubeJobsWatcher = trackCreationFromYoutubeJobsWatcher1;
     this.audioFileUploaderClient = audioFileUploaderClient;

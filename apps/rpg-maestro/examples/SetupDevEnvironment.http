@@ -1,0 +1,66 @@
+###
+### create a track
+POST http://localhost:3000/maestro/sessions/default-current-session/tracks
+Content-Type: application/json
+
+{
+  "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
+  "name": "my-track2"
+}
+> {%
+  client.global.set("last_created_track_id", response.body.id);
+  client.test("Request executed successfully", function() {
+    client.assert(response.status === 201, "response status code was: " + response.status);
+  });
+%}
+
+####
+#### create from directory
+#POST http://localhost:3000/maestro/sessions/test-session/tracks/from-directory
+#Accept: application/json
+#Content-Type: application/json
+#
+#{
+#  "directoryUrl": "https://fourgate.cloud/public/musics"
+#}
+
+###
+### Get one
+GET http://localhost:3000/tracks/{{last_created_track_id}}
+
+> {%
+  client.test("Request executed successfully", function() {
+    client.assert(response.status === 200, "response status code was: " + response.status);
+  });
+%}
+
+###
+
+### Set created track to current playing
+PUT http://localhost:3000/maestro/sessions/default-current-session/playing-tracks
+Content-Type: application/json
+
+{
+  "currentTrack":{
+      "trackId": "{{last_created_track_id}}",
+      "paused": false
+  }
+}
+> {%
+  client.test("Request executed successfully", function() {
+    client.assert(response.status === 200, "response status code was: " + response.status);
+  });
+%}
+
+###
+
+### get playing track
+GET http://localhost:3000/sessions/default-current-session/playing-tracks
+
+> {%
+  client.test("Request executed successfully", function() {
+    client.assert(response.status === 200, "response status code was: " + response.status);
+  });
+%}
+
+###

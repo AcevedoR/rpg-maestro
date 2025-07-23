@@ -6,22 +6,23 @@
   "tags": [],
   "targets": {
     "dev": {
-      "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
-      "dependsOn": [
-        "build"
-      ],
+      "executor": "nx:run-commands",
       "options": {
-        "buildTarget": "rpg-maestro:build",
-        "runBuildTargetDependencies": false
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "rpg-maestro:build:development"
-        },
-        "production": {
-          "buildTarget": "rpg-maestro:build:production"
-        }
+        "commands": [
+          {
+            "command": "nx run rpg-maestro:serve"
+          },
+          {
+            "command": "npx wait-on http://localhost:3000/health --timeout 5000 && nx run rpg-maestro:setup-dev-env"
+          }
+        ],
+        "parallel": true
+      }
+    },
+    "setup-dev-env": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx httpyac --all --bail apps/rpg-maestro/examples/SetupDevEnvironment.http"
       }
     },
     "serve": {

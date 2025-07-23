@@ -160,12 +160,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
       onPlay={() => changePlayingStatus(true)}
       onPause={() => changePlayingStatus(false)}
       className={'maestro-audio-player'}
-      style={{
-        width: '50vw',
-        minWidth: '300px',
-        overflowWrap: 'break-word',
-      }}
-      header={<h3 style={{ textAlign: 'center' }}>{currentTrack?.name}</h3>}
+      header={<h3>{currentTrack?.name}</h3>}
       customIcons={{}}
     />
   );

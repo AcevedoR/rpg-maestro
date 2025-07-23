@@ -1,16 +1,24 @@
 .audio-player-readonly .rhap_controls-section {
     display: flex;
     justify-content: space-evenly;
-    align-content: center;
     align-items: center;
     width: 80%;
+    padding: 1rem;
+    backdrop-filter: blur(10px);
 }
 
 .audio-player-readonly .rhap_main-controls {
+    gap: 1rem;
 }
 
 .audio-player-readonly .rhap_volume-controls {
     flex: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.audio-player-readonly .rhap_volume-controls:hover {
 }
 
 .audio-player-readonly .rhap_volume-container {
@@ -25,9 +33,31 @@
 
 .audio-player-readonly .rhap_progress-section {
     cursor: not-allowed;
+    margin: 1rem 0;
 }
 
 .audio-player-readonly .rhap_progress-section .rhap_progress-bar,
 .audio-player-readonly .rhap_progress-section .rhap_progress-container {
     pointer-events: none;
+    /*background: color-mix(in srgb, var(--gold-color) 70%, white);*/
+    border-radius: 4px;
+}
+
+.audio-player-readonly .rhap_progress-filled {
+    background: var(--gold-color);
+    border-radius: 4px;
+}
+
+.audio-player-readonly .rhap_time {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.audio-player-readonly .rhap_button-clear {
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.audio-player-readonly .rhap_button-clear:hover {
+    color: var(--gold-color);
 }

@@ -132,12 +132,3 @@ export class TrackCreationFromYoutubeJobsWatcher {
     return;
   }
 }
-
-async function sleep(delay): Promise<void> {
-  return new Promise(function (resolve) {
-    setTimeout(() => {
-      console.error('This message is logged after 2 seconds');
-      resolve();
-    }, delay);
-  });
-}

@@ -45,7 +45,7 @@ export function TracksManagement() {
   }, [refreshTrackCreationFromYoutube]);
 
   return (
-    <div>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap:'1rem', padding:'1rem' }}>
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
         <TextLinkWithIconWrapper
           link={`/maestro/${sessionId}`}
@@ -54,7 +54,7 @@ export function TracksManagement() {
         />
         <h1 style={{ margin: 0, display: 'inline-block' }}>Tracks management</h1>
       </div>
-      <hr />
+      <hr style={{width: '100vw', borderColor: 'var(--gold-color)'}} />
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
         <div>
           <FileUpload onFileUploaded={createFileUploadedEvent} />
