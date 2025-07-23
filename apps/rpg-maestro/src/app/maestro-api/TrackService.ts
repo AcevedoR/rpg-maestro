@@ -156,7 +156,7 @@ async function checkFileIfActuallyUsable(url: string) {
       const shortError = `httpStatus: ${response.status}, statusText: ${response.statusText}`;
       Logger.error(`checkFileIfActuallyUsable failed with error: ${shortError}`, response);
       throw new Error(
-        `Cannot create track, file '${url}' not reachable, fetch error: ${shortError}, full error: ${await response.text()}`
+        `Cannot create track, file not reachable at: '${url}' , fetch error: ${shortError}, full error: ${await response.text()}`
       );
     }
   } catch (error) {

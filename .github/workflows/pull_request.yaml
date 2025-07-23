@@ -43,5 +43,5 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: ./dist/.playwright/apps/rpg-maestro-ui-e2e/playwright-report/
+          path: playwright-report/
           retention-days: 7
