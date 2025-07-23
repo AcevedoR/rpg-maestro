@@ -20,8 +20,8 @@ export class RolesGuard implements CanActivate {
     }
     const dbUser = await this.usersService.get(user.id);
     if (!dbUser || !dbUser.role) {
-      Logger.log(`RolesGuard unhandled case: dbUser for id: ${user.id} not found or no role: ${dbUser?.role}`);
-      throw new ForbiddenException('Forbidden. User roles not found');
+      Logger.log(`RolesGuard: dbUser for id: ${user.id} not found or no role: ${dbUser?.role}`);
+      throw new ForbiddenException({errorCode: 'NOT_YET_ONBOARDED', description: 'you need to onboard first'});
     }
     if (dbUser.role === 'ADMIN') {
       return true;
