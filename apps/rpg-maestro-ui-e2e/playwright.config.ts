@@ -25,7 +25,7 @@ export default defineConfig({
   },
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npx nx run rpg-maestro-ui:init-e2e-setup --no-cloud --verbose',
+    command: 'npx nx run rpg-maestro-ui:init-e2e-setup --no-cloud',
     url: 'http://localhost:4300',
     reuseExistingServer: !process.env.CI,
     cwd: workspaceRoot,
