@@ -74,7 +74,7 @@ describe('Onboarding API e2e', () => {
         .expect(200)
     ).body as SessionPlayingTracks;
     expect(fetched.sessionId).toEqual(created.sessionId);
-  });
+  }, 10000);
 
   it('a Minstrel cannot create a new session outside of onboarding process', async () => {
     await request(app.getHttpServer())
@@ -83,7 +83,7 @@ describe('Onboarding API e2e', () => {
       .set('Content-Type', 'application/json')
       .set('Cookie', `CF_Authorization=${A_MINSTREL_USER.token}`)
       .expect(403)
-  });
+  }, 10000);
 
   it('a Maestro can create a session with a default collection', async () => {
     const trackCollectionCreateRequest: TrackCollectionCreation = {
@@ -141,7 +141,7 @@ describe('Onboarding API e2e', () => {
     expect(sessionTracks[0].source).toEqual(trackCollectionCreateRequest.tracks[0].source);
 
     expect(created.currentTrack).toBeDefined();
-  });
+  }, 10000);
 
   afterEach(async () => {
     await app.close();

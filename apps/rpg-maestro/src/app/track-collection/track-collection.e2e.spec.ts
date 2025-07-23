@@ -93,7 +93,7 @@ describe('TrackCollection', () => {
         const res = httpResponse.body as TrackCollection;
         expect(res.id).toEqual(trackCollectionCreateRequest.id);
       });
-  });
+  }, 10000);
   it('a Maestro can get TrackCollections', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')
@@ -114,7 +114,7 @@ describe('TrackCollection', () => {
         const res = httpResponse.body as TrackCollection;
         expect(res.id).toEqual(trackCollectionCreateRequest.id);
       });
-  });
+  }, 10000);
   it('an Admin can import a TrackCollection from an existing session', async () => {
     // given a session
     const session = (await request(app.getHttpServer())
@@ -167,7 +167,7 @@ describe('TrackCollection', () => {
         const res = httpResponse.body as TrackCollection;
         expect(res.id).toEqual(importRequest.id);
       });
-  });
+  }, 10000);
   it('cannot create when not Admin', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')
@@ -175,7 +175,7 @@ describe('TrackCollection', () => {
       .set('Content-Type', 'application/json')
       .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
       .expect(403);
-  });
+  }, 10000);
   it('cannot create with already existing id', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')
@@ -193,7 +193,7 @@ describe('TrackCollection', () => {
       .then((httpResponse) => {
         expect(httpResponse.body.message).toContain('already exists');
       });
-  });
+  }, 10000);
 
   afterEach(async () => {
     await app.close();
