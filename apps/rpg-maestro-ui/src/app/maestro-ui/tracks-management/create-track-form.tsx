@@ -29,7 +29,6 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
     }
     const consumeFileUploadedEventBody = consumeFileUploadedEvent();
     if (consumeFileUploadedEventBody) {
-      console.log('received event: ' + consumeFileUploadedEventBody);
       setInputUrl(consumeFileUploadedEventBody);
     }
   }, [inputUrl, consumeFileUploadedEvent]);
@@ -60,7 +59,7 @@ export function CreateTrackForm(props: CreateTrackFormProps) {
         name: inputName,
         tags: inputTags ?? [],
       }).then((track: Track) => {
-        console.log(`track created: ${JSON.stringify(track)}`);
+        console.info(`track created: ${JSON.stringify(track)}`);
         toastSuccess(`Track created: ${track.name}`, 10000);
         resetform();
         setIsCreatingTrack(false);

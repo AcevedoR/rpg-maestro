@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import process from 'node:process';
 
 const AUDIO_FILE_SERVER_BASE_URL = process.env.AUDIO_FILE_SERVER_BASE_URL;
@@ -21,7 +21,7 @@ export class FileUploadService {
     if (file.size > maxSize) {
       throw new BadRequestException('file is too large!');
     }
-    console.log(`uploading file ${file.filename} with size ${(file.size / 1024 / 1024).toFixed(2)}mb`);
+    Logger.log(`uploading file ${file.filename} with size ${(file.size / 1024 / 1024).toFixed(2)}mb`);
     return {
       message: 'File uploaded successfully',
       fileURL: `${AUDIO_FILE_SERVER_BASE_URL}/uploads/${file.filename}`,

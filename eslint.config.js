@@ -34,6 +34,7 @@ module.exports = [
     // Override or add rules here
     rules: {
       "strict": ["error", "global"], // Enforce strict mode
+      "no-console": ["error", { allow: ["info", "warn", "error"] }], // Disallow console.log
     },
   },
 ];

@@ -32,7 +32,7 @@ export const isCurrentTrackTooMuchDesynchronizedFromServer = (
   }
   const desyncTime = Math.abs(currentTrackPlayTime - serverPlayTime);
   if (desyncTime > 5000) {
-    console.log(
+    console.warn(
       `CurrentTrackTooMuchDesynchronizedFromServer by ${desyncTime}ms, current: ${currentTrackPlayTime} vs server: ${serverPlayTime}`
     );
     return true;
@@ -42,13 +42,13 @@ export const isCurrentTrackTooMuchDesynchronizedFromServer = (
 };
 export const isCurrentTrackOutOfDate = (currentTrack: PlayingTrack, serverTrack: PlayingTrack): boolean => {
   if (currentTrack.id !== serverTrack.id) {
-    console.log('CurrentTrackOutOfDate: track have changed');
+    console.info('CurrentTrackOutOfDate: track have changed');
     return true;
   } else if (currentTrack.isPaused !== serverTrack.isPaused) {
-    console.log('CurrentTrackOutOfDate: track paused status have changed');
+    console.info('CurrentTrackOutOfDate: track paused status have changed');
     return true;
   } else if (currentTrack.playTimestamp !== serverTrack.playTimestamp) {
-    console.log('CurrentTrackOutOfDate: track playTimestamp have changed');
+    console.info('CurrentTrackOutOfDate: track playTimestamp have changed');
     return true;
   }
   return false;

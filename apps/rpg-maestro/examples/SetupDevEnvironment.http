@@ -1,7 +1,19 @@
 ###
+### init test users fixture
+POST http://localhost:3000/test-utils/create-test-users-fixtures
+
+> {%
+  client.global.set("an_admin_user", response.body.an_admin_user);
+  client.test("Request executed successfully", function() {
+    client.assert(response.status === 201, "response status code was: " + response.status);
+  });
+%}
+
+###
 ### create a track
-POST http://localhost:3000/maestro/sessions/default-current-session/tracks
+POST http://localhost:3000/maestro/sessions/local-test-session/tracks
 Content-Type: application/json
+Cookie: CF_Authorization={{an_admin_user.token}}
 
 {
   "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
@@ -27,6 +39,7 @@ Content-Type: application/json
 ###
 ### Get one
 GET http://localhost:3000/tracks/{{last_created_track_id}}
+Cookie: CF_Authorization={{an_admin_user.token}}
 
 > {%
   client.test("Request executed successfully", function() {
@@ -37,8 +50,9 @@ GET http://localhost:3000/tracks/{{last_created_track_id}}
 ###
 
 ### Set created track to current playing
-PUT http://localhost:3000/maestro/sessions/default-current-session/playing-tracks
+PUT http://localhost:3000/maestro/sessions/local-test-session/playing-tracks
 Content-Type: application/json
+Cookie: CF_Authorization={{an_admin_user.token}}
 
 {
   "currentTrack":{
@@ -55,7 +69,8 @@ Content-Type: application/json
 ###
 
 ### get playing track
-GET http://localhost:3000/sessions/default-current-session/playing-tracks
+GET http://localhost:3000/sessions/local-test-session/playing-tracks
+Cookie: CF_Authorization={{an_admin_user.token}}
 
 > {%
   client.test("Request executed successfully", function() {

@@ -32,10 +32,17 @@ export default defineConfig({
     stderr: 'pipe',
     stdout: 'pipe',
   },
+  expect: { timeout: 10_000 },
+  reporter: [['html', { open: 'never' }], process.env.CI ? ['github'] : ['list']],
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        trace: 'retain-on-failure',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+      },
     },
 
     // {

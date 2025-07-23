@@ -51,7 +51,7 @@ export class UploadFromYoutubeService {
               .format('mp3')
               .on('error', (err) => {
                 Logger.error(`Error converting to MP3 for URL ${url}: ${err.message}`);
-                console.trace(err);
+                console.error(err);
                 fileStream.destroy(err);
                 reject(err);
               })
@@ -67,7 +67,7 @@ export class UploadFromYoutubeService {
           return;
         } catch (error) {
           Logger.error(`Error while downloading audio from URL ${url}: ${error.message}`);
-          console.trace(error);
+          console.error(error);
           const job = await this.uploadFromYoutubeJobsStore.get(jobId);
           job.failed(error.message);
           return;

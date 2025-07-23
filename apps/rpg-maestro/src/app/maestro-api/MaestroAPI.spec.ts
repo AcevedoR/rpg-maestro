@@ -33,7 +33,7 @@ beforeAll(() => {
 
   app.use('/public', express.static(path.join(__dirname, '../../assets')));
   server = app.listen(port, () => {
-    console.log(`[server]: Server serving static files is running at http://localhost:${port}`);
+    console.info(`[server]: Server serving static files is running at http://localhost:${port}`);
   });
 });
 beforeEach(() => {
@@ -95,7 +95,7 @@ describe('ManageCurrentlyPlaying track API', () => {
       },
     });
 
-    const res = await database.getCurrentSession(session);
+    const res = await database.getSession(session);
     expect(res).toHaveProperty('currentTrack');
     expect(res.currentTrack.id).toEqual('track-1');
     expect(res.currentTrack.isPaused).toBeFalsy();

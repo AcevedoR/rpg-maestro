@@ -16,6 +16,7 @@ export function TracksManagement() {
   const [trackCreationFromYoutube, setTrackCreationFromYoutube] = useState<TrackCreationFromYoutubeDto[]>([]);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const sessionId = useParams().sessionId ?? '';
+
   if (sessionId === '') {
     displayError('no session found in URL');
     throw new Error('no session found in URL');
@@ -32,7 +33,12 @@ export function TracksManagement() {
     refreshTrackCreationFromYoutube();
   };
   const refreshTrackCreationFromYoutube = useCallback(async () => {
-    setTrackCreationFromYoutube(await getTrackCreationFromYoutube(sessionId));
+    try{
+      setTrackCreationFromYoutube(await getTrackCreationFromYoutube(sessionId));
+    } catch (e){
+      console.warn(e);
+      // TODO fix, we should check role is MAESTRO
+    }
   }, [sessionId]);
 
   useEffect(() => {

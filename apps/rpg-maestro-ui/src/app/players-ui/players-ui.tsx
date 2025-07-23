@@ -77,7 +77,7 @@ const StyledAudioPlayer = styled(AudioPlayer)`
     border-radius: 24px;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
     text-align: center;
 `;
@@ -99,7 +99,7 @@ export function PlayersUi() {
         currentTrack
       );
       if (newerServerTrack) {
-        console.log('synchronizing track');
+        console.info('synchronizing track');
         setCurrentTrack(newerServerTrack);
         if (!newerServerTrack) {
           throw new Error('Current track is not defined');
@@ -172,9 +172,8 @@ export function PlayersUi() {
           className={'audio-player-readonly'}
           header={
           <div>
-            <h2 style={{marginBottom: '2rem'}}>RPG-maestro</h2>
             <span>You are listening to:</span>
-            <h3  style={{marginTop: '0.7rem'}}>{currentTrack?.name}</h3>
+            <h3 style={{marginTop: '0.7rem'}}>{currentTrack?.name}</h3>
           </div>
           }
           customIcons={{

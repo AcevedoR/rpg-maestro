@@ -4,6 +4,7 @@ import { TracksDatabase } from './TracksDatabase';
 import { getTrackDuration } from './audio/AudioHelper';
 import {
   Track,
+  TrackCollection,
   TrackCreation,
   TracksFromDirectoryCreation,
   TrackUpdate,
@@ -30,7 +31,6 @@ export class TrackService {
     trackCreationFromYoutubeJobsWatcher1: TrackCreationFromYoutubeJobsWatcher,
     @Inject(AudioFileUploaderClient) audioFileUploaderClient: AudioFileUploaderClient
   ) {
-    console.log(databaseWrapper)
     this.database = databaseWrapper.getTracksDB();
     this.trackCreationFromYoutubeJobsStore = trackCreationFromYoutubeJobsStore;
     this.trackCreationFromYoutubeJobsWatcher = trackCreationFromYoutubeJobsWatcher1;
@@ -40,10 +40,7 @@ export class TrackService {
   async createTrack(sessionId: string, trackCreation: TrackCreation): Promise<Track> {
     const now = Date.now();
 
-    const url = new URL(trackCreation.url);
-    const fileName = getFileName(url);
-    await checkFileIfActuallyUsable(trackCreation.url);
-    const duration = await getTrackDuration(url);
+    const { fileName, duration } = await getTrackFileMetadata(trackCreation.url);
 
     const track: Track = {
       id: uuid(),
@@ -54,7 +51,7 @@ export class TrackService {
       source: {
         origin_media: trackCreation.originMedia ?? 'same-server',
         origin_url: trackCreation.originUrl ?? trackCreation.url,
-        origin_name: fileName,
+        origin_name: trackCreation.originName ?? fileName,
       },
 
       name: trackCreation.name ?? fileName,
@@ -120,9 +117,36 @@ export class TrackService {
     this.trackCreationFromYoutubeJobsWatcher.wakeUp();
   }
 
+  async importTracksFromTrackCollection(sessionId: string, trackCollection: TrackCollection): Promise<Track[]> {
+    const importedTracks: Track[] = [];
+    for (const track of trackCollection.tracks) {
+      importedTracks.push(await this.createTrack(
+        sessionId,
+        {
+          url: track.url,
+          name: track.name,
+          tags: track.tags,
+
+          originUrl: track.source.origin_url,
+          originMedia: track.source.origin_media,
+          originName: track.source.origin_name
+        }
+      ));
+    }
+    return importedTracks;
+  }
+
   async getTrackFromYoutubeCreations(sessionId: string) {
     return this.trackCreationFromYoutubeJobsStore.getAllForSession(sessionId);
   }
+}
+
+export async function getTrackFileMetadata(trackUrl: string): Promise<{fileName: string, duration: number}> {
+  const url = new URL(trackUrl);
+  const fileName = getFileName(url);
+  await checkFileIfActuallyUsable(trackUrl);
+  const duration = await getTrackDuration(url);
+  return { fileName, duration };
 }
 
 async function checkFileIfActuallyUsable(url: string) {
@@ -130,21 +154,22 @@ async function checkFileIfActuallyUsable(url: string) {
     const response = await fetch(url);
     if (!response.ok || response.status != 200) {
       const shortError = `httpStatus: ${response.status}, statusText: ${response.statusText}`;
-      console.log(`checkFileIfActuallyUsable failed with error: ${shortError}`, response);
+      Logger.error(`checkFileIfActuallyUsable failed with error: ${shortError}`, response);
       throw new Error(
-        `Cannot create track, file not reachable, fetch error: ${shortError}, full error: ${await response.text()}`
+        `Cannot create track, file not reachable at: '${url}' , fetch error: ${shortError}, full error: ${await response.text()}`
       );
     }
   } catch (error) {
     if (error instanceof TypeError) {
-      console.debug(error);
+      Logger.error(error);
       if (error.message && error.message === 'fetch failed') {
         throw new Error(`Fetch network error: ${error}`);
       } else {
         throw new Error(`Fetch unhandled error: ${error}`);
       }
     } else {
-      throw error;
+      Logger.error(error);
+      throw new Error(error);
     }
   }
 }

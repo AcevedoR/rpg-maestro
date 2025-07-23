@@ -10,7 +10,7 @@ export class PlayersService {
     return this.databaseWrapper.getTracksDB().getTrack(id);
   }
 
-  async getSessionPlayingTracks(sessionId: string): Promise<SessionPlayingTracks> {
-    return this.databaseWrapper.getTracksDB().getCurrentSession(sessionId);
+  async getSessionPlayingTracks(sessionId: string): Promise<SessionPlayingTracks|null> {
+    return this.databaseWrapper.getTracksDB().getSession(sessionId);
   }
 }

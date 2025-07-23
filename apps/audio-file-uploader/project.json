@@ -71,6 +71,24 @@
       "dependsOn": [
         "docker-build"
       ]
+    },
+    "docker-build-preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker build . -f ./apps/audio-file-uploader/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:preview --platform linux/amd64"
+      },
+      "dependsOn": [
+        "build", "test"
+      ]
+    },
+    "deploy-preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker push acevedor/$NX_TASK_TARGET_PROJECT:preview"
+      },
+      "dependsOn": [
+        "docker-build-preview"
+      ]
     }
   }
 }

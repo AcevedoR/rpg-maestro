@@ -1,6 +1,6 @@
 import { TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useRef, useState } from 'react';
-import { SessionPlayingTracks, Tag, Track, TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
+import { SessionPlayingTracks, Tag, Track, TrackToPlay, User } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
@@ -17,8 +17,11 @@ import { displayError } from '../error-utils';
 import { useParams } from 'react-router';
 import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
 import { MaestroAudioPlayer, MaestroAudioPlayerRef } from './maestro-audio-player/maestro-audio-player';
+import { getUser } from '../cache/user.cache';
+import { toastError } from '../ui-components/toast-popup';
 
 export function MaestroSoundboard() {
+  const [user, setUser] = useState<User | undefined>(undefined);
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
   const [trackFilters, setTrackFilters] = useState<TrackFilters>({});
   const sessionId = useParams().sessionId ?? '';
@@ -30,6 +33,15 @@ export function MaestroSoundboard() {
   useEffect(() => {
     if (allTracks === undefined) {
       refreshTracks();
+    }
+    if (user === undefined){
+      getUser().then((user) => {
+        if (user === null) {
+          toastError('unauthenticated', 5000);
+        } else {
+          setUser(user);
+        }
+      });
     }
   });
 
@@ -70,7 +82,16 @@ export function MaestroSoundboard() {
   };
 
   return (
-    <div style={{height:'100vh', padding:'1rem', display:'flex', flexDirection:'column', justifyContent:'space-around', gap:'1rem'}}>
+    <div
+      style={{
+        height: '100vh',
+        padding: '1rem',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-around',
+        gap: '1rem'
+      }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
@@ -85,11 +106,15 @@ export function MaestroSoundboard() {
           text={'see what your players are seeing'}
           materialUiIcon={Visibility}
         />
-        <TextLinkWithIconWrapper
-          link={`/maestro/manage/${sessionId}`}
-          text={'Manage your tracks'}
-          materialUiIcon={LyricsTwoTone}
-        />
+        {
+          user && user.role === 'MAESTRO' ?
+            <TextLinkWithIconWrapper
+              link={`/maestro/manage/${sessionId}`}
+              text={'Manage your tracks'}
+              materialUiIcon={LyricsTwoTone}
+            />
+            : <></>
+        }
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
@@ -141,7 +166,7 @@ export function MaestroSoundboard() {
             ref={maestroAudioPlayerChildRef}
           />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <SearchTags
             tags={trackFilters.tagsToFilterOn ?? []}
             tracks={allTracks ?? []}

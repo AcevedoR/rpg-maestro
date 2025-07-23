@@ -49,7 +49,7 @@ export function FileUpload(props: FileUploadProps) {
       axios
         .post(`${audioFileUploaderAPI}/upload/audio`, formData, config)
         .then((response) => {
-          console.log(response.data);
+          console.info(response.data);
           const uploadRes = response.data as { fileURL: string };
           onFileUploaded(`${uploadRes.fileURL}`);
         })

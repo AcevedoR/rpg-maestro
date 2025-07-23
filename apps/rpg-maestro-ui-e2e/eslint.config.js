@@ -6,8 +6,10 @@ module.exports = [
 
   ...baseConfig,
   {
-    files: ['**/*.ts', '**/*.js'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     // Override or add rules here
-    rules: {},
+    rules: {
+      'playwright/no-conditional-in-test': 'off',
+    },
   },
 ];

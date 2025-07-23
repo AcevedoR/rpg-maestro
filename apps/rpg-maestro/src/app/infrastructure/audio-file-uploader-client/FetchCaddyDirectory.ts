@@ -1,4 +1,5 @@
 import { TrackCreation } from '@rpg-maestro/rpg-maestro-api-contract';
+import { Logger } from '@nestjs/common';
 
 interface CaddyFileserverFile {
   name: string;
@@ -19,27 +20,27 @@ export async function getAllFilesFromCaddyFileServerDirectory(url: string): Prom
     });
     if (!response.ok || response.status != 200) {
       const shortError = `httpStatus: ${response.status}, statusText: ${response.statusText}`;
-      console.log(`getAllFilesFromFileServerDirectory failed with error: ${shortError}`, response);
+      Logger.error(`getAllFilesFromFileServerDirectory failed with error: ${shortError}`, response);
       throw new Error(
         `Cannot create tracks, url not reachable, fetch error: ${shortError}, full error: ${await response.text()}`
       );
     } else {
       const caddyFiles = await response.json() as CaddyFileserverFile[];
-      console.log(`found ${caddyFiles.length} tracks to insert from fileserver: ${url}`);
+      Logger.log(`found ${caddyFiles.length} tracks to insert from fileserver: ${url}`);
       return caddyFiles
         .filter(x => !x.is_dir)
         .map(x => ({url: `${url}/${x.url}`} as TrackCreation))
     }
   } catch (error) {
     if (error instanceof TypeError) {
-      console.debug(error);
+      Logger.debug(error);
       if (error.message && error.message === 'fetch failed') {
         throw new Error(`Fetch network error: ${error}`);
       } else {
         throw new Error(`Fetch unhandled error: ${error}`);
       }
     } else {
-      throw error;
+      throw new Error(error);
     }
   }
 }
