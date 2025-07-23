@@ -23,6 +23,7 @@ export function UserInfos() {
       return <div>Loading...</div>;
     } else if (user === null) {
       // TODO redirect 401 ?
+      return <p>error we do not see you authenticated</p>
     } else {
       const userInfos = (
         // TODO centralize this styledbox
