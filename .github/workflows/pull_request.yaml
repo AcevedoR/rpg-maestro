@@ -34,9 +34,6 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
       - run: npx nx affected -t lint build test --no-cloud
       - run: npx nx affected -t e2e --no-cloud
-      - run: ls -l dist
-        if: ${{ !cancelled() }}
-
       - name: Upload Playwright Report as Github artifact
         # 'With this report, you can analyze locally the results of the tests. see https://playwright.dev/docs/ci-intro#html-report'
         uses: actions/upload-artifact@v4
