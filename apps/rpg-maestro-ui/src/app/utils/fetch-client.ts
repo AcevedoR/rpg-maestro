@@ -1,5 +1,8 @@
 // ...existing code...
 
+import { toastError } from '../ui-components/toast-popup';
+import { displayError } from '../error-utils';
+
 export interface FetchClientOptions {
   method?: string;
   headers?: Record<string, string>;
@@ -23,7 +26,7 @@ export async function fetchClient<T = any>(
     signal
   };
   if (body !== undefined) {
-    fetchOptions.body = JSON.stringify(body);
+    fetchOptions.body = body;
   }
   const response = await fetch(url, fetchOptions);
   let data;
@@ -38,6 +41,7 @@ export async function fetchClient<T = any>(
       // Optionally, return a rejected promise to halt further processing
       return Promise.reject(new Error('Redirecting to onboarding'));
     }
+    displayError(`fetch error: ${method} ${url}, response status: ${response.status}, message: ${JSON.stringify(data)}`)
     throw new Error(data?.message || response.statusText);
   }
   return data;

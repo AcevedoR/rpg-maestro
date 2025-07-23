@@ -57,7 +57,6 @@ export const setTrackToPlay = async (
     };
   } catch (error) {
     console.error(error);
-    displayError(`Fetch /maestro/sessions/${sessionId}/playing-tracks error: ${JSON.stringify(error)}`);
     return Promise.reject();
   }
 };
@@ -76,7 +75,6 @@ export const createTrack = async (sessionId: string, trackCreation: TrackCreatio
     return response as Track;
   } catch (error) {
     console.error(error);
-    displayError(`Fetch error: ${JSON.stringify(error)}`);
     return Promise.reject();
   }
 };
@@ -97,7 +95,6 @@ export const createTrackFromYoutube = async (sessionId: string, url: string): Pr
     return;
   } catch (error) {
     console.error(error);
-    displayError(`Fetch error: ${JSON.stringify(error)}`);
     return Promise.reject();
   }
 };
@@ -131,7 +128,6 @@ export const getTrackCreationFromYoutube = async (sessionId: string): Promise<Tr
     );
   } catch (error) {
     console.error(error);
-    displayError(`Fetch error: ${JSON.stringify(error)}`);
     return Promise.reject();
   }
 };
@@ -150,7 +146,6 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
     return response as Track;
   } catch (error) {
     console.error(error);
-    displayError(`Fetch error: ${JSON.stringify(error)}`);
     return Promise.reject();
   }
 };
@@ -189,7 +184,6 @@ export const getMaestroInfos = async(): Promise<User> => {
     return response as User;
   } catch (error) {
     console.error(error);
-    displayError(`Fetch error: ${JSON.stringify(error)}`);
     return Promise.reject();
   }
 }
@@ -202,7 +196,6 @@ export const getUserFromAPI = async(): Promise<User> => {
     return response as User;
   } catch (error) {
     console.error(error);
-    displayError(`Fetch error: ${JSON.stringify(error)}`);
     return Promise.reject();
   }
 }
