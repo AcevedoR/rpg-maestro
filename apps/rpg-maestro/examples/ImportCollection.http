@@ -1,0 +1,11 @@
+###
+POST https://fourgate.cloud/api/track-collections/import-from/session
+Content-Type: application/json
+Cookie: CF_AppSession=dfsdf; CF_Authorization=fdzfze
+
+{
+  "sessionId": "default-current-session",
+  "id": "default",
+  "name": "Default tracks collection",
+  "override": true
+}
