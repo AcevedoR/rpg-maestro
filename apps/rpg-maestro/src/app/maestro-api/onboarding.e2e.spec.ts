@@ -32,7 +32,8 @@ describe('Onboarding API e2e', () => {
   const staticServerApp: Express = express();
 
   let AN_ADMIN_USER: FakeJwtToken;
-  let A_MAESTRO_USER: FakeJwtToken;
+  let MAESTRO_A: FakeJwtToken;
+  let MAESTRO_B: FakeJwtToken;
   let A_MINSTREL_USER: FakeJwtToken;
 
   const EMPTY_SESSION_BODY = {};
@@ -49,7 +50,8 @@ describe('Onboarding API e2e', () => {
       .post('/test-utils/create-test-users-fixtures')
       .expect(201)
       .then((httpResponse) => httpResponse.body as TestUsersFixture);
-    A_MAESTRO_USER = users.a_maestro_user;
+    MAESTRO_A = users.a_maestro_user;
+    MAESTRO_B = users.a_maestro_B_user;
     A_MINSTREL_USER = users.a_minstrel_user;
     AN_ADMIN_USER = users.an_admin_user;
   });
@@ -60,7 +62,7 @@ describe('Onboarding API e2e', () => {
         .post('/maestro/sessions')
         .send(EMPTY_SESSION_BODY)
         .set('Content-Type', 'application/json')
-        .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
         .expect(201)
     ).body as SessionPlayingTracks;
 
@@ -70,7 +72,7 @@ describe('Onboarding API e2e', () => {
     const fetched = (
       await request(app.getHttpServer())
         .get('/sessions/:sessionId/playing-tracks'.replace(':sessionId', created.sessionId))
-        .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
         .expect(200)
     ).body as SessionPlayingTracks;
     expect(fetched.sessionId).toEqual(created.sessionId);
@@ -119,7 +121,7 @@ describe('Onboarding API e2e', () => {
         .post('/maestro/sessions')
         .send(createSessionRequest)
         .set('Content-Type', 'application/json')
-        .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
         .expect(201)
     ).body as SessionPlayingTracks;
 
@@ -129,7 +131,7 @@ describe('Onboarding API e2e', () => {
     const sessionTracks = (
       await request(app.getHttpServer())
         .get('/maestro/sessions/:sessionId/tracks'.replace(':sessionId', created.sessionId))
-        .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
         .expect(200)
     ).body as Track[];
     expect(sessionTracks).toBeDefined();
@@ -142,6 +144,44 @@ describe('Onboarding API e2e', () => {
 
     expect(created.currentTrack).toBeDefined();
   }, 10000);
+
+  it('a Maestro cannot access an other Maestro session', async () => {
+    // given
+    const sessionA = (
+      await request(app.getHttpServer())
+        .post('/maestro/sessions')
+        .send(EMPTY_SESSION_BODY)
+        .set('Content-Type', 'application/json')
+        .set('Cookie', `CF_Authorization=${MAESTRO_A.token}`)
+        .expect(201)
+    ).body as SessionPlayingTracks;
+    const sessionB = (
+      await request(app.getHttpServer())
+        .post('/maestro/sessions')
+        .send(EMPTY_SESSION_BODY)
+        .set('Content-Type', 'application/json')
+        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
+        .expect(201)
+    ).body as SessionPlayingTracks;
+
+    // both maestro can get their respective session
+    await request(app.getHttpServer())
+      .get(`/maestro/sessions/${sessionA.sessionId}/tracks`)
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${MAESTRO_A.token}`)
+      .expect(200);
+    await request(app.getHttpServer())
+      .get(`/maestro/sessions/${sessionB.sessionId}/tracks`)
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
+      .expect(200);
+    // but maestro A cannot get maestro B session
+    await request(app.getHttpServer())
+      .get(`/maestro/sessions/${sessionB.sessionId}/tracks`)
+      .set('Content-Type', 'application/json')
+      .set('Cookie', `CF_Authorization=${MAESTRO_A.token}`)
+      .expect(403);
+  });
 
   afterEach(async () => {
     await app.close();
