@@ -53,7 +53,7 @@ export function SetupSession() {
 
   useEffect(() => {
     if (maestroInfos) {
-      navigate('/account/infos');
+      navigate('/maestro/infos');
     }
   }, [maestroInfos, navigate]);
 
