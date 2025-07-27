@@ -41,12 +41,12 @@ export function App() {
         {/* Feel free to move and update them to fit your needs */}
         <Routes>
           <Route path="/health" element={<HealthStatus />} />
-          <Route path="/account/infos" element={<UserInfos />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/onboarding/setup-session" element={<SetupSession />} />
           {isDevModeEnabled && <Route path="/dev/fake-idp-login-page" element={<FakeIDPLoginPage />} />}
           <Route path=":sessionId" element={<PlayersUi />} />
           <Route path="/" element={<WelcomePage />} />
+          <Route path="/maestro/infos" element={<UserInfos />} />
           <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
           <Route path="/maestro/manage/:sessionId" element={<TracksManagement />} />
           <Route path="/admin" element={<Navigate to="/maestro" replace />} />
