@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller,
+  Controller, ForbiddenException,
   Get,
   HttpCode,
   HttpException,
@@ -11,7 +11,7 @@ import {
   Post,
   Put,
   Request,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { TrackService } from './maestro-api/TrackService';
 import { OnboardingService } from './maestro-api/onboarding.service';
@@ -71,10 +71,12 @@ export class AuthenticatedMaestroController {
 
   @Post('/maestro/sessions/:sessionId/tracks/from-directory')
   @Roles([Role.MAESTRO])
-  createAllTracksFromDirectory(
+  async createAllTracksFromDirectory(
+    @Request() req: { user: AuthenticatedUser },
     @Param('sessionId') sessionId: string,
     @Body() tracksFromDirectoryCreation: TracksFromDirectoryCreation
   ): Promise<void> {
+    await this.checkAccessOnSession(req.user, sessionId);
     Logger.log(`importing tracks for session ${sessionId} from: ${tracksFromDirectoryCreation}`);
     return this.trackService.createAllTracksFromDirectory(sessionId, tracksFromDirectoryCreation);
   }
@@ -82,47 +84,66 @@ export class AuthenticatedMaestroController {
   @Post('/maestro/sessions/:sessionId/tracks/from-youtube')
   @Roles([Role.MAESTRO])
   @HttpCode(HttpStatus.ACCEPTED)
-  uploadAndCreateTracksFromYoutube(
+  async uploadAndCreateTracksFromYoutube(
+    @Request() req: { user: AuthenticatedUser },
     @Param('sessionId') sessionId: string,
     @Body() uploadAndCreateTracksFromYoutubeRequest: UploadAndCreateTracksFromYoutubeRequest
   ): Promise<void> {
+    await this.checkAccessOnSession(req.user, sessionId);
     return this.trackService.uploadAndCreateTrackFromYoutube(sessionId, uploadAndCreateTracksFromYoutubeRequest);
   }
 
   @Get('/maestro/sessions/:sessionId/tracks/from-youtube')
   @Roles([Role.MAESTRO])
-  getYoutubeTrackCreations(@Param('sessionId') sessionId: string): Promise<TrackCreationFromYoutubeDto[]> {
+  async getYoutubeTrackCreations(
+    @Request() req: { user: AuthenticatedUser },
+    @Param('sessionId') sessionId: string
+  ): Promise<TrackCreationFromYoutubeDto[]> {
+    await this.checkAccessOnSession(req.user, sessionId);
     return this.trackService.getTrackFromYoutubeCreations(sessionId);
   }
 
   @Post('/maestro/sessions/:sessionId/tracks')
   @Roles([Role.MAESTRO, Role.MINSTREL])
-  postTrack(@Param('sessionId') sessionId: string, @Body() trackCreation: TrackCreation): Promise<Track> {
+  async postTrack(
+    @Request() req: { user: AuthenticatedUser },
+    @Param('sessionId') sessionId: string,
+    @Body() trackCreation: TrackCreation
+  ): Promise<Track> {
+    await this.checkAccessOnSession(req.user, sessionId);
     return this.trackService.createTrack(sessionId, trackCreation);
   }
 
   @Put('/maestro/sessions/:sessionId/tracks/:trackId')
   @Roles([Role.MAESTRO, Role.MINSTREL])
-  updateTrack(
+  async updateTrack(
+    @Request() req: { user: AuthenticatedUser },
     @Param('sessionId') sessionId: string,
     @Param('trackId') id: string,
     @Body() trackUpdate: TrackUpdate
   ): Promise<Track> {
+    await this.checkAccessOnSession(req.user, sessionId);
     return this.trackService.updateTrack(id, trackUpdate);
   }
 
   @Get('/maestro/sessions/:sessionId/tracks')
   @Roles([Role.MAESTRO, Role.MINSTREL])
-  getAllTracks(@Param('sessionId') sessionId: string): Promise<Track[]> {
+  async getAllTracks(
+    @Request() req: { user: AuthenticatedUser },
+    @Param('sessionId') sessionId: string
+  ): Promise<Track[]> {
+    await this.checkAccessOnSession(req.user, sessionId);
     return this.trackService.getAll(sessionId);
   }
 
   @Put('/maestro/sessions/:sessionId/playing-tracks')
   @Roles([Role.MAESTRO, Role.MINSTREL])
   async changeCurrentTrack(
+    @Request() req: { user: AuthenticatedUser },
     @Param('sessionId') sessionId: string,
     @Body() changeSessionPlayingTracks: ChangeSessionPlayingTracksRequest
   ): Promise<SessionPlayingTracks> {
+    await this.checkAccessOnSession(req.user, sessionId);
     const playingTrack = await this.manageCurrentlyPlayingTracks.changeSessionPlayingTracks(
       sessionId,
       changeSessionPlayingTracks
@@ -145,5 +166,12 @@ export class AuthenticatedMaestroController {
   @Post('/maestro/onboard')
   async createSession(@Request() req: {user: AuthenticatedUser}): Promise<SessionPlayingTracks> {
     return Promise.resolve(this.onboardingService.createNewUserWithSession(req.user.id));
+  }
+
+  async checkAccessOnSession(reqUser: AuthenticatedUser, sessionId: string){
+    const user = await this.userService.get(reqUser.id);
+    if(!user.sessions || !user.sessions[sessionId]){
+      throw new ForbiddenException('Forbidden. No access to this session');
+    }
   }
 }

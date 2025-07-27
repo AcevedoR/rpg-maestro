@@ -9,6 +9,7 @@ import { TrackService } from '../maestro-api/TrackService';
 export interface TestUsersFixture {
   an_admin_user: FakeJwtToken;
   a_maestro_user: FakeJwtToken;
+  a_maestro_B_user: FakeJwtToken;
   a_minstrel_user: FakeJwtToken;
 }
 
@@ -43,8 +44,9 @@ export class TestsUtilsController {
     }
     const an_admin_user = await this.createUserAndToken('an.admin.user.23284283OUO28Ufhjdsfj@fourgate.cloud', 'ADMIN');
     const a_maestro_user = await this.createUserAndToken('a.maestro.user.O8JKNKJN2309I0391U3I2@fourgate.cloud', 'MAESTRO');
+    const a_maestro_B_user = await this.createUserAndToken('a.maestro.B.user.SDKDHQ87Y09I0391U3I2@fourgate.cloud', 'MAESTRO');
     const a_minstrel_user = await this.createUserAndToken('a.minstrel.user.fdslfSFLIJ23U4OE2323@fourgate.cloud', 'MINSTREL');
 
-    return { an_admin_user, a_maestro_user, a_minstrel_user };
+    return { an_admin_user, a_maestro_user, a_maestro_B_user, a_minstrel_user };
   }
 }
