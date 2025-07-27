@@ -41,6 +41,10 @@ export async function fetchClient<T = any>(
       // Optionally, return a rejected promise to halt further processing
       return Promise.reject(new Error('Redirecting to onboarding'));
     }
+    if(response.status === 403){
+      window.location.assign('/account/infos');
+      return Promise.reject(new Error('Redirecting to account infos'));
+    }
     displayError(`fetch error: ${method} ${url}, response status: ${response.status}, message: ${JSON.stringify(data)}`)
     throw new Error(data?.message || response.statusText);
   }
