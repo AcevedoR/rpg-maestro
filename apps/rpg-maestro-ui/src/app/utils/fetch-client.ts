@@ -2,6 +2,7 @@
 
 import { toastError } from '../ui-components/toast-popup';
 import { displayError } from '../error-utils';
+import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 
 export interface FetchClientOptions {
   method?: string;
@@ -43,7 +44,10 @@ export async function fetchClient<T = any>(
     }
     if(response.status === 403){
       window.location.assign('/maestro/infos');
-      return Promise.reject(new Error('Redirecting to account infos'));
+      return Promise.reject(new Error('Forbidden. Redirecting to account infos'));
+    } else if(response.status === 401){
+      clearUserFromSessionStorage();
+      return Promise.reject(new Error('Unauthenticated. Redirecting to account infos'))
     }
     displayError(`fetch error: ${method} ${url}, response status: ${response.status}, message: ${JSON.stringify(data)}`)
     throw new Error(data?.message || response.statusText);
