@@ -107,7 +107,7 @@ export function MaestroSoundboard() {
           materialUiIcon={Visibility}
         />
         {
-          user && user.role === 'MAESTRO' ?
+          user && (user.role === 'MAESTRO' || user.role === 'ADMIN') ?
             <TextLinkWithIconWrapper
               link={`/maestro/manage/${sessionId}`}
               text={'Manage your tracks'}

@@ -50,7 +50,7 @@ export function UserInfos() {
           </Grid2>
         </StyledBox>
       );
-      if (user.role === 'MAESTRO' || user.role === 'MINSTREL') {
+      if (user.role === 'MAESTRO' || user.role === 'MINSTREL' || user.role === 'ADMIN') {
         if (!user.sessions || Object.keys(user.sessions).length === 0) {
           toastError('You have no sessions this should never happen, please contact an admin', 10000);
           return (
