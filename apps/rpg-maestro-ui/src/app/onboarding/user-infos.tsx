@@ -7,6 +7,7 @@ import { getURLToShareToPlayers } from './setup-session';
 import { toastError } from '../ui-components/toast-popup';
 import { getUser } from '../cache/user.cache';
 import { User } from '@rpg-maestro/rpg-maestro-api-contract';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 export function UserInfos() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -23,7 +24,7 @@ export function UserInfos() {
       return <div>Loading...</div>;
     } else if (user === null) {
       // TODO redirect 401 ?
-      return <p>error we do not see you authenticated</p>
+      return <p>error we do not see you authenticated</p>;
     } else {
       const userInfos = (
         // TODO centralize this styledbox
@@ -33,20 +34,10 @@ export function UserInfos() {
               Your infos
             </Typography>
             <Divider style={{ borderColor: 'var(--gold-color)' }} />
-            <List>
-              <ListItem>
-                <ListItemButton style={{ display: 'flex', gap: '2rem' }}>
-                  <ListItemText secondary={'username'} />
-                  <ListItemText primary={user.id} />
-                </ListItemButton>
-              </ListItem>
-              <ListItem>
-                <ListItemButton>
-                  <ListItemText secondary={'role'} />
-                  <ListItemText primary={user.role} />
-                </ListItemButton>
-              </ListItem>
-            </List>
+            <div style={{ textAlign: 'center' }}>
+              <p>username: {user.id}</p>
+              <p>role: {user.role}</p>
+            </div>
           </Grid2>
         </StyledBox>
       );
@@ -76,7 +67,8 @@ export function UserInfos() {
                         style={{ display: 'flex', justifyContent: 'space-around', gap: '4rem' }}
                       >
                         <ListItemButton key={sessionId} href={`${window.location.origin}/${sessionId}`}>
-                          {sessionId}
+                          <ArrowForwardIcon color="secondary"/>
+                          <ListItemText>{sessionId}</ListItemText>
                         </ListItemButton>
                         <ContentToCopy content={getURLToShareToPlayers(sessionId)} />
                       </ListItem>
