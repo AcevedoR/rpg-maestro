@@ -37,7 +37,6 @@ export function TracksManagement() {
       setTrackCreationFromYoutube(await getTrackCreationFromYoutube(sessionId));
     } catch (e){
       console.warn(e);
-      // TODO fix, we should check role is MAESTRO
     }
   }, [sessionId]);
 
