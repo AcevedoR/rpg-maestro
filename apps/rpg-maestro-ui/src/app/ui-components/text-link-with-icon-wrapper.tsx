@@ -7,10 +7,11 @@ export interface TextLinkWithIconProps {
   link: string;
   text: string;
   materialUiIcon: SvgIconComponent;
+  theme?: 'error';
 }
 
 export function TextLinkWithIconWrapper(props: TextLinkWithIconProps) {
-  const { link, text, materialUiIcon } = props;
+  const { link, text, materialUiIcon, theme } = props;
   const icon = React.createElement(materialUiIcon, { sx: { fontSize: '60px' } });
   return (
     <Button
@@ -18,7 +19,7 @@ export function TextLinkWithIconWrapper(props: TextLinkWithIconProps) {
       style={{
         display: 'flex',
         textDecoration: 'none',
-        color: 'var(--gold-color)',
+        color: theme ? '#9f2d2d': 'var(--gold-color)',
         height: '100px',
         width: '170px',
         border: '1px solid',

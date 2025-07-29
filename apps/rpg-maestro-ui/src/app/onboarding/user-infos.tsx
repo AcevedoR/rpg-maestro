@@ -8,6 +8,7 @@ import { toastError } from '../ui-components/toast-popup';
 import { getUser } from '../cache/user.cache';
 import { User } from '@rpg-maestro/rpg-maestro-api-contract';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
 
 export function UserInfos() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -100,6 +101,9 @@ export function UserInfos() {
       </div>
       <div>
         <Content></Content>
+      </div>
+      <div>
+        <TextLinkWithIconWrapper theme={'error'} link={'https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout'} text={'Log out'} materialUiIcon={ArrowForwardIcon}></TextLinkWithIconWrapper>
       </div>
       <ToastContainer limit={5} />
     </div>
