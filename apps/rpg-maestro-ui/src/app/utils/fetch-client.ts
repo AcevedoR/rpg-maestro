@@ -21,6 +21,7 @@ export async function fetchClient<T = any>(
     method,
     headers: {
       'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',// force Cloudflare to return 401 when session is expired
       ...headers,
     },
     credentials,
