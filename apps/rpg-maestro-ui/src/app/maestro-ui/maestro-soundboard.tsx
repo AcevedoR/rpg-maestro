@@ -35,7 +35,7 @@ export function MaestroSoundboard() {
     if (allTracks === undefined) {
       refreshTracks();
     }
-    if (user === undefined){
+    if (user === undefined) {
       getUser().then((user) => {
         if (user === null) {
           toastError('unauthenticated', 5000);
@@ -50,8 +50,9 @@ export function MaestroSoundboard() {
     getAllTracks(sessionId).then((x) => setAllTracks(x));
   };
 
-  const requestSetTrackToPlay = async (trackId: string) => {
-    const changedTracks = await setTrackToPlay(sessionId, { currentTrack: { trackId } });
+  const requestSetTrackToPlay = async (trackId: string, options?: { paused?: boolean }) => {
+    const paused = options?.paused ?? false;
+    const changedTracks = await setTrackToPlay(sessionId, { currentTrack: { trackId: trackId, paused: paused } });
     dispatchTrackWasManuallyChanged(changedTracks);
   };
   const requestEditTrackToPlay = async (trackToPlay: TrackToPlay): Promise<SessionPlayingTracks> => {
@@ -81,6 +82,7 @@ export function MaestroSoundboard() {
   const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks): void => {
     maestroAudioPlayerChildRef?.current?.dispatchTrackWasManuallyChanged(newTracks);
   };
+  const currentPlayingTrack = maestroAudioPlayerChildRef?.current?.currentTrack ?? null;
 
   return (
     <div
@@ -90,12 +92,12 @@ export function MaestroSoundboard() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-around',
-        gap: '1rem'
+        gap: '1rem',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <div style={{display: 'flex', gap: '2rem'}}>
+          <div style={{ display: 'flex', gap: '2rem' }}>
             <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
             <BasicMenu></BasicMenu>
           </div>
@@ -110,19 +112,29 @@ export function MaestroSoundboard() {
           text={'see what your players are seeing'}
           materialUiIcon={Visibility}
         />
-        {
-          user && (user.role === 'MAESTRO' || user.role === 'ADMIN') ?
-            <TextLinkWithIconWrapper
-              link={`/maestro/manage/${sessionId}`}
-              text={'Manage your tracks'}
-              materialUiIcon={LyricsTwoTone}
-            />
-            : <></>
-        }
+        {user && (user.role === 'MAESTRO' || user.role === 'ADMIN') ? (
+          <TextLinkWithIconWrapper
+            link={`/maestro/manage/${sessionId}`}
+            text={'Manage your tracks'}
+            materialUiIcon={LyricsTwoTone}
+          />
+        ) : (
+          <></>
+        )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
-          <h5 style={{ textOrientation: 'upright', writingMode: 'vertical-rl', margin: '0', color: 'var(--gold-color', textAlign: 'center' }}>QUICK TAGS</h5>
+          <h5
+            style={{
+              textOrientation: 'upright',
+              writingMode: 'vertical-rl',
+              margin: '0',
+              color: 'var(--gold-color',
+              textAlign: 'center',
+            }}
+          >
+            QUICK TAGS
+          </h5>
           <div
             style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', margin: '0' }}
           >
@@ -184,9 +196,11 @@ export function MaestroSoundboard() {
         <TracksTable
           sessionId={sessionId}
           tracks={allTracks ?? []}
+
           onSetTrackToPlay={requestSetTrackToPlay}
           filters={trackFilters}
           onRefreshRequested={refreshTracks}
+          currentTrack={currentPlayingTrack}
         />
       </div>
       <ToastContainer limit={5} />

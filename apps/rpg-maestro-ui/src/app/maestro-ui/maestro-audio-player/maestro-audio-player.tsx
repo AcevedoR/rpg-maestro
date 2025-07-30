@@ -8,6 +8,7 @@ import './maestro-audio-player.css';
 
 export interface MaestroAudioPlayerRef {
   dispatchTrackWasManuallyChanged: (newTracks: SessionPlayingTracks) => void;
+  currentTrack: PlayingTrack | null;
 }
 
 export interface MaestroAudioPlayerProps {
@@ -27,6 +28,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
   };
   useImperativeHandle(ref, () => ({
     dispatchTrackWasManuallyChanged,
+    currentTrack: currentTrack
   }));
 
   if (audioPlayer.current?.progressBar.current) {
