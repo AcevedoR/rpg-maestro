@@ -162,7 +162,21 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
       onPlay={() => changePlayingStatus(true)}
       onPause={() => changePlayingStatus(false)}
       className={'maestro-audio-player'}
-      header={<h3>{currentTrack?.name ?? 'No tracks selected to play'}</h3>}
+      header={
+        <div style={{ width: '100%' }}>
+          <h3
+            style={{
+              fontSize: '1rem',
+              lineHeight: '2em',
+              maxHeight: '2em',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+            }}
+          >
+            {currentTrack?.name ?? 'No tracks selected to play'}
+          </h3>
+        </div>
+      }
       customIcons={{}}
     />
   );

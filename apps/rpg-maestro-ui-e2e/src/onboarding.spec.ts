@@ -22,7 +22,7 @@ test('a new User can become a Maestro and have his own session', async ({ page }
   });
 
   await test.step('get redirected to session setup page after IDP auth', async () => {
-    await page.getByRole('button').click();
+    await page.getByRole('button', {name: 'Log as a new user'}).click();
     await expect(page.getByRole('heading', { name: 'Account created!' })).toBeVisible();
     await expect(page.getByText('Share this link to your Players so they can join your session')).toBeVisible();
     await page.getByRole('link', { name: 'Enter your Maestro Session' }).click();

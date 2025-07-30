@@ -7,7 +7,7 @@ process.env.CONFIGURATION_ENV = 'unit-tests';
 process.env.LOG_LEVEL = 'DEBUG';
 // keep env var first
 
-import { FakeJwtToken } from '@rpg-maestro/test-utils';
+import { FakeJwtToken, TestUsersFixture } from '@rpg-maestro/test-utils';
 import express, { Express } from 'express';
 import {
   SessionPlayingTracks, Track,
@@ -21,7 +21,6 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import path from 'node:path';
 import http from 'http';
-import { TestUsersFixture } from '../test-utils/tests-utils.controller';
 
 const staticServerPort = 3013;
 export const trackCollectionCreateRequest: TrackCollectionCreation = {
