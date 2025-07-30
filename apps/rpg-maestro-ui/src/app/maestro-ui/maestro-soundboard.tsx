@@ -19,6 +19,7 @@ import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy'
 import { MaestroAudioPlayer, MaestroAudioPlayerRef } from './maestro-audio-player/maestro-audio-player';
 import { getUser } from '../cache/user.cache';
 import { toastError } from '../ui-components/toast-popup';
+import BasicMenu from '../ui-components/menu';
 
 export function MaestroSoundboard() {
   const [user, setUser] = useState<User | undefined>(undefined);
@@ -94,7 +95,10 @@ export function MaestroSoundboard() {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
+          <div style={{display: 'flex', gap: '2rem'}}>
+            <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
+            <BasicMenu></BasicMenu>
+          </div>
           <p>As the Maestro, control what current track is playing for the session: {sessionId}</p>
           <p>
             Share this link to your Players so then can join your session:

@@ -1,7 +1,6 @@
 
 ## urgent
 - fix auth:
-  - redirect on 401
   - onboarding nominal path does not work with cloudlfare auth
   - detect when we just reconnected with cloudflare redirect and fetch user
   - add a way to promote a maestro from UI?
@@ -19,4 +18,3 @@
   - idea: maybe a quick hack would be for the gm to allow for others to modify its session with a simple button
     and then, all Players with the URL can modify it
     I will need to check userId or email vs the sessionOwner
-    I could simply add a list of additional Maestro on the session infos !!!!!!

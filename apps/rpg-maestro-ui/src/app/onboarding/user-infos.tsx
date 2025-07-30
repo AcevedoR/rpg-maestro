@@ -67,7 +67,7 @@ export function UserInfos() {
                         key={sessionId}
                         style={{ display: 'flex', justifyContent: 'space-around', gap: '4rem' }}
                       >
-                        <ListItemButton key={sessionId} href={`${window.location.origin}/${sessionId}`}>
+                        <ListItemButton key={sessionId} href={`${window.location.origin}/maestro/${sessionId}`}>
                           <ArrowForwardIcon color="secondary"/>
                           <ListItemText>{sessionId}</ListItemText>
                         </ListItemButton>
