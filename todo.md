@@ -1,8 +1,7 @@
 
 ## urgent
 - fix auth:
-  - onboarding nominal path does not work with cloudlfare auth
-  - detect when we just reconnected with cloudflare redirect and fetch user
+  - check onboarding nominal path does work
   - add a way to promote a maestro from UI?
 
 ## ideas

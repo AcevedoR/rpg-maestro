@@ -1,19 +1,17 @@
 import React from 'react';
 import { ToastContainer } from 'react-toastify';
 import GoogleButton from 'react-google-button';
-import { useNavigate } from 'react-router-dom';
 import { isDevModeEnabled } from '../../FeaturesConfiguration';
 
 export function Onboarding() {
-  const navigate = useNavigate();
 
   const goToLogin = () => {
     if (isDevModeEnabled) {
       const params = new URLSearchParams({ routeToRedirectTo: '/onboarding/setup-session' });
-      navigate(`/dev/fake-idp-login-page?${params.toString()}`);
+      window.location.href = `/dev/fake-idp-login-page?${params.toString()}`;
     } else {
       // Cloudflare will redirect to the login page since the user is not authenticated yet
-      navigate('/onboarding/setup-session');
+      window.location.href = '/onboarding/setup-session';
     }
   };
 
