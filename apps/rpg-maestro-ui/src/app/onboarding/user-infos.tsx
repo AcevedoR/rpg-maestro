@@ -9,6 +9,7 @@ import { getUser } from '../cache/user.cache';
 import { User } from '@rpg-maestro/rpg-maestro-api-contract';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
+import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 
 export function UserInfos() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -17,6 +18,7 @@ export function UserInfos() {
     setUser(user);
   };
   useEffect(() => {
+    clearUserFromSessionStorage();
     fetchUser();
   }, []);
 
@@ -103,7 +105,7 @@ export function UserInfos() {
         <Content></Content>
       </div>
       <div>
-        <TextLinkWithIconWrapper theme={'error'} link={'https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout'} text={'Log out'} materialUiIcon={ArrowForwardIcon}></TextLinkWithIconWrapper>
+        <TextLinkWithIconWrapper theme={'error'} onClickAction={() => clearUserFromSessionStorage()} link={'https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout'} text={'Log out'} materialUiIcon={ArrowForwardIcon}></TextLinkWithIconWrapper>
       </div>
       <ToastContainer limit={5} />
     </div>

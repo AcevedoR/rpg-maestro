@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
+import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 
 export default function BasicMenu() {
   const navigate = useNavigate();
@@ -40,10 +41,11 @@ export default function BasicMenu() {
       >
         <MenuItem onClick={() => navigate('/maestro/infos')}>My account</MenuItem>
         <MenuItem
-          onClick={() =>
-            (window.location.href =
-              'https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout?returnTo=' + window.location.href)
-          }
+          onClick={() => {
+            clearUserFromSessionStorage();
+            window.location.href =
+              'https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout?returnTo=' + window.location.href;
+          }}
         >
           Logout
         </MenuItem>

@@ -18,6 +18,7 @@ export class InMemoryTrackCollectionDatabase implements TrackCollectionsDatabase
               origin_url: 'https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3',
               origin_name: 'inspiring-upbeat-corporate-250495.mp3',
             },
+            duration: 121000,
             name: 'inspiring-upbeat-corporate',
             tags: ['test'],
             url: 'https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3',

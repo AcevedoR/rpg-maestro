@@ -170,7 +170,7 @@ export class AuthenticatedMaestroController {
 
   async checkAccessOnSession(reqUser: AuthenticatedUser, sessionId: string){
     const user = await this.userService.get(reqUser.id);
-    if(!user.sessions || !user.sessions[sessionId]){
+    if(user.role === 'ADMIN' || (!user.sessions || !user.sessions[sessionId])){
       throw new ForbiddenException('Forbidden. No access to this session');
     }
   }

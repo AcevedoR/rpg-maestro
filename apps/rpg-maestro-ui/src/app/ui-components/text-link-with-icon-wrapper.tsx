@@ -8,10 +8,11 @@ export interface TextLinkWithIconProps {
   text: string;
   materialUiIcon: SvgIconComponent;
   theme?: 'error';
+  onClickAction?: () => void
 }
 
 export function TextLinkWithIconWrapper(props: TextLinkWithIconProps) {
-  const { link, text, materialUiIcon, theme } = props;
+  const { link, text, materialUiIcon, theme, onClickAction } = props;
   const icon = React.createElement(materialUiIcon, { sx: { fontSize: '60px' } });
   return (
     <Button
@@ -25,7 +26,7 @@ export function TextLinkWithIconWrapper(props: TextLinkWithIconProps) {
         border: '1px solid',
         fontSize: '0.2em',
       }}
-      onClick={() => noop()}
+      onClick={onClickAction ? onClickAction : () => noop()}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         {icon}
