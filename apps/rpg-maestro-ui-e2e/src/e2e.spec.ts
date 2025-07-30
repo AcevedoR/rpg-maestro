@@ -1,5 +1,10 @@
 import { expect, Page, test } from '@playwright/test';
-import { UserWithGeneratedSession, generateNewSession, iniTracksFromFileServerFixture, initUsersFixture } from './fixtures';
+import {
+  UserWithGeneratedSession,
+  generateNewSession,
+  iniTracksFromFileServerFixture,
+  initUsersFixtureSpec
+} from './fixtures';
 import { goToMaestroPage, waitForAppToBeReady } from './navigation';
 import { FakeJwtToken } from '@rpg-maestro/test-utils';
 
@@ -8,7 +13,7 @@ test('a Maestro can load (via API) and play a current track for its players', as
   let user: UserWithGeneratedSession;
   await test.step('prepare data', async () => {
     await waitForAppToBeReady(page)
-    user = await generateNewSession((await initUsersFixture()).a_maestro_user);
+    user = await generateNewSession((await initUsersFixtureSpec()).a_maestro_user);
     await iniTracksFromFileServerFixture(user, user.sessionId);
   });
 
@@ -34,7 +39,7 @@ test('a Maestro can add a new track located on a remote server', async ({ page }
   let user: UserWithGeneratedSession;
   await test.step('prepare data', async () => {
     await waitForAppToBeReady(page)
-    user = await generateNewSession((await initUsersFixture()).a_maestro_user);
+    user = await generateNewSession((await initUsersFixtureSpec()).a_maestro_user);
   });
 
   await simulateAuth(page, user);

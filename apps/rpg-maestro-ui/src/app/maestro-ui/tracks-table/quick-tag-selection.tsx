@@ -16,10 +16,11 @@ export interface QuickTagSelectionProps {
   color: Color;
   tags: string[];
   onQuickTagSelection: (tags: string[]) => void;
+  onQuickTagDoubleClick: (tags: string[]) => void;
 }
 
 export function QuickTagSelection(props: QuickTagSelectionProps) {
-  const { text, icon, tags, color, onQuickTagSelection } = props;
+  const { text, icon, tags, color, onQuickTagSelection, onQuickTagDoubleClick } = props;
   const iconInstance = React.createElement(icon, { sx: { fontSize: 50 } });
   return (
     <Button
@@ -35,6 +36,7 @@ export function QuickTagSelection(props: QuickTagSelectionProps) {
         backgroundColor: 'rgba(57,57,57,0.15)',
       }}
       onClick={() => onQuickTagSelection(tags)}
+      onDoubleClick={() => onQuickTagDoubleClick(tags)}
     >
       <div style={{ display: 'flex', alignItems: 'center' }}>
         {iconInstance}

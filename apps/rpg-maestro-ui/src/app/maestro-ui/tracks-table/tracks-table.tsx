@@ -52,7 +52,7 @@ export function TracksTable(props: TracksTableProps) {
       field: 'duration',
       type: 'number',
       width: 80,
-      valueGetter: (value, row) => durationInMsToString(value) + currentTrack?.id,
+      valueGetter: (value, row) => durationInMsToString(value),
     },
     { field: 'tags' },
     {
@@ -132,7 +132,7 @@ export function TracksTable(props: TracksTableProps) {
   );
 }
 
-function filter(tracks: Track[], filters: TrackFilters): Track[] {
+export function filter(tracks: Track[], filters: TrackFilters): Track[] {
   let filteredTracks = [...tracks];
   if (filters.trackIdToFilterOn) {
     const foundTrack = filteredTracks.find((x) => x.id === filters.trackIdToFilterOn);
