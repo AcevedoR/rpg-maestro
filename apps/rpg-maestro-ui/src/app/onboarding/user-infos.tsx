@@ -105,7 +105,7 @@ export function UserInfos() {
         <Content></Content>
       </div>
       <div>
-        <TextLinkWithIconWrapper theme={'error'} onClickAction={() => clearUserFromSessionStorage()} link={`https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout?returnTo=${window.location.href}`} text={'Log out'} materialUiIcon={ArrowForwardIcon}></TextLinkWithIconWrapper>
+        <TextLinkWithIconWrapper theme={'error'} onClickAction={() => clearUserFromSessionStorage()} link={`https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout`} text={'Log out'} materialUiIcon={ArrowForwardIcon}></TextLinkWithIconWrapper>
       </div>
       <ToastContainer limit={5} />
     </div>

@@ -44,7 +44,7 @@ export default function BasicMenu() {
           onClick={() => {
             clearUserFromSessionStorage();
             window.location.href =
-              `https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout?returnTo=${window.location.href}`;
+              `https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout`;
           }}
         >
           Logout

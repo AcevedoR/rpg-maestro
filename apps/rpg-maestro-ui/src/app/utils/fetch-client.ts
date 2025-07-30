@@ -1,6 +1,5 @@
 // ...existing code...
 
-import { toastError } from '../ui-components/toast-popup';
 import { displayError } from '../error-utils';
 import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 
