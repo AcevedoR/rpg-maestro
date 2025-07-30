@@ -38,3 +38,8 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
 
       - run: npx nx affected -t lint test deploy --no-cloud --parallel=false
+
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -f ${{ vars.DEPLOY_WEBHOOK }}
