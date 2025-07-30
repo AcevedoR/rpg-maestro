@@ -1,4 +1,4 @@
-import { TrackFilters, TracksTable } from './tracks-table/tracks-table';
+import { filter, TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useRef, useState } from 'react';
 import { SessionPlayingTracks, Tag, Track, TrackToPlay, User } from '@rpg-maestro/rpg-maestro-api-contract';
 import { getAllTracks, setTrackToPlay } from './maestro-api';
@@ -31,6 +31,12 @@ export function MaestroSoundboard() {
     // TODO redirect by generating a sessionId in backend, and redirect on /maestro/{sessionId}
     throw new Error('no session found in URL');
   }
+  const maestroAudioPlayerChildRef = useRef<MaestroAudioPlayerRef>(null);
+  const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks): void => {
+    maestroAudioPlayerChildRef?.current?.dispatchTrackWasManuallyChanged(newTracks);
+  };
+  const currentPlayingTrack = maestroAudioPlayerChildRef?.current?.currentTrack ?? null;
+
   useEffect(() => {
     if (allTracks === undefined) {
       refreshTracks();
@@ -65,24 +71,36 @@ export function MaestroSoundboard() {
       trackIdToFilterOn: track?.id,
     });
   };
+  const onQuickTagSelection = (tags: Tag[]) => {
+    onTrackSearchByTagChange(tags);
+  };
   const onTrackSearchByTagChange = (tags: Tag[] | null) => {
     setTrackFilters({
       ...trackFilters,
       tagsToFilterOn: tags ?? undefined,
     });
   };
-  const onQuickTagSelection = (tags: Tag[]) => {
-    onTrackSearchByTagChange(tags);
+  const onQuickTagChange = async (tags: Tag[]) => {
+    setTrackFilters({
+      ...trackFilters,
+      tagsToFilterOn: tags ?? undefined,
+    });
+    await requestRandomTrackToPlay(tags);
+  };
+  const requestRandomTrackToPlay = async (tags: Tag[]) => {
+    if (allTracks) {
+      const filtered = filter(allTracks.filter(x => x.id !== currentPlayingTrack?.id), { tagsToFilterOn: tags });
+      if (filtered.length > 0) {
+        const randomIndex = Math.floor(Math.random() * filtered.length);
+        const randomTrack = filtered[randomIndex];
+        await requestSetTrackToPlay(randomTrack.id);
+      }
+    }
   };
   const getURLToShareToPlayers = () => {
     return `${window.location.origin}/${sessionId}`;
   };
 
-  const maestroAudioPlayerChildRef = useRef<MaestroAudioPlayerRef>(null);
-  const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks): void => {
-    maestroAudioPlayerChildRef?.current?.dispatchTrackWasManuallyChanged(newTracks);
-  };
-  const currentPlayingTrack = maestroAudioPlayerChildRef?.current?.currentTrack ?? null;
 
   return (
     <div
@@ -144,6 +162,7 @@ export function MaestroSoundboard() {
               color={'#9a0404'}
               tags={['combat']}
               onQuickTagSelection={onQuickTagSelection}
+              onQuickTagDoubleClick={onQuickTagChange}
             />
             <QuickTagSelection
               text={'town'}
@@ -151,6 +170,7 @@ export function MaestroSoundboard() {
               color={'#97723d'}
               tags={['settlement']}
               onQuickTagSelection={onQuickTagSelection}
+              onQuickTagDoubleClick={onQuickTagChange}
             />
             <QuickTagSelection
               text={'forest'}
@@ -158,6 +178,7 @@ export function MaestroSoundboard() {
               color={'#0d5e01'}
               tags={['forest']}
               onQuickTagSelection={onQuickTagSelection}
+              onQuickTagDoubleClick={onQuickTagChange}
             />
             <QuickTagSelection
               text={'travel'}
@@ -165,6 +186,7 @@ export function MaestroSoundboard() {
               color={'#0d5785'}
               tags={['travel']}
               onQuickTagSelection={onQuickTagSelection}
+              onQuickTagDoubleClick={onQuickTagChange}
             />
             <QuickTagSelection
               text={'dungeon'}
@@ -172,6 +194,7 @@ export function MaestroSoundboard() {
               color={'#5c5c5c'}
               tags={['dungeon']}
               onQuickTagSelection={onQuickTagSelection}
+              onQuickTagDoubleClick={onQuickTagChange}
             />
           </div>
         </div>
@@ -196,7 +219,6 @@ export function MaestroSoundboard() {
         <TracksTable
           sessionId={sessionId}
           tracks={allTracks ?? []}
-
           onSetTrackToPlay={requestSetTrackToPlay}
           filters={trackFilters}
           onRefreshRequested={refreshTracks}

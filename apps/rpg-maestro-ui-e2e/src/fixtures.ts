@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 import { SessionID, SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
-import { FakeJwtToken } from '@rpg-maestro/test-utils';
+import { FakeJwtToken, initUsersFixture } from '@rpg-maestro/test-utils';
 
 export interface UserWithGeneratedSession {
   sessionId: SessionID;
@@ -63,29 +63,8 @@ export async function iniTracksFromFileServerFixture(jwtToken: FakeJwtToken, ses
     }
   });
 }
-
-export async function initUsersFixture(): Promise<TestUsersFixture> {
+export async function initUsersFixtureSpec(){
   return await test.step('init tracks from fileserver using api', async () => {
-    try {
-      const res = await fetch(`http://localhost:8099/test-utils/create-test-users-fixtures`, {
-        method: 'POST',
-      });
-      if (!res.ok) {
-        const error = new Error(`Failed to initialize users: ${res.status} ${res.statusText}`);
-        console.error(error.message);
-        throw error;
-      } else {
-        console.info('init users using api ok ');
-        return (await res.json()) as TestUsersFixture;
-      }
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
+    return initUsersFixture('http://localhost:8099');
   });
-}
-
-export interface TestUsersFixture {
-  an_admin_user: FakeJwtToken;
-  a_maestro_user: FakeJwtToken;
 }

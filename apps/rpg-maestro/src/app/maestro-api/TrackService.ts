@@ -119,7 +119,7 @@ export class TrackService {
     await Promise.all(
       (
         await getAllFilesFromCaddyFileServerDirectory(tracksFromDirectoryCreation.directoryUrl)
-      ).map((x) => this.createTrack(sessionId, x))
+      ).map((x) => this.createTrack(sessionId, {...x, tags: tracksFromDirectoryCreation.tags}))
     );
   }
 

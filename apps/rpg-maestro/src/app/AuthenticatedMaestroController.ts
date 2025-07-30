@@ -165,7 +165,9 @@ export class AuthenticatedMaestroController {
 
   @Post('/maestro/onboard')
   async createSession(@Request() req: {user: AuthenticatedUser}): Promise<SessionPlayingTracks> {
-    return Promise.resolve(this.onboardingService.createNewUserWithSession(req.user.id));
+    const session = await this.onboardingService.createNewUserWithSession(req.user.id);
+    await this.cacheManager.set(session.sessionId, session, ONE_DAY_TTL);
+    return session;
   }
 
   async checkAccessOnSession(reqUser: AuthenticatedUser, sessionId: string){

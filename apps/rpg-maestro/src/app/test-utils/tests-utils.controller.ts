@@ -3,15 +3,8 @@ import { isProductionEnv } from '../config';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import { User } from '@rpg-maestro/rpg-maestro-api-contract';
 import { UsersDatabase } from '../users-management/users-database';
-import { FakeJwtToken, generateFakeJwtToken } from '@rpg-maestro/test-utils';
+import { FakeJwtToken, generateFakeJwtToken, TestUsersFixture } from '@rpg-maestro/test-utils';
 import { TrackService } from '../maestro-api/TrackService';
-
-export interface TestUsersFixture {
-  an_admin_user: FakeJwtToken;
-  a_maestro_user: FakeJwtToken;
-  a_maestro_B_user: FakeJwtToken;
-  a_minstrel_user: FakeJwtToken;
-}
 
 @Controller('test-utils')
 export class TestsUtilsController {
