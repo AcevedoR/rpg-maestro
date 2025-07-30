@@ -16,7 +16,7 @@
 }
 
 .highlighted-row {
-    box-shadow: inset 0 0 4px 1px rgba(218, 165, 32, 0.3); /* glowing gold */
+    box-shadow: inset 0 0 5px 2px rgba(218, 165, 32, 0.4); /* glowing gold */
     transition: box-shadow 0.3s ease;
     border-radius: 4px; /* matches DataGrid cell corners */
 }
