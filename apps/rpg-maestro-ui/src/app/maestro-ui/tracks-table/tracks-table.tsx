@@ -112,9 +112,9 @@ export function TracksTable(props: TracksTableProps) {
           pageSizeOptions={[10, 25, 50]}
           sx={{ border: 0 }}
           onRowSelectionModelChange={onRowSelection}
-          getRowClassName={(params) =>
+          /*getRowClassName={(params) => TODO not working well for now, probably need a proper store
             currentTrack && currentTrack?.id === params.id ? 'highlighted-row' : ''
-          }
+          }*/
         />
         {selectedTrackToEdit ? (
           <EditTrackSideForm
