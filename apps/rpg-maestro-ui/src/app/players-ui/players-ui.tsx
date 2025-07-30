@@ -173,8 +173,18 @@ export function PlayersUi() {
           header={
           <div>
             <span>You are listening to:</span>
-            <h3 style={{marginTop: '0.7rem'}}>{currentTrack?.name}</h3>
-          </div>
+            <h3
+            style={{
+              fontSize: '1rem',
+              lineHeight: '2em',
+              maxHeight: '4em',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+            }}
+          >
+            {currentTrack?.name}
+          </h3>
+        </div>
           }
           customIcons={{
             pause: <MusicNoteIcon style={{ cursor: 'not-allowed' }} />,
