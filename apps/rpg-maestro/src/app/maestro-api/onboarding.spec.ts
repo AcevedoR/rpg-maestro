@@ -62,7 +62,7 @@ describe('Onboarding', () => {
     const userId = 'new-maestro-1';
     await onboardingService.createNewUserWithSession(userId, {noCollections: true});
 
-    await expect(onboardingService.createNewUserWithSession(userId, {noCollections: true})).rejects.toThrow('already exists');
+    await expect(onboardingService.createNewUserWithSession(userId, {noCollections: true})).rejects.toThrow('You already have one session');
   });
   it('can onboard different users', async () => {
     await onboardingService.createNewUserWithSession('new-maestro-1', {noCollections: true});

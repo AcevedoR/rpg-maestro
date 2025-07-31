@@ -29,4 +29,9 @@ export class UsersService {
     await this.usersDatabase.save(user);
     await this.cache.set(user);
   }
+
+  // for admin only
+  async getAll(): Promise<User[]>{
+    return this.usersDatabase.getAll();
+  }
 }

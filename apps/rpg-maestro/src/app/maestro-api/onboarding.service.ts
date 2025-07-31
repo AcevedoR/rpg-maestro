@@ -27,23 +27,28 @@ export class OnboardingService {
     private trackCollectionService: TrackCollectionService,
     private usersService: UsersService
   ) {
-    this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(databaseWrapper.getTracksDB(), sessionsService);
+    this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(
+      databaseWrapper.getTracksDB(),
+      sessionsService
+    );
   }
 
   async createNewUserWithSession(userId: UserID, options?: { noCollections: boolean }): Promise<SessionPlayingTracks> {
-    const alreadyExistingUser = await this.usersService.get(userId);
-    if (alreadyExistingUser) {
-      throw new HttpException(`User ${userId} already exists`, HttpStatus.CONFLICT);
+    let user: User = await this.usersService.get(userId);
+    if (!user) {
+      const now = Date.now();
+      user = {
+        id: userId,
+        created_at: now,
+        updated_at: now,
+        role: 'MINSTREL',
+      };
+      await this.usersService.save(user);
     }
 
-    const now = Date.now();
-    const user: User = {
-      id: userId,
-      created_at: now,
-      updated_at: now,
-      role: 'MINSTREL',
-    };
-    await this.usersService.save(user);
+    if (user.sessions && Object.keys(user.sessions).length > 0) {
+      throw new HttpException(`You already have one session`, HttpStatus.CONFLICT);
+    }
 
     return this.createSessionInternal(
       await parseAndValidateDto(CreateSession, options?.noCollections ? {} : { withTrackCollections: ['default'] }),

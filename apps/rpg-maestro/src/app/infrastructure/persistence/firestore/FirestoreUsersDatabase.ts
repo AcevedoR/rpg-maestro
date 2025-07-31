@@ -29,4 +29,8 @@ export class FirestoreUsersDatabase implements UsersDatabase {
       return Promise.resolve(null);
     }
   }
+
+  async getAll(): Promise<User[]> {
+    return (await this.db.collection(USERS_DATABASE).get()).docs.map(doc => doc.data() as User);
+  }
 }

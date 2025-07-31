@@ -50,7 +50,7 @@ export function App() {
           <Route path="/maestro/infos" element={<UserInfos />} />
           <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
           <Route path="/maestro/manage/:sessionId" element={<TracksManagement />} />
-          {/*<Route path="/maestro/admin" element={<AdminBoard/>}/>*/}
+          <Route path="/maestro/admin" element={<AdminBoard/>}/>
           <Route path="/admin" element={<Navigate to="/maestro" replace />} />
         </Routes>
         {/* END: routes */}
