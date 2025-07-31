@@ -13,7 +13,7 @@ import { INestApplication } from '@nestjs/common';
 
 import request from 'supertest';
 
-describe('TrackCollection', () => {
+describe('Admin API', () => {
   let app: INestApplication;
 
   let AN_ADMIN_USER: FakeJwtToken;
@@ -38,6 +38,19 @@ describe('TrackCollection', () => {
   it('a Maestro is forbidden to get all sessions', async () => {
     await request(app.getHttpServer())
       .get('/maestro/admin/sessions')
+      .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+      .expect(403);
+  }, 10000);
+
+  it('an Admin can get all users', async () => {
+    await request(app.getHttpServer())
+      .get('/maestro/admin/users')
+      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .expect(200);
+  }, 10000);
+  it('a Maestro is forbidden to get all users', async () => {
+    await request(app.getHttpServer())
+      .get('/maestro/admin/users')
       .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
       .expect(403);
   }, 10000);
