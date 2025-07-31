@@ -38,7 +38,7 @@ export class FirestoreTracksDatabase implements TracksDatabase {
   async getAllSessions(): Promise<SessionPlayingTracks[]> {
     return (
       await this.db.collection(RPG_MAESTRO_SESSIONS_DB).get()
-    ).docs.map((doc) => doc.data() as SessionPlayingTracks);
+    ).docs.map((doc) => entityToSession(doc.data() as SessionPlayingTrackEntity));
   }
 
   async save(track: Track): Promise<void> {
