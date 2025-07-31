@@ -178,8 +178,9 @@ export function PlayersUi() {
               fontSize: '1rem',
               lineHeight: '2em',
               maxHeight: '4em',
-              textOverflow: 'ellipsis',
+              textOverflow: 'revert',
               overflow: 'hidden',
+              wordBreak: 'break-all'
             }}
           >
             {currentTrack?.name}
