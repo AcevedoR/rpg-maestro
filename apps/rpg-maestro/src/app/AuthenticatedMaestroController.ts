@@ -1,6 +1,7 @@
 import {
   Body,
-  Controller, ForbiddenException,
+  Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpException,
@@ -11,11 +12,10 @@ import {
   Post,
   Put,
   Request,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { TrackService } from './maestro-api/TrackService';
 import { OnboardingService } from './maestro-api/onboarding.service';
-import { TracksDatabase } from './maestro-api/TracksDatabase';
 import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
 import {
   ChangeSessionPlayingTracksRequest,
@@ -29,8 +29,6 @@ import {
   UploadAndCreateTracksFromYoutubeRequest,
   User,
 } from '@rpg-maestro/rpg-maestro-api-contract';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache, Milliseconds } from 'cache-manager';
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { DatabaseWrapperConfiguration } from './DatabaseWrapperConfiguration';
 import { UsersService } from './users-management/users.service';
@@ -38,30 +36,30 @@ import { AuthenticatedUser, JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import { Roles } from './auth/roles.decorator';
 import { Role } from './auth/role.enum';
-
-const ONE_DAY_TTL: Milliseconds = 1000 * 60 * 60 * 24;
+import { SessionsService } from './sessions/sessions.service';
 
 @ApiCookieAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller()
 export class AuthenticatedMaestroController {
-  private readonly database: TracksDatabase;
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private databaseWrapper: DatabaseWrapperConfiguration,
+    @Inject() databaseWrapper: DatabaseWrapperConfiguration,
+    @Inject() sessionsService: SessionsService,
     @Inject() private trackService: TrackService,
     @Inject() private onboardingService: OnboardingService,
     @Inject() private userService: UsersService
   ) {
-    this.database = databaseWrapper.getTracksDB();
-    this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(this.database);
+    this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(
+      databaseWrapper.getTracksDB(),
+      sessionsService
+    );
   }
 
   @Get('/maestro')
   @Roles([Role.MAESTRO, Role.MINSTREL])
-  async getMaestroInfos(@Request() req: {user: AuthenticatedUser}): Promise<User> {
+  async getMaestroInfos(@Request() req: { user: AuthenticatedUser }): Promise<User> {
     const user = await this.userService.get(req.user.id);
     if (!user) {
       throw new HttpException(`Current user ${req.user.id} not found in db`, HttpStatus.CONFLICT);
@@ -144,12 +142,7 @@ export class AuthenticatedMaestroController {
     @Body() changeSessionPlayingTracks: ChangeSessionPlayingTracksRequest
   ): Promise<SessionPlayingTracks> {
     await this.checkAccessOnSession(req.user, sessionId);
-    const playingTrack = await this.manageCurrentlyPlayingTracks.changeSessionPlayingTracks(
-      sessionId,
-      changeSessionPlayingTracks
-    );
-    await this.cacheManager.set(sessionId, playingTrack, ONE_DAY_TTL);
-    return playingTrack;
+    return await this.manageCurrentlyPlayingTracks.changeSessionPlayingTracks(sessionId, changeSessionPlayingTracks);
   }
 
   @Post('/maestro/sessions')
@@ -158,21 +151,17 @@ export class AuthenticatedMaestroController {
     @Request() req: { user: AuthenticatedUser },
     @Body() createSession: CreateSession
   ): Promise<SessionPlayingTracks> {
-    const session = await this.onboardingService.createSession(createSession, req.user.id);
-    await this.cacheManager.set(session.sessionId, session, ONE_DAY_TTL);
-    return session;
+    return await this.onboardingService.createSession(createSession, req.user.id);
   }
 
   @Post('/maestro/onboard')
-  async createSession(@Request() req: {user: AuthenticatedUser}): Promise<SessionPlayingTracks> {
-    const session = await this.onboardingService.createNewUserWithSession(req.user.id);
-    await this.cacheManager.set(session.sessionId, session, ONE_DAY_TTL);
-    return session;
+  async createSession(@Request() req: { user: AuthenticatedUser }): Promise<SessionPlayingTracks> {
+    return await this.onboardingService.createNewUserWithSession(req.user.id);
   }
 
-  async checkAccessOnSession(reqUser: AuthenticatedUser, sessionId: string){
+  async checkAccessOnSession(reqUser: AuthenticatedUser, sessionId: string) {
     const user = await this.userService.get(reqUser.id);
-    if(!user.sessions || !user.sessions[sessionId]){
+    if (!user.sessions || !user.sessions[sessionId]) {
       throw new ForbiddenException('Forbidden. No access to this session');
     }
   }

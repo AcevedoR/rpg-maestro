@@ -11,13 +11,17 @@ import { getTrackFileMetadata } from '../maestro-api/TrackService';
 import { TrackCollectionsDatabase } from './track-collections-database';
 import { TracksDatabase } from '../maestro-api/TracksDatabase';
 import { v4 as uuid } from 'uuid';
+import { SessionsService } from '../sessions/sessions.service';
 
 @Injectable()
 export class TrackCollectionService {
   trackCollectionDatabase: TrackCollectionsDatabase;
   tracksDatabase: TracksDatabase;
 
-  constructor(@Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration) {
+  constructor(
+    @Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration,
+    private sessionsService: SessionsService
+    ) {
     this.trackCollectionDatabase = databaseWrapper.getTrackCollectionDB();
     this.tracksDatabase = databaseWrapper.getTracksDB();
   }
@@ -69,7 +73,7 @@ export class TrackCollectionService {
         409
       );
     }
-    const session = await this.tracksDatabase.getSession(importFromSessionRequest.sessionId);
+    const session = await this.sessionsService.get(importFromSessionRequest.sessionId);
     if (!session) {
       throw new HttpException(
         `Cannot import Track collection from session, session does not exist: ${importFromSessionRequest.sessionId}`,

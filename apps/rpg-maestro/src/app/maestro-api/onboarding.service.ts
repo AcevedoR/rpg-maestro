@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { TracksDatabase } from './TracksDatabase';
 import {
   CreateSession,
   parseAndValidateDto,
@@ -15,20 +14,20 @@ import { TrackService } from './TrackService';
 import { TrackCollectionService } from '../track-collection/track-collection.service';
 import { ManageCurrentlyPlayingTracks } from './ManageCurrentlyPlayingTracks';
 import { UsersService } from '../users-management/users.service';
+import { SessionsService } from '../sessions/sessions.service';
 
 @Injectable()
 export class OnboardingService {
-  private tracksDatabase: TracksDatabase;
   private manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
   constructor(
     @Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration,
+    private sessionsService: SessionsService,
     private trackService: TrackService,
     private trackCollectionService: TrackCollectionService,
     private usersService: UsersService
   ) {
-    this.tracksDatabase = databaseWrapper.getTracksDB();
-    this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(databaseWrapper.getTracksDB());
+    this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(databaseWrapper.getTracksDB(), sessionsService);
   }
 
   async createNewUserWithSession(userId: UserID, options?: { noCollections: boolean }): Promise<SessionPlayingTracks> {
@@ -62,12 +61,12 @@ export class OnboardingService {
 
   private async createSessionInternal(createSession: CreateSession, user: User): Promise<SessionPlayingTracks> {
     const sessionId = await this.generateSessionId();
-    await this.tracksDatabase.createSession(sessionId);
+    await this.sessionsService.create(sessionId);
     await this.giveUserAccessToSession(user, sessionId);
     if (createSession.withTrackCollections) {
       await this.importTracksFromCollections(sessionId, createSession.withTrackCollections);
     }
-    return await this.tracksDatabase.getSession(sessionId);
+    return await this.sessionsService.get(sessionId);
   }
 
   private async importTracksFromCollections(sessionId: string, trackCollectionsIds: string[]): Promise<Track[]> {
@@ -103,7 +102,7 @@ export class OnboardingService {
         return chars.charAt(Math.floor(Math.random() * chars.length));
       })
       .join('');
-    if ((await this.tracksDatabase.getSession(id)) !== null) {
+    if ((await this.sessionsService.get(id)) !== null) {
       throw new Error(`session ${id} already exists`);
     }
     return id;

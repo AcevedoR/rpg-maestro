@@ -4,7 +4,7 @@ process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-te
 process.env.PORT = '3012';
 process.env.NODE_ENV = 'unit-tests';
 process.env.CONFIGURATION_ENV = 'unit-tests';
-process.env.LOG_LEVEL = 'DEBUG';
+process.env.LOG_LEVEL = 'WARN';
 // keep env var first
 
 import { FakeJwtToken, TestUsersFixture } from '@rpg-maestro/test-utils';
@@ -23,7 +23,7 @@ import request from 'supertest';
 import path from 'node:path';
 import http from 'http';
 
-const staticServerPort = 3014;
+const staticServerPort = 3013;
 
 describe('Onboarding API e2e', () => {
   let app: INestApplication;

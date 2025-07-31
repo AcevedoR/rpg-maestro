@@ -2,7 +2,6 @@ import express, { Express } from 'express';
 import * as path from 'node:path';
 import http from 'http';
 import { TrackService } from './TrackService';
-import { InMemoryTracksDatabase } from '../infrastructure/persistence/in-memory/InMemoryTracksDatabase';
 import { ManageCurrentlyPlayingTracks } from './ManageCurrentlyPlayingTracks';
 import { randomUUID } from 'node:crypto';
 import { InMemoryTrackCreationFromYoutubeJobsStore } from '../infrastructure/persistence/in-memory/InMemoryTrackCreationFromYoutubeJobsStore.service';
@@ -11,10 +10,11 @@ import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import {
   TrackCreationFromYoutubeJobsWatcher
 } from '../track-creation-from-youtube-jobs-watcher/track-creation-from-youtube-jobs-watcher.service';
+import { SessionsService } from '../sessions/sessions.service';
 
 let createTrack: TrackService;
 let manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
-const database = new InMemoryTracksDatabase();
+let database;
 
 let server: http.Server;
 const app: Express = express();
@@ -23,13 +23,17 @@ const port = 3003;
 const CURRENT_DATE = Date.now();
 
 beforeAll(() => {
+  const databases = new DatabaseWrapperConfiguration('in-memory');
+  database = databases.getTracksDB();
+  const sessionsService = new SessionsService(databases);
   createTrack = new TrackService(
-    new DatabaseWrapperConfiguration('in-memory'),
+    databases,
     new InMemoryTrackCreationFromYoutubeJobsStore(),
     null as TrackCreationFromYoutubeJobsWatcher,
     null as AudioFileUploaderClient
   );
-  manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(database);
+  manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(database, sessionsService);
+
 
   app.use('/public', express.static(path.join(__dirname, '../../assets')));
   server = app.listen(port, () => {
