@@ -5,8 +5,11 @@ export interface TracksDatabase {
 
   createSession(sessionId: SessionID): Promise<void>;
 
+  getAllSessions(): Promise<SessionPlayingTracks[]>;
+
   save: (track: Track) => Promise<void>;
-  upsertCurrentTrack: (sessionId: string, playingTrack: PlayingTrack) => Promise<void>;
+
+  upsertCurrentTrack: (sessionId: string, playingTrack: PlayingTrack) => Promise<SessionPlayingTracks>;
 
   getTrack(trackId: string): Promise<Track>;
 

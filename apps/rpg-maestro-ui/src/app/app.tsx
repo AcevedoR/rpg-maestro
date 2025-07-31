@@ -16,6 +16,7 @@ import { isDevModeEnabled } from '../FeaturesConfiguration';
 import { HealthStatus } from './misc/health-status';
 import { UserInfos } from './onboarding/user-infos';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { AdminBoard } from './admin-ui/admin-board';
 
 const StyledApp = styled.div`
   //  Your style here
@@ -49,6 +50,7 @@ export function App() {
           <Route path="/maestro/infos" element={<UserInfos />} />
           <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
           <Route path="/maestro/manage/:sessionId" element={<TracksManagement />} />
+          {/*<Route path="/maestro/admin" element={<AdminBoard/>}/>*/}
           <Route path="/admin" element={<Navigate to="/maestro" replace />} />
         </Routes>
         {/* END: routes */}

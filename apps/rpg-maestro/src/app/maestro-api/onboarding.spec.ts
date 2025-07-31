@@ -9,6 +9,7 @@ import { TrackCreationFromYoutubeJobsWatcher } from '../track-creation-from-yout
 import { AudioFileUploaderClient } from '../track-creation-from-youtube-jobs-watcher/audio-file-uploader-client';
 import { TrackCollectionService } from '../track-collection/track-collection.service';
 import { UsersService } from '../users-management/users.service';
+import { SessionsService } from '../sessions/sessions.service';
 
 let onboardingService: OnboardingService;
 let databases: DatabaseWrapperConfiguration;
@@ -25,15 +26,17 @@ beforeAll(async () => {
 });
 beforeEach(() => {
   databases = new DatabaseWrapperConfiguration('in-memory');
+  const sessionsService = new SessionsService(databases);
   onboardingService = new OnboardingService(
     databases,
+    sessionsService,
     new TrackService(
       new DatabaseWrapperConfiguration('in-memory'),
       new InMemoryTrackCreationFromYoutubeJobsStore(),
       null as TrackCreationFromYoutubeJobsWatcher,
       null as AudioFileUploaderClient
     ),
-    new TrackCollectionService(databases),
+    new TrackCollectionService(databases, sessionsService),
     new UsersService(databases)
   );
 });

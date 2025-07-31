@@ -5,6 +5,10 @@ import { FirestoreAuth } from './FirestoreAuth';
 import Firestore = firestore.Firestore;
 import Filter = firestore.Filter;
 
+const RPG_MAESTRO_SESSIONS_DB = 'rpg-maestro-sessions';
+
+const RPG_MAESTRO_TRACKS_DB = 'rpg-maestro-tracks';
+
 export class FirestoreTracksDatabase implements TracksDatabase {
   db: Firestore;
 
@@ -17,42 +21,36 @@ export class FirestoreTracksDatabase implements TracksDatabase {
       id: sessionId,
       currentTrack: null,
     };
-    await this.db.collection('rpg-maestro-sessions').doc(sessionId).set(newSession);
+    await this.db.collection(RPG_MAESTRO_SESSIONS_DB).doc(sessionId).set(newSession);
     return await Promise.resolve();
   }
 
   async getSession(sessionId: string): Promise<SessionPlayingTracks | null> {
-    const sessionDoc = await this.db.collection('rpg-maestro-sessions').doc(sessionId).get();
+    const sessionDoc = await this.db.collection(RPG_MAESTRO_SESSIONS_DB).doc(sessionId).get();
     if (sessionDoc.exists) {
       const data = sessionDoc.data() as SessionPlayingTrackEntity;
-      const currentTrackEntity = data.currentTrack;
-      return {
-        sessionId: sessionId,
-        currentTrack: new PlayingTrack(
-          currentTrackEntity.id,
-          currentTrackEntity.name,
-          currentTrackEntity.url,
-          currentTrackEntity.duration,
-          currentTrackEntity.isPaused,
-          currentTrackEntity.playTimestamp,
-          currentTrackEntity.trackStartTime
-        ),
-      };
+      return entityToSession(data);
     } else {
       return Promise.resolve(null);
     }
   }
 
+  async getAllSessions(): Promise<SessionPlayingTracks[]> {
+    return (
+      await this.db.collection(RPG_MAESTRO_SESSIONS_DB).get()
+    ).docs.map((doc) => doc.data() as SessionPlayingTracks);
+  }
+
   async save(track: Track): Promise<void> {
     return this.db
-      .collection('rpg-maestro-tracks')
+      .collection(RPG_MAESTRO_TRACKS_DB)
       .doc(track.id)
       .set(track)
       .then(() => Promise.resolve());
   }
 
-  async upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<void> {
-    const defaultCurrentSession: SessionPlayingTrackEntity = {
+  async upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
+    const sessionEntity: SessionPlayingTrackEntity = {
       id: sessionId,
       currentTrack: {
         id: playingTrack.id,
@@ -64,15 +62,15 @@ export class FirestoreTracksDatabase implements TracksDatabase {
         trackStartTime: playingTrack.trackStartTime,
       },
     };
-    return this.db
-      .collection('rpg-maestro-sessions')
+    await this.db
+      .collection(RPG_MAESTRO_SESSIONS_DB)
       .doc(sessionId)
-      .set(defaultCurrentSession)
-      .then(() => Promise.resolve());
+      .set(sessionEntity);
+    return entityToSession(sessionEntity);
   }
 
   async getTrack(trackId: string): Promise<Track> {
-    const doc = await this.db.collection('rpg-maestro-tracks').doc(trackId).get();
+    const doc = await this.db.collection(RPG_MAESTRO_TRACKS_DB).doc(trackId).get();
     if (doc.exists) {
       return doc.data() as Track;
     } else {
@@ -82,7 +80,7 @@ export class FirestoreTracksDatabase implements TracksDatabase {
 
   async getAllTracks(sessionId: string): Promise<Track[]> {
     return (
-      await this.db.collection('rpg-maestro-tracks').where(Filter.where('sessionId', '==', sessionId)).get()
+      await this.db.collection(RPG_MAESTRO_TRACKS_DB).where(Filter.where('sessionId', '==', sessionId)).get()
     ).docs.map((doc) => doc.data() as Track);
   }
 }
@@ -101,4 +99,20 @@ interface PlayingTrackEntity {
   isPaused: boolean;
   playTimestamp: number;
   trackStartTime: number;
+}
+
+function entityToSession(entity: SessionPlayingTrackEntity): SessionPlayingTracks{
+  const session: SessionPlayingTracks = {
+    sessionId: entity.id,
+    currentTrack: new PlayingTrack(
+      entity.currentTrack.id,
+      entity.currentTrack.name,
+      entity.currentTrack.url,
+      entity.currentTrack.duration,
+      entity.currentTrack.isPaused,
+      entity.currentTrack.playTimestamp,
+      entity.currentTrack.trackStartTime
+    ),
+  }
+  return session;
 }

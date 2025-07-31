@@ -4,12 +4,15 @@ import {
   PlayingTrack,
   SessionPlayingTracks,
 } from '@rpg-maestro/rpg-maestro-api-contract';
+import { SessionsService } from '../sessions/sessions.service';
 
 export class ManageCurrentlyPlayingTracks {
   database: TracksDatabase;
+  sessionsService: SessionsService;
 
-  constructor(database: TracksDatabase) {
+  constructor(database: TracksDatabase, sessionsService: SessionsService) {
     this.database = database;
+    this.sessionsService = sessionsService;
   }
 
   async changeSessionPlayingTracks(
@@ -33,7 +36,6 @@ export class ManageCurrentlyPlayingTracks {
       Date.now(),
       changeSessionPlayingTracksRequest.currentTrack.startTime ?? 0
     );
-    await this.database.upsertCurrentTrack(sessionId, playingTrack);
-    return Promise.resolve({ sessionId: sessionId, currentTrack: playingTrack });
+    return this.sessionsService.upsertCurrentTrack(sessionId, playingTrack);
   }
 }
