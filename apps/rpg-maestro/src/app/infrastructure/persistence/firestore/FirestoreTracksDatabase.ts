@@ -104,7 +104,7 @@ interface PlayingTrackEntity {
 function entityToSession(entity: SessionPlayingTrackEntity): SessionPlayingTracks{
   const session: SessionPlayingTracks = {
     sessionId: entity.id,
-    currentTrack: new PlayingTrack(
+    currentTrack: entity.currentTrack ? new PlayingTrack(
       entity.currentTrack.id,
       entity.currentTrack.name,
       entity.currentTrack.url,
@@ -112,7 +112,7 @@ function entityToSession(entity: SessionPlayingTrackEntity): SessionPlayingTrack
       entity.currentTrack.isPaused,
       entity.currentTrack.playTimestamp,
       entity.currentTrack.trackStartTime
-    ),
+    ) : null,
   }
   return session;
 }
