@@ -10,6 +10,8 @@ import { User } from '@rpg-maestro/rpg-maestro-api-contract';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
 import { clearUserFromSessionStorage } from '../cache/session-storage.service';
+import DiscordInviteLink from '../ui-components/discord-invite-link/discord-invite-link';
+import GithubSourceCodeLink from '../ui-components/github-source-code-link/github-source-code-link';
 
 export function UserInfos() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -106,6 +108,10 @@ export function UserInfos() {
       </div>
       <div>
         <TextLinkWithIconWrapper theme={'error'} onClickAction={() => clearUserFromSessionStorage()} link={`https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout`} text={'Log out'} materialUiIcon={ArrowForwardIcon}></TextLinkWithIconWrapper>
+      </div>
+      <div>
+        <DiscordInviteLink/>
+        <GithubSourceCodeLink/>
       </div>
       <ToastContainer limit={5} />
     </div>
