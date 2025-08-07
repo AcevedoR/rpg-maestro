@@ -1,12 +1,23 @@
 import { getCurrentTrack } from '../tracks-api';
 import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
+import { AbortedRequestError } from '../maestro-ui/maestro-api';
 
+/**
+ *
+ * @param sessionId
+ * @param currentTrackPlayTime the requested play time of the track
+ * @param currentTrack the current track in the browser
+ * @param options
+ */
 export const resyncCurrentTrackIfNeeded = async (
   sessionId: string,
   currentTrackPlayTime: number | null,
-  currentTrack: PlayingTrack | null
-): Promise<PlayingTrack | null> => {
+  currentTrack: PlayingTrack | null,
+): Promise<PlayingTrack | null | AbortedRequestError> => {
   const optServerTrack = await getCurrentTrack(sessionId);
+  if(optServerTrack==='AbortedRequestError'){
+    return optServerTrack;
+  }
   if (!optServerTrack) {
     return null;
   }

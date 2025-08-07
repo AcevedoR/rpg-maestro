@@ -1,7 +1,7 @@
 import { filter, TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useRef, useState } from 'react';
 import { SessionPlayingTracks, Tag, Track, TrackToPlay, User } from '@rpg-maestro/rpg-maestro-api-contract';
-import { getAllTracks, setTrackToPlay } from './maestro-api';
+import { AbortedRequestError, getAllTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
@@ -58,10 +58,18 @@ export function MaestroSoundboard() {
 
   const requestSetTrackToPlay = async (trackId: string, options?: { paused?: boolean }) => {
     const paused = options?.paused ?? false;
-    const changedTracks = await setTrackToPlay(sessionId, { currentTrack: { trackId: trackId, paused: paused } });
+    let changedTracks;
+    try {
+      changedTracks = await setTrackToPlay(sessionId, { currentTrack: { trackId: trackId, paused: paused } });
+      if (changedTracks === 'AbortedRequestError') {
+        return Promise.resolve();
+      }
+    } catch (err) {
+      return Promise.reject(err);
+    }
     dispatchTrackWasManuallyChanged(changedTracks);
   };
-  const requestEditTrackToPlay = async (trackToPlay: TrackToPlay): Promise<SessionPlayingTracks> => {
+  const requestEditTrackToPlay = async (trackToPlay: TrackToPlay): Promise<SessionPlayingTracks | AbortedRequestError> => {
     return await setTrackToPlay(sessionId, { currentTrack: trackToPlay });
   };
 
@@ -89,7 +97,10 @@ export function MaestroSoundboard() {
   };
   const requestRandomTrackToPlay = async (tags: Tag[]) => {
     if (allTracks) {
-      const filtered = filter(allTracks.filter(x => x.id !== currentPlayingTrack?.id), { tagsToFilterOn: tags });
+      const filtered = filter(
+        allTracks.filter((x) => x.id !== currentPlayingTrack?.id),
+        { tagsToFilterOn: tags }
+      );
       if (filtered.length > 0) {
         const randomIndex = Math.floor(Math.random() * filtered.length);
         const randomTrack = filtered[randomIndex];
@@ -100,7 +111,6 @@ export function MaestroSoundboard() {
   const getURLToShareToPlayers = () => {
     return `${window.location.origin}/${sessionId}`;
   };
-
 
   return (
     <div

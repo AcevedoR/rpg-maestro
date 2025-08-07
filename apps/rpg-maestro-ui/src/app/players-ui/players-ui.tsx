@@ -82,6 +82,8 @@ const StyledAudioPlayer = styled(AudioPlayer)`
     text-align: center;
 `;
 
+export const SYNC_TRACK_INTERVAL_MS = 1000;
+
 export function PlayersUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
@@ -98,14 +100,16 @@ export function PlayersUi() {
         audioPlayer.current?.audio?.current?.currentTime ?? null,
         currentTrack
       );
-      if (newerServerTrack) {
+      if (newerServerTrack && newerServerTrack !== 'AbortedRequestError') {
         console.info('synchronizing track');
         setCurrentTrack(newerServerTrack);
         if (!newerServerTrack) {
           throw new Error('Current track is not defined');
         }
         if (audioPlayer.current?.audio?.current) {
-          audioPlayer.current.audio.current.src = newerServerTrack.url;
+          if(audioPlayer.current.audio.current.src !== newerServerTrack.url){
+            audioPlayer.current.audio.current.src = newerServerTrack.url;
+          }
           audioPlayer.current.audio.current.title = newerServerTrack.name;
           const currentPlayTime = newerServerTrack.getCurrentPlayTime();
           audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
@@ -136,7 +140,7 @@ export function PlayersUi() {
     resyncCurrentTrackOnUi();
     const id = setInterval(() => {
       resyncCurrentTrackOnUi();
-    }, 1000);
+    }, SYNC_TRACK_INTERVAL_MS);
     setIntervalId(id);
     return () => clearInterval(id);
   }, [currentTrack]);

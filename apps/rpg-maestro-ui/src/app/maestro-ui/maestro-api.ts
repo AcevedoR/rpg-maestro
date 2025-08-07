@@ -27,10 +27,24 @@ export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
   }
 };
 
+export type AbortedRequestError = 'AbortedRequestError';
+interface OngoingSetTrackToPlayRequest {
+  abortController: AbortController;
+  startTimeMs: number;
+}
+let ongoingSetTrackToPlayRequest: OngoingSetTrackToPlayRequest | null = null;
 export const setTrackToPlay = async (
   sessionId: string,
   changeSessionPlayingTracksRequest: ChangeSessionPlayingTracksRequest
-): Promise<SessionPlayingTracks> => {
+): Promise<SessionPlayingTracks | AbortedRequestError> => {
+  // Abort previous request if any
+  if (ongoingSetTrackToPlayRequest) {
+    ongoingSetTrackToPlayRequest.abortController.abort();
+  }
+  ongoingSetTrackToPlayRequest = {
+    abortController: new AbortController(),
+    startTimeMs: Date.now()
+  };
   try {
     const response = await fetchClient(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/playing-tracks`, {
       method: 'PUT',
@@ -39,8 +53,11 @@ export const setTrackToPlay = async (
       },
       body: JSON.stringify(changeSessionPlayingTracksRequest),
       credentials: 'include',
+      signal: ongoingSetTrackToPlayRequest.abortController.signal
     });
     const rawSerialized = response as SessionPlayingTracks;
+    ongoingSetTrackToPlayRequest = null;
+
     return {
       sessionId: rawSerialized.sessionId,
       currentTrack: !rawSerialized.currentTrack
@@ -56,8 +73,14 @@ export const setTrackToPlay = async (
           ),
     };
   } catch (error) {
-    console.error(error);
-    return Promise.reject();
+    if ((error as DOMException).name === 'AbortError') {
+      console.info('Previous fetchMyUser request aborted');
+      return 'AbortedRequestError';
+    } else {
+      console.error(error);
+      ongoingSetTrackToPlayRequest = null;
+      return Promise.reject();
+    }
   }
 };
 
