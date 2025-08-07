@@ -1,6 +1,8 @@
 # RpgMaestro
 
-Work in progress
+RPG Maestro is a a web app to broadcast music to your players during your TTRPG sessions.
+It will soon be publicly available, in the mean time, you can request access in our Discord: https://discord.gg/e4cvXZc3bZ
+
 
 ## run tests
 
