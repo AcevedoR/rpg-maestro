@@ -5,6 +5,7 @@ import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, us
 import { resyncCurrentTrackIfNeeded } from '../../track-sync/track-sync';
 import { displayError } from '../../error-utils';
 import './maestro-audio-player.css';
+import { AbortedRequestError } from '../maestro-api';
 
 export interface MaestroAudioPlayerRef {
   dispatchTrackWasManuallyChanged: (newTracks: SessionPlayingTracks) => void;
@@ -13,14 +14,17 @@ export interface MaestroAudioPlayerRef {
 
 export interface MaestroAudioPlayerProps {
   sessionId: string;
-  onCurrentTrackEdit: (editedCurrentTrack: TrackToPlay) => Promise<SessionPlayingTracks>;
+  onCurrentTrackEdit: (editedCurrentTrack: TrackToPlay) => Promise<SessionPlayingTracks | AbortedRequestError>;
 }
 
+const SYNC_TRACK_INTERVAL_MS = 5000;
 export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, ref: Ref<MaestroAudioPlayerRef>) => {
   const { sessionId, onCurrentTrackEdit } = props;
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
-  const isInResync = useRef(false);
+  const [syncCurrentTrackRequested, setSyncCurrentTrackRequested] = useState<Promise<void> | null>(null);
+  const [currentTrackEditRequested, setCurrentTrackEditRequested] = useState<Promise<void> | null>(null);
+  const isInUIResync = useRef(false);
   const audioPlayer = useRef<H5AudioPlayer>();
 
   const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks) => {
@@ -40,10 +44,10 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
     };
   }
 
-  const resyncCurrentTrackOnUi = useCallback(async (trackFromServer: PlayingTrack | null, forceRun?: boolean) => {
-    if (forceRun || !isInResync.current) {
+  const resyncCurrentTrackOnUi = useCallback(async (trackFromServer: PlayingTrack | null) => {
+    if (currentTrackEditRequested === null && !isInUIResync.current) {
       try {
-        isInResync.current = true;
+        isInUIResync.current = true;
         if (trackFromServer) {
           console.info('synchronizing track');
           setCurrentTrack(trackFromServer);
@@ -51,7 +55,10 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
             throw new Error('Current track is not defined');
           }
           if (audioPlayer.current?.audio?.current) {
-            audioPlayer.current.audio.current.src = trackFromServer.url;
+            if (audioPlayer.current.audio.current.src !== trackFromServer.url) {
+              // this avoids the player to 'blink' in the UI
+              audioPlayer.current.audio.current.src = trackFromServer.url;
+            }
             audioPlayer.current.audio.current.title = trackFromServer.name;
             const currentPlayTime = trackFromServer.getCurrentPlayTime();
             if (currentPlayTime) {
@@ -79,36 +86,67 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
             console.warn('audio player not available yet');
           }
         } else {
-          isInResync.current = false;
+          isInUIResync.current = false;
         }
       } catch (err) {
         console.error('An unexpected error occurred:', err);
       } finally {
-        isInResync.current = false;
+        isInUIResync.current = false;
       }
     }
   }, []);
-  const syncCurrentTrackOnUi = useCallback(async () => {
-    const newerServerTrack = await resyncCurrentTrackIfNeeded(
-      sessionId,
-      audioPlayer.current?.audio?.current?.currentTime ?? null,
-      currentTrack
-    );
-    await resyncCurrentTrackOnUi(newerServerTrack);
-  }, [currentTrack, sessionId, resyncCurrentTrackOnUi]);
+
+  const requestCurrentTrackEdit = async (editedCurrentTrack: TrackToPlay): Promise<void> => {
+    const requestFunc = () =>
+      onCurrentTrackEdit(editedCurrentTrack).then((newTrack) => {
+        if (newTrack !== 'AbortedRequestError') {
+          return resyncCurrentTrackOnUi(newTrack.currentTrack);
+        }
+      });
+    try {
+      const request = requestFunc();
+      setCurrentTrackEditRequested(request);
+      await request;
+    } finally {
+      setCurrentTrackEditRequested(null);
+    }
+  };
+
+  const periodicallySyncCurrentTrack = useCallback(async () => {
+    if (currentTrackEditRequested !== null) {
+      // prevent periodical sync when user has made actions
+      return Promise.resolve();
+    }
+    const requestFunc = () =>
+      resyncCurrentTrackIfNeeded(
+        sessionId,
+        audioPlayer.current?.audio?.current?.currentTime ?? null,
+        currentTrack
+      ).then((newerServerTrack) => {
+        if (newerServerTrack !== 'AbortedRequestError') {
+          return resyncCurrentTrackOnUi(newerServerTrack);
+        }
+        return Promise.resolve();
+      });
+    try {
+      const request = requestFunc();
+      setSyncCurrentTrackRequested(request);
+      await request;
+    } finally {
+      setSyncCurrentTrackRequested(null);
+    }
+  }, [currentTrackEditRequested, sessionId, currentTrack, resyncCurrentTrackOnUi]);
 
   useEffect(() => {
-    syncCurrentTrackOnUi();
+    periodicallySyncCurrentTrack();
     const id = setInterval(() => {
-      syncCurrentTrackOnUi();
-    }, 5000);
+      periodicallySyncCurrentTrack();
+    }, SYNC_TRACK_INTERVAL_MS);
     setIntervalId(id);
     return () => clearInterval(id);
-  }, [syncCurrentTrackOnUi, resyncCurrentTrackOnUi, sessionId, currentTrack]);
+  }, [periodicallySyncCurrentTrack, sessionId, currentTrack]);
 
   const changePlayingStatus = async (playing: boolean): Promise<void> => {
-    if (!isInResync.current) {
-      isInResync.current = true;
       if (!currentTrack) {
         throw new Error('this cannot happen');
       }
@@ -119,37 +157,28 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
         const stoppedTime = currentTrack.getCurrentPlayTime();
         currentTrack.trackStartTime = stoppedTime;
         currentTrack.isPaused = newPausedStatus;
-        const newTrack = await onCurrentTrackEdit({
+        await requestCurrentTrackEdit({
           trackId: currentTrack.id,
           startTime: stoppedTime,
           paused: newPausedStatus,
         });
-        await resyncCurrentTrackOnUi(newTrack.currentTrack, true);
       }
-    } else {
-      console.warn('changePlayingStatus: unhandled concurrency case');
-    }
   };
 
   const onTrackTimecodeChange = async () => {
-    if (!isInResync.current) {
-      isInResync.current = true;
-      if (!audioPlayer.current?.audio.current || !currentTrack) {
-        throw new Error('should never happen');
-      }
-      const newTimecode = audioPlayer.current.audio.current.currentTime * 1000;
-      console.info('onTrackTimecodeChange', newTimecode);
-      currentTrack.trackStartTime = newTimecode;
-      const newTrack = await onCurrentTrackEdit({
-        trackId: currentTrack.id,
-        startTime: newTimecode,
-        paused: currentTrack.isPaused,
-      });
-      await resyncCurrentTrackOnUi(newTrack.currentTrack, true);
-    } else {
-      console.warn('onTrackTimecodeChange: unhandled concurrency case');
+    if (!audioPlayer.current?.audio.current || !currentTrack) {
+      throw new Error('should never happen');
     }
+    const newTimecode = audioPlayer.current.audio.current.currentTime * 1000;
+    console.info('onTrackTimecodeChange', newTimecode);
+    currentTrack.trackStartTime = newTimecode;
+    await requestCurrentTrackEdit({
+      trackId: currentTrack.id,
+      startTime: newTimecode,
+      paused: currentTrack.isPaused,
+    });
   };
+
 
   return (
     <AudioPlayer
