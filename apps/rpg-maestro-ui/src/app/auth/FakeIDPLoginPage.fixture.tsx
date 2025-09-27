@@ -8,6 +8,8 @@ import { generateFakeJwtToken, initUsersFixture, TestUsersFixture, randomEmail }
 
 export function FakeIDPLoginPage() {
   const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
+  const testFakeIdpAudience = import.meta.env.VITE_RPG_MAESTRO_FAKE_IDP_AUDIENCE;
+  const testFakeIdpIssuer = import.meta.env.VITE_RPG_MAESTRO_FAKE_IDP_ISSUER;
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -25,11 +27,11 @@ export function FakeIDPLoginPage() {
     const appSession = Math.floor(Math.random() * 1_000_000_000).toString();
     let token: string;
     if(userFixtureKey === 'a_new_user') {
-      token = (await generateFakeJwtToken(randomEmail())).token
+      token = (await generateFakeJwtToken(randomEmail(), {issuer: testFakeIdpIssuer, audience: testFakeIdpAudience})).token
     } else {
       token = testUsersFixture[userFixtureKey].token;
     }
-    document.cookie = `CF_Authorization=${token}; CF_AppSession=${appSession}; path=/;`;
+    document.cookie = `Bearer ${token}; CF_AppSession=${appSession}; path=/;`;
 
     // Optionally wait a tick to ensure cookie is set
     setTimeout(() => {

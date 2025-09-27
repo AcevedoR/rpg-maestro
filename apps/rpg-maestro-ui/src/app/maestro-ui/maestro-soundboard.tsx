@@ -20,8 +20,10 @@ import { MaestroAudioPlayer, MaestroAudioPlayerRef } from './maestro-audio-playe
 import { getUser } from '../cache/user.cache';
 import { toastError } from '../ui-components/toast-popup';
 import BasicMenu from '../ui-components/menu';
+import { withAuthenticationRequired } from '@auth0/auth0-react';
+import { Loading } from '../auth/Loading';
 
-export function MaestroSoundboard() {
+function MaestroSoundboardComponent() {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
   const [trackFilters, setTrackFilters] = useState<TrackFilters>({});
@@ -69,7 +71,9 @@ export function MaestroSoundboard() {
     }
     dispatchTrackWasManuallyChanged(changedTracks);
   };
-  const requestEditTrackToPlay = async (trackToPlay: TrackToPlay): Promise<SessionPlayingTracks | AbortedRequestError> => {
+  const requestEditTrackToPlay = async (
+    trackToPlay: TrackToPlay
+  ): Promise<SessionPlayingTracks | AbortedRequestError> => {
     return await setTrackToPlay(sessionId, { currentTrack: trackToPlay });
   };
 
@@ -239,3 +243,7 @@ export function MaestroSoundboard() {
     </div>
   );
 }
+
+export const MaestroSoundboard = withAuthenticationRequired(MaestroSoundboardComponent, {
+  onRedirecting: () => <Loading />,
+});

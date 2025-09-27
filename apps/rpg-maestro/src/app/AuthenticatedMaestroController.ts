@@ -45,11 +45,11 @@ export class AuthenticatedMaestroController {
   private readonly manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
 
   constructor(
-    @Inject() databaseWrapper: DatabaseWrapperConfiguration,
-    @Inject() sessionsService: SessionsService,
-    @Inject() private trackService: TrackService,
-    @Inject() private onboardingService: OnboardingService,
-    @Inject() private userService: UsersService
+    @Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration,
+    @Inject(SessionsService) sessionsService: SessionsService,
+    @Inject(TrackService) private trackService: TrackService,
+    @Inject(OnboardingService) private onboardingService: OnboardingService,
+    @Inject(UsersService) private userService: UsersService
   ) {
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(
       databaseWrapper.getTracksDB(),

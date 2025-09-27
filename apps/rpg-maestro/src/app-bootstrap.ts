@@ -6,11 +6,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { NetworkingConfiguration } from './app/NetworkingConfiguration';
 import { LogLevel } from '@nestjs/common/services/logger.service';
+import { checkValidConfig } from './config';
 
 export async function bootstrap(): Promise<INestApplication> {
   const env = process.env['NODE' + '_ENV'] || 'development';
   const configurationEnv = process.env['CONFIGURATION_ENV'] || 'development';
   Logger.log(`starting app in env: ${env} or ${configurationEnv}`);
+  checkValidConfig();
 
   const logLevels: Record<string, LogLevel[]>  = {
     TRACE: ['log', 'error', 'warn', 'debug', 'verbose'],
@@ -39,7 +41,7 @@ export async function bootstrap(): Promise<INestApplication> {
       new DocumentBuilder()
         .setTitle('rpg-maestro API')
         .setDescription(
-          'For /maestro API, use your CF_Authorization cookie, for example: curl -H "cookie: CF_Authorization=XXXX" https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks\nthis doc is WIP, bodies and responses are not documented yet'
+          'For /maestro API, use your CF_Authorization cookie, for example: curl -H "cookie: Bearer XXXX" https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks\nthis doc is WIP, bodies and responses are not documented yet'
         )
         .addCookieAuth('CF_Authorization')
         .build()

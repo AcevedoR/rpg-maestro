@@ -211,14 +211,16 @@ export const getMaestroInfos = async(): Promise<User> => {
   }
 }
 
-export const getUserFromAPI = async(): Promise<User> => {
+export const getUserFromAPI = async (token: string): Promise<User> => {
   try {
     const response = await fetchClient(`${rpgmaestroapiurl}/users/me`, {
-      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return response as User;
   } catch (error) {
     console.error(error);
     return Promise.reject();
   }
-}
+};

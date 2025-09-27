@@ -22,10 +22,10 @@ export class OnboardingService {
 
   constructor(
     @Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration,
-    private sessionsService: SessionsService,
-    private trackService: TrackService,
-    private trackCollectionService: TrackCollectionService,
-    private usersService: UsersService
+    @Inject(SessionsService) private sessionsService: SessionsService,
+    @Inject(TrackService) private trackService: TrackService,
+    @Inject(TrackCollectionService) private trackCollectionService: TrackCollectionService,
+    @Inject(UsersService) private usersService: UsersService
   ) {
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(
       databaseWrapper.getTracksDB(),

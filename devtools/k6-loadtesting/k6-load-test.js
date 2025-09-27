@@ -20,7 +20,7 @@ export default function () {
     'accept': '*/*',
     'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
     'content-type': 'application/json',
-    'cookie': 'CF_AppSession=XXXX_toreplace_XXXX; CF_Authorization=XXXX_toreplace_XXXX',
+    'Authorization': 'CF_AppSession=XXXX_toreplace_XXXX; Bearer XXXX_toreplace_XXXX',
     'origin': 'https://fourgate.cloud',
     'priority': 'u=1, i',
     'referer': 'https://fourgate.cloud/maestro/I7tyU8i',

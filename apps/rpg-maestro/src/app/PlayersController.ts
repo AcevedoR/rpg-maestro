@@ -5,7 +5,7 @@ import { TrackService } from './maestro-api/TrackService';
 
 @Controller()
 export class PlayersController {
-  constructor(@Inject() private sessionsService: SessionsService, @Inject() private trackService: TrackService) {}
+  constructor(@Inject(SessionsService) private sessionsService: SessionsService, @Inject(TrackService) private trackService: TrackService) {}
 
   @Get('/tracks/:id')
   getTrack(@Param('id') id: string): Promise<Track> {

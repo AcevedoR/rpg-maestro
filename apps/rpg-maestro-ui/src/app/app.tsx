@@ -17,6 +17,7 @@ import { HealthStatus } from './misc/health-status';
 import { UserInfos } from './onboarding/user-infos';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AdminBoard } from './admin-ui/admin-board';
+import { LoginPage } from './auth/LoginPage';
 
 const StyledApp = styled.div`
   //  Your style here
@@ -47,6 +48,7 @@ export function App() {
           {isDevModeEnabled && <Route path="/dev/fake-idp-login-page" element={<FakeIDPLoginPage />} />}
           <Route path=":sessionId" element={<PlayersUi />} />
           <Route path="/" element={<WelcomePage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/maestro/infos" element={<UserInfos />} />
           <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
           <Route path="/maestro/manage/:sessionId" element={<TracksManagement />} />

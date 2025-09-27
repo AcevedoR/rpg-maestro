@@ -16,7 +16,7 @@ export async function generateNewSession(fakeJwt: FakeJwtToken): Promise<UserWit
         body: JSON.stringify({}),
         headers: {
           'Content-Type': 'application/json',
-          Cookie: `CF_Authorization=${fakeJwt.token}`,
+          Cookie: `Bearer ${fakeJwt.token}`,
         },
       });
       if (!response.ok) {
@@ -42,7 +42,7 @@ export async function iniTracksFromFileServerFixture(jwtToken: FakeJwtToken, ses
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Cookie: `CF_Authorization=${jwtToken.token}`,
+          Cookie: `Bearer ${jwtToken.token}`,
         },
         body: JSON.stringify({
           url: 'http://localhost:8099/public/race1.ogg',

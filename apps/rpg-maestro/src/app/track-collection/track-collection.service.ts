@@ -20,7 +20,7 @@ export class TrackCollectionService {
 
   constructor(
     @Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration,
-    private sessionsService: SessionsService
+    @Inject(SessionsService) private sessionsService: SessionsService
     ) {
     this.trackCollectionDatabase = databaseWrapper.getTrackCollectionDB();
     this.tracksDatabase = databaseWrapper.getTracksDB();
