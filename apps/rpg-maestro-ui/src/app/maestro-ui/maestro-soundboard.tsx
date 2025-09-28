@@ -150,9 +150,7 @@ function MaestroSoundboardComponent() {
             text={'Manage your tracks'}
             materialUiIcon={LyricsTwoTone}
           />
-        ) : (
-          <></>
-        )}
+        ) : ''}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>

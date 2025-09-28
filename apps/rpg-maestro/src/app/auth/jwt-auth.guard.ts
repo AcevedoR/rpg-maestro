@@ -6,10 +6,8 @@ import { createRemoteJWKSet } from 'jose';
 import * as process from 'node:process';
 import { validateJWT } from './jwt-helper';
 
-const JWT_AUDIENCE = process.env.AUTH_JWT_AUDIENCE;
 const ISSUER = process.env.AUTH_ISSUER;
-
-const jwksFunction = createRemoteJWKSet(new URL('.well-known/jwks.json', ISSUER));
+const JWKS = createRemoteJWKSet(new URL('.well-known/jwks.json', ISSUER));
 
 export interface AuthenticatedUser {
   id: string;
@@ -30,23 +28,20 @@ export class JwtAuthGuard implements CanActivate {
 }
 
 async function getUser(req: Request): Promise<UserID> {
-  const token = req.header('Authorization');
-  if (!token) {
+  const authorizationHeader = req.header('Authorization');
+  if (!authorizationHeader) {
     throw new UnauthorizedException('No Bearer access token in Authorization');
   }
 
   let decoded: null | JwtPayload | string;
   try {
-    const jwks = await jwksFunction({ alg: 'RS256' });
-    decoded = await validateJWT(token.replace('Bearer ', ''), jwks, {
-      algorithms: ['RS256'],
-      issuer: ISSUER,
-      audience: JWT_AUDIENCE,
-    });
-  } catch (err) {
-    throw new UnauthorizedException(`Invalid token, err when decoding jwt: '${err}'`);
-  }
 
+    const token = authorizationHeader.replace('Bearer ', '');
+    decoded = await validateJWT(token, JWKS);
+  } catch (err) {
+    Logger.warn(`Invalid token, err when decoding jwt ${err}`);
+    throw new UnauthorizedException(`Invalid token, err when decoding jwt`);
+  }
   if (!decoded?.email) {
     throw new UnauthorizedException('Email not found in token');
   }

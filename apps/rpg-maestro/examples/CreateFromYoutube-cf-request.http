@@ -2,7 +2,7 @@
 ###
 POST https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks/from-youtube
 Content-Type: application/json
-cookie: Bearer XXX-replace-with-token-xXX
+Authorization: Bearer XXX-replace-with-token-xXX
 
 {
   "urls": [

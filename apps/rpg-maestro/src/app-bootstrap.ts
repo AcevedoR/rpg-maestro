@@ -14,7 +14,7 @@ export async function bootstrap(): Promise<INestApplication> {
   Logger.log(`starting app in env: ${env} or ${configurationEnv}`);
   checkValidConfig();
 
-  const logLevels: Record<string, LogLevel[]>  = {
+  const logLevels: Record<string, LogLevel[]> = {
     TRACE: ['log', 'error', 'warn', 'debug', 'verbose'],
     DEBUG: ['log', 'error', 'warn', 'debug'],
     INFO: ['log', 'error', 'warn'],
@@ -22,10 +22,12 @@ export async function bootstrap(): Promise<INestApplication> {
   };
   let configuredLogLevel: LogLevel[] | null;
   if (process.env.LOG_LEVEL) {
-    if(logLevels[process.env.LOG_LEVEL]){
+    if (logLevels[process.env.LOG_LEVEL]) {
       configuredLogLevel = logLevels[process.env.LOG_LEVEL];
     } else {
-      throw new Error(`invalid LOG_LEVEL value configured: ${process.env.LOG_LEVEL}, available levels are: ${Object.keys(logLevels)}`);
+      throw new Error(
+        `invalid LOG_LEVEL value configured: ${process.env.LOG_LEVEL}, available levels are: ${Object.keys(logLevels)}`
+      );
     }
   }
 
@@ -41,7 +43,7 @@ export async function bootstrap(): Promise<INestApplication> {
       new DocumentBuilder()
         .setTitle('rpg-maestro API')
         .setDescription(
-          'For /maestro API, use your CF_Authorization cookie, for example: curl -H "cookie: Bearer XXXX" https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks\nthis doc is WIP, bodies and responses are not documented yet'
+          'For /maestro API, use your CF_Authorization cookie, for example: curl -H "Authorization: Bearer XXXX" https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks\nthis doc is WIP, bodies and responses are not documented yet'
         )
         .addCookieAuth('CF_Authorization')
         .build()

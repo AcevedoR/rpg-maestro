@@ -9,7 +9,7 @@ import { generateFakeJwtToken, initUsersFixture, TestUsersFixture, randomEmail }
 export function FakeIDPLoginPage() {
   const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
   const testFakeIdpAudience = import.meta.env.VITE_RPG_MAESTRO_FAKE_IDP_AUDIENCE;
-  const testFakeIdpIssuer = import.meta.env.VITE_RPG_MAESTRO_FAKE_IDP_ISSUER;
+  const testFakeIdpIssuer = import.meta.env.VITE_RPG_MAESTRO_API_URL + '/test-utils/fake-idp';
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);

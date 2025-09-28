@@ -21,8 +21,6 @@ const SYNC_TRACK_INTERVAL_MS = 5000;
 export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, ref: Ref<MaestroAudioPlayerRef>) => {
   const { sessionId, onCurrentTrackEdit } = props;
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
-  const [syncCurrentTrackRequested, setSyncCurrentTrackRequested] = useState<Promise<void> | null>(null);
   const [currentTrackEditRequested, setCurrentTrackEditRequested] = useState<Promise<void> | null>(null);
   const isInUIResync = useRef(false);
   const audioPlayer = useRef<H5AudioPlayer>();
@@ -128,13 +126,8 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
         }
         return Promise.resolve();
       });
-    try {
-      const request = requestFunc();
-      setSyncCurrentTrackRequested(request);
-      await request;
-    } finally {
-      setSyncCurrentTrackRequested(null);
-    }
+    const request = requestFunc();
+    await request;
   }, [currentTrackEditRequested, sessionId, currentTrack, resyncCurrentTrackOnUi]);
 
   useEffect(() => {
@@ -142,7 +135,6 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
     const id = setInterval(() => {
       periodicallySyncCurrentTrack();
     }, SYNC_TRACK_INTERVAL_MS);
-    setIntervalId(id);
     return () => clearInterval(id);
   }, [periodicallySyncCurrentTrack, sessionId, currentTrack]);
 

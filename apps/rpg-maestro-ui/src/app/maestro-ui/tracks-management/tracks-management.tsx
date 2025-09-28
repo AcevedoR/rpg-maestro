@@ -16,7 +16,6 @@ import { Loading } from '../../auth/Loading';
 function TracksManagementComponent() {
   const [onFileUploadedEvent, setOnFileUploadedEvent] = useState<string | null>(null);
   const [trackCreationFromYoutube, setTrackCreationFromYoutube] = useState<TrackCreationFromYoutubeDto[]>([]);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const sessionId = useParams().sessionId ?? '';
 
   if (sessionId === '') {
@@ -47,7 +46,6 @@ function TracksManagementComponent() {
     const id = setInterval(() => {
       refreshTrackCreationFromYoutube();
     }, 5000);
-    setIntervalId(id);
     return () => clearInterval(id);
   }, [refreshTrackCreationFromYoutube]);
 

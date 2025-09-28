@@ -18,6 +18,9 @@ import { UserInfos } from './onboarding/user-infos';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AdminBoard } from './admin-ui/admin-board';
 import { LoginPage } from './auth/LoginPage';
+import { useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
+import { initAuthRequirements } from './utils/authenticated-fetch';
 
 const StyledApp = styled.div`
   //  Your style here
@@ -35,6 +38,10 @@ const theme = createTheme({
   },
 });
 export function App() {
+  const { getAccessTokenSilently } = useAuth0();
+  useEffect(() => {
+    initAuthRequirements(getAccessTokenSilently);
+  }, [getAccessTokenSilently]);
   return (
     <StyledApp style={{ fontFamily: '"Roboto", "Helvetica", "Arial", "sans-serif"', height: '100vh' }}>
       <ThemeProvider theme={theme}>
@@ -42,6 +49,7 @@ export function App() {
         {/* These routes and navigation have been generated for you */}
         {/* Feel free to move and update them to fit your needs */}
         <Routes>
+          {/*TODO add secured routes*/}
           <Route path="/health" element={<HealthStatus />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/onboarding/setup-session" element={<SetupSession />} />

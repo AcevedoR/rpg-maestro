@@ -1,12 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import LoginButton from './LoginButton';
 
 export function LoginPage() {
-  const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
-
-  const navigate = useNavigate();
-
   return (
     <div
       style={{

@@ -21,8 +21,7 @@ function UserInfosComponent() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = await getAccessTokenSilently();
-      const apiUser = await getUserFromAPI(token);
+      const apiUser = await getUserFromAPI();
       setRpgMaestroUser(apiUser);
     };
     fetchUser();
