@@ -1,7 +1,7 @@
 import AudioPlayer from 'react-h5-audio-player';
 import H5AudioPlayer from 'react-h5-audio-player';
 import { ToastContainer } from 'react-toastify';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { LegacyRef, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { resyncCurrentTrackIfNeeded } from '../track-sync/track-sync';
 import { displayError } from '../error-utils';
@@ -86,7 +86,6 @@ export const SYNC_TRACK_INTERVAL_MS = 1000;
 
 export function PlayersUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const audioPlayer = useRef<H5AudioPlayer>();
   const sessionId = useParams().sessionId ?? '';
   if (sessionId === '') {
@@ -107,7 +106,7 @@ export function PlayersUi() {
           throw new Error('Current track is not defined');
         }
         if (audioPlayer.current?.audio?.current) {
-          if(audioPlayer.current.audio.current.src !== newerServerTrack.url){
+          if (audioPlayer.current.audio.current.src !== newerServerTrack.url) {
             audioPlayer.current.audio.current.src = newerServerTrack.url;
           }
           audioPlayer.current.audio.current.title = newerServerTrack.name;
@@ -141,9 +140,8 @@ export function PlayersUi() {
     const id = setInterval(() => {
       resyncCurrentTrackOnUi();
     }, SYNC_TRACK_INTERVAL_MS);
-    setIntervalId(id);
     return () => clearInterval(id);
-  }, [currentTrack]);
+  }, [currentTrack, sessionId]);
 
   return (
     <Container>
@@ -167,34 +165,34 @@ export function PlayersUi() {
         <p>To avoid sync issues, Players can only change their volume.</p>
       </WelcomeText>
 
-        <StyledAudioPlayer
-          ref={audioPlayer}
-          loop={true}
-          showJumpControls={false}
-          showSkipControls={false}
-          customAdditionalControls={undefined}
-          className={'audio-player-readonly'}
-          header={
+      <StyledAudioPlayer
+        ref={audioPlayer as LegacyRef<H5AudioPlayer>}
+        loop={true}
+        showJumpControls={false}
+        showSkipControls={false}
+        customAdditionalControls={undefined}
+        className={'audio-player-readonly'}
+        header={
           <div>
             <span>You are listening to:</span>
             <h3
-            style={{
-              fontSize: '1rem',
-              lineHeight: '2em',
-              maxHeight: '4em',
-              textOverflow: 'revert',
-              overflow: 'hidden',
-              wordBreak: 'break-all'
-            }}
-          >
-            {currentTrack?.name}
-          </h3>
-        </div>
-          }
-          customIcons={{
-            pause: <MusicNoteIcon style={{ cursor: 'not-allowed' }} />,
-          }}
-        />
+              style={{
+                fontSize: '1rem',
+                lineHeight: '2em',
+                maxHeight: '4em',
+                textOverflow: 'revert',
+                overflow: 'hidden',
+                wordBreak: 'break-all',
+              }}
+            >
+              {currentTrack?.name}
+            </h3>
+          </div>
+        }
+        customIcons={{
+          pause: <MusicNoteIcon style={{ cursor: 'not-allowed' }} />,
+        }}
+      />
 
       <GithubSourceCodeLink />
       <ToastContainer limit={5} />

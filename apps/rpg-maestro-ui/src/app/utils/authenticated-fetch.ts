@@ -9,7 +9,7 @@ export function initAuthRequirements(getAccessTokenSilentlyFunctionParam: (() =>
   getAccessTokenSilentlyFunction = getAccessTokenSilentlyFunctionParam;
 }
 
-export async function authenticatedFetch<T = any>(url: string, options: FetchClientOptions = {}): Promise<T> {
+export async function authenticatedFetch<T = unknown>(url: string, options: FetchClientOptions = {}): Promise<T> {
   const { method = 'GET', headers = {}, body, credentials, signal } = options;
   if (getAccessTokenSilentlyFunction) {
     headers.Autorization = `Bearer ${await getAccessTokenSilentlyFunction()}`;
@@ -24,13 +24,13 @@ export async function authenticatedFetch<T = any>(url: string, options: FetchCli
     signal,
   };
   if (body !== undefined) {
-    fetchOptions.body = body;
+    fetchOptions.body = body as BodyInit;
   }
   const response = await fetch(url, fetchOptions);
   let data;
   try {
     data = await response.json();
-  } catch (e) {
+  } catch {
     data = undefined;
   }
   if (!response.ok) {
@@ -57,7 +57,7 @@ export async function authenticatedFetch<T = any>(url: string, options: FetchCli
 export interface FetchClientOptions {
   method?: string;
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
   credentials?: RequestCredentials;
   signal?: AbortSignal;
 }

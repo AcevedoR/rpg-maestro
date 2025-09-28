@@ -5,7 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import { durationInMsToString } from '../../utils/time';
-import { PlayingTrack, Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { EditTrackSideForm } from './edit-track-side-form';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
@@ -22,21 +22,20 @@ export interface TracksTableProps {
   onSetTrackToPlay: (trackId: string, options?: {paused?: boolean}) => Promise<void>;
   onRefreshRequested: () => unknown;
   filters: TrackFilters;
-  currentTrack: PlayingTrack | null
 }
 
 export function TracksTable(props: TracksTableProps) {
-  const { sessionId, tracks, onSetTrackToPlay, filters, onRefreshRequested, currentTrack } = props;
+  const { sessionId, tracks, onSetTrackToPlay, filters, onRefreshRequested } = props;
   const [selectedTrackToEdit, setSelectedTrackToEdit] = useState<Track | null>(null);
 
-  const onClickEditRowButton = (id: string, row: any) => {
-    setSelectedTrackToEdit(row as Track);
+  const onClickEditRowButton = (id: string, row: Track) => {
+    setSelectedTrackToEdit(row);
   };
-  const onClickPlayRowButton = async (id: string, row: any) => {
+  const onClickPlayRowButton = async (id: string) => {
     await onSetTrackToPlay(id);
   };
-  const onClickPauseRowButton = async (id: string, row: any) => {
-    await onSetTrackToPlay(id, {paused: true});
+  const onClickPauseRowButton = async (id: string) => {
+    await onSetTrackToPlay(id, { paused: true });
   };
   const onEditTrackSideFormClose = () => {
     setSelectedTrackToEdit(null);
@@ -52,7 +51,7 @@ export function TracksTable(props: TracksTableProps) {
       field: 'duration',
       type: 'number',
       width: 80,
-      valueGetter: (value, row) => durationInMsToString(value),
+      valueGetter: (value, _row) => durationInMsToString(valu),
     },
     { field: 'tags' },
     {
@@ -67,21 +66,21 @@ export function TracksTable(props: TracksTableProps) {
             icon={<PlayCircleIcon />}
             label="Play"
             className="textPrimary"
-            onClick={() => onClickPlayRowButton(id.toString(), row)}
+            onClick={() => onClickPlayRowButton(id.toString())}
             color="inherit"
           />,
           <GridActionsCellItem
             icon={<PauseCircleIcon />}
             label="Play"
             className="textPrimary"
-            onClick={() => onClickPauseRowButton(id.toString(), row)}
+            onClick={() => onClickPauseRowButton(id.toString())}
             color="inherit"
           />,
           <GridActionsCellItem
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
-            onClick={() => onClickEditRowButton(id.toString(), row)}
+            onClick={() => onClickEditRowButton(id.toString(), row as Track)}
             color="inherit"
           />,
         ];
@@ -125,7 +124,7 @@ export function TracksTable(props: TracksTableProps) {
             onTrackUpdated={onTrackUpdated}
           ></EditTrackSideForm>
         ) : (
-          <></>
+          ''
         )}
       </ThemeProvider>
     </div>
