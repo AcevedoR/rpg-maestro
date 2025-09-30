@@ -51,7 +51,7 @@ export function TracksTable(props: TracksTableProps) {
       field: 'duration',
       type: 'number',
       width: 80,
-      valueGetter: (value, _row) => durationInMsToString(valu),
+      valueGetter: (value, _row) => durationInMsToString(value),
     },
     { field: 'tags' },
     {

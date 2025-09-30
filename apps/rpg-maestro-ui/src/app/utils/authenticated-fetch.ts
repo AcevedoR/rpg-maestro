@@ -12,7 +12,7 @@ export function initAuthRequirements(getAccessTokenSilentlyFunctionParam: (() =>
 export async function authenticatedFetch<T = unknown>(url: string, options: FetchClientOptions = {}): Promise<T> {
   const { method = 'GET', headers = {}, body, credentials, signal } = options;
   if (getAccessTokenSilentlyFunction) {
-    headers.Autorization = `Bearer ${await getAccessTokenSilentlyFunction()}`;
+    headers.Authorization = `Bearer ${await getAccessTokenSilentlyFunction()}`;
   }
   const fetchOptions: RequestInit = {
     method,

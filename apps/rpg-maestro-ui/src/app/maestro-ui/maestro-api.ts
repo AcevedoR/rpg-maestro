@@ -176,7 +176,7 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
 export type UserAlreadyExistsError = "UserAlreadyExistsError";
 export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExistsError > => {
   try {
-    const response = await fetch(`${rpgmaestroapiurl}/maestro/onboard`, {
+    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/onboard`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -184,14 +184,7 @@ export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExist
       },
       credentials: 'include',
     });
-    if (!response.ok) {
-      if(response.status === 409){
-        return 'UserAlreadyExistsError';
-      }
-      console.error(response.status, response.statusText);
-      throw new Error('fetch failed for error: ' + response);
-    }
-    return (await response.json()) as SessionPlayingTracks;
+    return await (response) as SessionPlayingTracks;
   } catch (error) {
     console.error(error);
     displayError(`Fetch error: ${JSON.stringify(error)}`);
