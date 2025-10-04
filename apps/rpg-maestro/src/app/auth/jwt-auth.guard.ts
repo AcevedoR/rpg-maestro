@@ -7,7 +7,8 @@ import * as process from 'node:process';
 import { validateJWT } from './jwt-helper';
 
 const ISSUER = process.env.AUTH_ISSUER;
-const JWKS = createRemoteJWKSet(new URL('.well-known/jwks.json', ISSUER));
+const JWKS_URL = ISSUER +'/.well-known/jwks.json';
+const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
 
 export interface AuthenticatedUser {
   id: string;
@@ -37,6 +38,8 @@ async function getUser(req: Request): Promise<UserID> {
   try {
 
     const token = authorizationHeader.replace('Bearer ', '');
+    console.log(ISSUER)
+    console.log(JWKS_URL)
     decoded = await validateJWT(token, JWKS);
   } catch (err) {
     Logger.warn(`Invalid token, err when decoding jwt ${err}`);

@@ -9,7 +9,7 @@ import './app.css';
 import './custom.datagrid.css';
 import './custom.autocomplete.css';
 import { Onboarding } from './onboarding/onboarding';
-import { FakeIDPLoginPage } from './auth/FakeIDPLoginPage.fixture';
+import { FakeIDPLoginPage, getFakeToken } from './auth/FakeIDPLoginPage.fixture';
 import { SetupSession } from './onboarding/setup-session';
 import { WelcomePage } from './welcome-page';
 import { isDevModeEnabled } from '../FeaturesConfiguration';
@@ -40,7 +40,7 @@ const theme = createTheme({
 export function App() {
   const { getAccessTokenSilently } = useAuth0();
   useEffect(() => {
-    initAuthRequirements(getAccessTokenSilently);
+    initAuthRequirements(isDevModeEnabled ? getFakeToken : getAccessTokenSilently);
   }, [getAccessTokenSilently]);
   return (
     <StyledApp style={{ fontFamily: '"Roboto", "Helvetica", "Arial", "sans-serif"', height: '100vh' }}>

@@ -3,8 +3,15 @@ import Button from '@mui/material/Button';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { displayError } from '../error-utils';
-import { generateFakeJwtToken, initUsersFixture, TestUsersFixture, randomEmail } from '@rpg-maestro/test-utils';
+import { generateFakeJwtToken, initUsersFixture, randomEmail, TestUsersFixture } from '@rpg-maestro/test-utils';
 
+export async function getFakeToken(): Promise<string> {
+  const token = getCookie('FAKE_TOKEN');
+  if (!token) {
+    throw new Error('no fake token found in query params');
+  }
+  return Promise.resolve(token);
+}
 
 export function FakeIDPLoginPage() {
   const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
@@ -31,13 +38,15 @@ export function FakeIDPLoginPage() {
     } else {
       token = testUsersFixture[userFixtureKey].token;
     }
-    document.cookie = `Bearer ${token}; CF_AppSession=${appSession}; path=/;`;
+
+    document.cookie = `FAKE_TOKEN=${token}; path=/;`;
 
     // Optionally wait a tick to ensure cookie is set
     setTimeout(() => {
       // simulate Cloudflare login redirection to the original page
+      console.info(`simulate redirection to ${routeToRedirectTo}`)
       navigate(routeToRedirectTo);
-    }, 10);
+    }, 1000);
   };
   return (
     <div
@@ -72,4 +81,8 @@ export function FakeIDPLoginPage() {
       </div>
     </div>
   );
+}
+function getCookie(key: string) {
+  const b = document.cookie.match('(^|;)\\s*' + key + '\\s*=\\s*([^;]+)');
+  return b ? b.pop() : undefined;
 }

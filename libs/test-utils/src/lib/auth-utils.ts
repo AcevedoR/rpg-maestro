@@ -77,7 +77,7 @@ async function getGeneratedJwk(): Promise<{ publicKKey: JWK; privateKKey: JWK }>
   if (FAKE_JWK) {
     return FAKE_JWK;
   }
-  const { publicKey, privateKey } = await generateKeyPair('RS256', { modulusLength: 2048 });
+  const { publicKey, privateKey } = await generateKeyPair('RS256', { modulusLength: 2048 , extractable: true});
   const publicKKeytmp = await exportJWK(publicKey);
   const privateKKeytmp = await exportJWK(privateKey);
   FAKE_JWK = {
