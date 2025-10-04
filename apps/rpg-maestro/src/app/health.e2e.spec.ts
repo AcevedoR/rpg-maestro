@@ -13,7 +13,7 @@ describe('testing healthcheck respond ok and 200', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    process.env.AUTH_ISSUER = 'http://localhost:3014/test-utils/fake-idp/';
+    process.env.AUTH_ISSUER = 'http://localhost:3014/test-utils/fake-idp';
     process.env.AUTH_JWT_AUDIENCE = 'http://localhost:3014';
     const { bootstrap } = await import('../app-bootstrap');
     app = await bootstrap();

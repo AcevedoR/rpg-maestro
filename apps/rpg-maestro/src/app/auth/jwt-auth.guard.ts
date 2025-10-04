@@ -38,8 +38,6 @@ async function getUser(req: Request): Promise<UserID> {
   try {
 
     const token = authorizationHeader.replace('Bearer ', '');
-    console.log(ISSUER)
-    console.log(JWKS_URL)
     decoded = await validateJWT(token, JWKS);
   } catch (err) {
     Logger.warn(`Invalid token, err when decoding jwt ${err}`);
