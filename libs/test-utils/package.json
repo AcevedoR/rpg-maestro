@@ -9,7 +9,7 @@
     "@types/uuid": "^10.0.0"
   },
   "dependencies": {
-    "jose": "4.15.9",
+    "jose": "^6.1.0",
     "uuid": "8.3.2"
   }
 }
