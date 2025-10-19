@@ -18,4 +18,5 @@ export interface SessionAccess {
 export type SessionAccessLevel = 'OWNER';
 
 export type UserID = string;
-export type Role = 'MINSTREL' | 'MAESTRO' | 'ADMIN';
+export const RolesList = ['MINSTREL', 'MAESTRO', 'ADMIN'] as const;
+export type Role = typeof RolesList[number];

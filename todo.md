@@ -3,6 +3,10 @@
 - fix auth:
   - check onboarding nominal path does work
   - add a way to promote a maestro from UI?
+  - add a way to load collections from UI?
+    - as a Maestro
+    - as an Admin for other Maestros
+    - as a Minstrel ?
 
 ## ideas
 - Youtube to mp3
