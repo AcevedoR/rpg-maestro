@@ -5,7 +5,7 @@ module.exports = [
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   {
-    ignores: ['**/dist'],
+    ignores: ['**/dist', '**/vite.config.*.timestamp*', '**/vitest.config.*.timestamp*'],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
@@ -23,18 +23,21 @@ module.exports = [
           ],
         },
       ],
-      '@typescript-eslint/no-unused-vars': ['warn', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }]
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
     },
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     // Override or add rules here
     rules: {
-      "strict": ["error", "global"], // Enforce strict mode
-      "no-console": ["error", { allow: ["info", "warn", "error"] }], // Disallow console.log
+      strict: ['error', 'global'], // Enforce strict mode
+      'no-console': ['error', { allow: ['info', 'warn', 'error'] }], // Disallow console.log
     },
   },
 ];

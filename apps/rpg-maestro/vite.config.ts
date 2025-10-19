@@ -11,14 +11,4 @@ export default defineConfig({
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
   // },
-  test: {
-    watch: false,
-    globals: true,
-    silent: false,                 // don't suppress console.*
-    environment: 'node',   // 👈 important for jose
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    reporters: ['default'],
-    coverage: { reportsDirectory: '../../coverage/apps/rpg-maestro', provider: 'v8' },
-    pool: 'forks',         // or: threads: false (older Vitest)
-  },
 });
