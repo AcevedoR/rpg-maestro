@@ -10,6 +10,7 @@ export interface TestUsersFixture {
   a_maestro_user: FakeJwtToken;
   a_maestro_B_user: FakeJwtToken;
   a_minstrel_user: FakeJwtToken;
+  a_new_user: FakeJwtToken;
 }
 
 let FAKE_JWK: { publicKKey: JWK; privateKKey: JWK } | undefined;

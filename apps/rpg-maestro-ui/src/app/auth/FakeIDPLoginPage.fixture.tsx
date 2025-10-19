@@ -3,7 +3,9 @@ import Button from '@mui/material/Button';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { displayError } from '../error-utils';
-import { generateFakeJwtToken, initUsersFixture, randomEmail, TestUsersFixture } from '@rpg-maestro/test-utils';
+import { initUsersFixture, TestUsersFixture } from '@rpg-maestro/test-utils';
+
+const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
 
 export async function getFakeToken(): Promise<string> {
   const token = getCookie('FAKE_TOKEN');
@@ -13,11 +15,14 @@ export async function getFakeToken(): Promise<string> {
   return Promise.resolve(token);
 }
 
-export function FakeIDPLoginPage() {
-  const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
-  const testFakeIdpAudience = import.meta.env.VITE_RPG_MAESTRO_FAKE_IDP_AUDIENCE;
-  const testFakeIdpIssuer = import.meta.env.VITE_RPG_MAESTRO_API_URL + '/test-utils/fake-idp';
+export async function simulateAuthenticated(userFixtureKey: keyof TestUsersFixture) {
+  // simulate login
+  const testUsersFixture = await initUsersFixture(rpgmaestroapiurl);
+  const token = testUsersFixture[userFixtureKey].token;
+  document.cookie = `FAKE_TOKEN=${token}; path=/;`;
+}
 
+export function FakeIDPLoginPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const routeToRedirectTo = params.get('routeToRedirectTo') ?? '';
@@ -28,23 +33,12 @@ export function FakeIDPLoginPage() {
 
   const navigate = useNavigate();
 
-  const onLogin = async (userFixtureKey: keyof TestUsersFixture | 'a_new_user') => {
-    // simulate Cloudflare login
-    const testUsersFixture = await initUsersFixture(rpgmaestroapiurl);
-    const appSession = Math.floor(Math.random() * 1_000_000_000).toString();
-    let token: string;
-    if(userFixtureKey === 'a_new_user') {
-      token = (await generateFakeJwtToken(randomEmail(), {issuer: testFakeIdpIssuer, audience: testFakeIdpAudience})).token
-    } else {
-      token = testUsersFixture[userFixtureKey].token;
-    }
-
-    document.cookie = `FAKE_TOKEN=${token}; path=/;`;
-
+  const onLogin = async (userFixtureKey: keyof TestUsersFixture) => {
+    await simulateAuthenticated(userFixtureKey);
     // Optionally wait a tick to ensure cookie is set
     setTimeout(() => {
       // simulate Cloudflare login redirection to the original page
-      console.info(`simulate redirection to ${routeToRedirectTo}`)
+      console.info(`simulate redirection to ${routeToRedirectTo}`);
       navigate(routeToRedirectTo);
     }, 1000);
   };

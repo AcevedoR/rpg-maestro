@@ -22,6 +22,7 @@ import { toastError } from '../ui-components/toast-popup';
 import BasicMenu from '../ui-components/menu';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../auth/Loading';
+import { isDevModeEnabled } from '../../FeaturesConfiguration';
 
 function MaestroSoundboardComponent() {
   const [user, setUser] = useState<User | undefined>(undefined);
@@ -243,6 +244,6 @@ function MaestroSoundboardComponent() {
   );
 }
 
-export const MaestroSoundboard = withAuthenticationRequired(MaestroSoundboardComponent, {
+export const MaestroSoundboard = isDevModeEnabled ? MaestroSoundboardComponent : withAuthenticationRequired(MaestroSoundboardComponent, {
   onRedirecting: () => <Loading />,
 });

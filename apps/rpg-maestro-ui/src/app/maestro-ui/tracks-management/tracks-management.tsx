@@ -12,6 +12,7 @@ import { getTrackCreationFromYoutube } from '../maestro-api';
 import { TrackCreationFromYoutubeDto } from '@rpg-maestro/rpg-maestro-api-contract';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../../auth/Loading';
+import { isDevModeEnabled } from '../../../FeaturesConfiguration';
 
 function TracksManagementComponent() {
   const [onFileUploadedEvent, setOnFileUploadedEvent] = useState<string | null>(null);
@@ -104,6 +105,6 @@ function TracksManagementComponent() {
   );
 }
 
-export const TracksManagement = withAuthenticationRequired(TracksManagementComponent, {
+export const TracksManagement = isDevModeEnabled ? TracksManagementComponent : withAuthenticationRequired(TracksManagementComponent, {
   onRedirecting: () => <Loading />,
 });

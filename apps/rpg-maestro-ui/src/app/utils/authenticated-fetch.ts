@@ -13,6 +13,8 @@ export async function authenticatedFetch<T = unknown>(url: string, options: Fetc
   const { method = 'GET', headers = {}, body, credentials, signal } = options;
   if (getAccessTokenSilentlyFunction) {
     headers.Authorization = `Bearer ${await getAccessTokenSilentlyFunction()}`;
+  } else {
+    return Promise.reject(new Error('Unhandled error, getAccessTokenSilentlyFunction not available yet '+ getAccessTokenSilentlyFunction));
   }
   const fetchOptions: RequestInit = {
     method,

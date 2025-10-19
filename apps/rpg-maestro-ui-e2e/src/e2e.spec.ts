@@ -3,11 +3,13 @@ import {
   UserWithGeneratedSession,
   generateNewSession,
   iniTracksFromFileServerFixture,
-  initUsersFixtureSpec
+  initUsersFixtureSpec, RPG_MAESTRO_URL
 } from './fixtures';
-import { goToMaestroPage, waitForAppToBeReady } from './navigation';
-import { FakeJwtToken } from '@rpg-maestro/test-utils';
+import { goToMaestroPage, simulateAuthenticatedInBrowser, waitForAppToBeReady } from './navigation';
 
+test('health check works', async ({ page }) => {
+    await expect(waitForAppToBeReady(page)).resolves.not.toThrow();
+});
 
 test('a Maestro can load (via API) and play a current track for its players', async ({ page }) => {
   let user: UserWithGeneratedSession;
@@ -17,7 +19,7 @@ test('a Maestro can load (via API) and play a current track for its players', as
     await iniTracksFromFileServerFixture(user, user.sessionId);
   });
 
-  await simulateAuth(page, user);
+  await simulateAuthenticatedInBrowser(page, user);
 
   await test.step('go to maestro page, and list available tracks', async () => {
     await goToMaestroPage(page, user.sessionId);
@@ -42,11 +44,11 @@ test('a Maestro can add a new track located on a remote server', async ({ page }
     user = await generateNewSession((await initUsersFixtureSpec()).a_maestro_user);
   });
 
-  await simulateAuth(page, user);
+  await simulateAuthenticatedInBrowser(page, user);
 
   await test.step('go to Tracks management and add a track', async () => {
     await goToTracksManagement(page, user.sessionId);
-    await page.getByLabel('URL').fill('http://localhost:8099/public/light-switch-sound-198508.mp3');
+    await page.getByLabel('URL').fill(`${RPG_MAESTRO_URL}/public/light-switch-sound-198508.mp3`);
     await page.getByText('CREATE TRACK').click();
     await expect(page.getByText('CREATE TRACK')).toBeEnabled();
   });
@@ -62,18 +64,3 @@ async function goToTracksManagement(page: Page, sessionId: string) {
   expect(await page.locator('h1').innerText()).toContain('Tracks management');
 }
 
-async function simulateAuth(page: Page, fakeJwtToken: FakeJwtToken) {
-  await test.step('simulate login in', async () => {
-    await page.context().addCookies([
-      {
-        name: 'CF_Authorization',
-        value: fakeJwtToken.token,
-        domain: 'localhost',
-        path: '/',
-        httpOnly: false,
-        secure: false,
-        sameSite: 'Lax',
-      },
-    ]);
-  });
-}

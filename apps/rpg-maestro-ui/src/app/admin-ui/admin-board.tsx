@@ -15,6 +15,7 @@ import { getAllSessions, getAllUsers } from './admin-api';
 import { formatTodayDate } from '../utils/time';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../auth/Loading';
+import { isDevModeEnabled } from '../../FeaturesConfiguration';
 
 function AdminBoardComponent() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -135,7 +136,7 @@ function AdminBoardComponent() {
   );
 }
 
-export const AdminBoard = withAuthenticationRequired(AdminBoardComponent, {
+export const AdminBoard = isDevModeEnabled ? AdminBoardComponent : withAuthenticationRequired(AdminBoardComponent, {
   onRedirecting: () => <Loading />,
 });
 

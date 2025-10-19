@@ -18,7 +18,7 @@ import { UserInfos } from './onboarding/user-infos';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AdminBoard } from './admin-ui/admin-board';
 import { LoginPage } from './auth/LoginPage';
-import { useEffect } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { initAuthRequirements } from './utils/authenticated-fetch';
 
@@ -38,11 +38,15 @@ const theme = createTheme({
   },
 });
 export function App() {
+  const [authReady, setAuthReady] = useState(false);
   const { getAccessTokenSilently } = useAuth0();
-  useEffect(() => {
+  useLayoutEffect(() => {
     initAuthRequirements(isDevModeEnabled ? getFakeToken : getAccessTokenSilently);
+    setAuthReady(true);
   }, [getAccessTokenSilently]);
   return (
+    // only load the whole app after auth is ready
+    !authReady ? null :
     <StyledApp style={{ fontFamily: '"Roboto", "Helvetica", "Arial", "sans-serif"', height: '100vh' }}>
       <ThemeProvider theme={theme}>
         {/* START: routes */}

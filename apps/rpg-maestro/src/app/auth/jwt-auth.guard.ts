@@ -41,6 +41,7 @@ async function getUser(req: Request): Promise<UserID> {
     decoded = await validateJWT(token, JWKS);
   } catch (err) {
     Logger.warn(`Invalid token, err when decoding jwt ${err}`);
+    Logger.debug(`Invalid token, err when decoding jwt debug: ${err}`);
     throw new UnauthorizedException(`Invalid token, err when decoding jwt`);
   }
   if (!decoded?.email) {

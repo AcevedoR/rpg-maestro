@@ -18,11 +18,26 @@
         ]
       },
       "configurations": {
-        "e2e-tests": {
-          "envFile": "apps/rpg-maestro/.env.e2e-tests"
+        "development": {
+          "envFile": "apps/rpg-maestro/.env.dev"
         },
         "production": {
           "envFile": "apps/rpg-maestro/.env.production"
+        }
+      }
+    },
+    "dev-e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "nx run rpg-maestro:serve --no-cloud"
+          }
+        ]
+      },
+      "configurations": {
+        "e2e-tests": {
+          "envFile": "apps/rpg-maestro/.env.e2e-tests"
         }
       }
     },
@@ -45,6 +60,10 @@
       "configurations": {
         "development": {
           "buildTarget": "rpg-maestro:build:development"
+        },
+        "debug": {
+          "buildTarget": "rpg-maestro:build:development",
+          "runtimeArgs": ["--inspect=0.0.0.0:9229", "--enable-source-maps"]
         },
         "production": {
           "buildTarget": "rpg-maestro:build:production"

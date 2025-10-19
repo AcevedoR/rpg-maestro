@@ -14,6 +14,7 @@ import LogoutButton from '../auth/LogoutButton';
 import { useAuth0, withAuthenticationRequired } from '@auth0/auth0-react';
 import { getUserFromAPI } from '../maestro-ui/maestro-api';
 import { Loading } from '../auth/Loading';
+import { isDevModeEnabled } from '../../FeaturesConfiguration';
 
 function UserInfosComponent() {
   const [rpgMaestroUser, setRpgMaestroUser] = useState<User | null | undefined>(undefined);
@@ -119,6 +120,6 @@ function UserInfosComponent() {
   );
 }
 
-export const UserInfos = withAuthenticationRequired(UserInfosComponent, {
+export const UserInfos = isDevModeEnabled ? UserInfosComponent : withAuthenticationRequired(UserInfosComponent, {
   onRedirecting: () => <Loading/>,
 });

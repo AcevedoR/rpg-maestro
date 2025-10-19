@@ -2,6 +2,8 @@ import { test } from '@playwright/test';
 import { SessionID, SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
 import { FakeJwtToken, initUsersFixture } from '@rpg-maestro/test-utils';
 
+export const RPG_MAESTRO_URL = 'http://localhost:8099';
+
 export interface UserWithGeneratedSession {
   sessionId: SessionID;
   token: string;
@@ -11,7 +13,7 @@ export interface UserWithGeneratedSession {
 export async function generateNewSession(fakeJwt: FakeJwtToken): Promise<UserWithGeneratedSession> {
   return await test.step('generate a new session with a new user', async () => {
     try {
-      const response = await fetch(`http://localhost:8099/maestro/sessions`, {
+      const response = await fetch(`${RPG_MAESTRO_URL}/maestro/sessions`, {
         method: 'POST',
         body: JSON.stringify({}),
         headers: {
@@ -20,11 +22,11 @@ export async function generateNewSession(fakeJwt: FakeJwtToken): Promise<UserWit
         },
       });
       if (!response.ok) {
-        console.error(response.status, response.statusText);
+        console.error(`POST /maestro/sessions failed for user: ${fakeJwt.email} ${response.status} ${response.statusText}, TODO remove: Bearer ${fakeJwt.token}`);
         throw new Error('fetch failed for error: ' + response);
       }
       const sessionPlayingTracks = (await response.json()) as SessionPlayingTracks;
-      console.info('debut gession: ', sessionPlayingTracks);
+      console.info('debut session: ', sessionPlayingTracks);
       const session = { sessionId: sessionPlayingTracks.sessionId, token: fakeJwt.token, email: fakeJwt.email };
       console.info('test session generated: ', session);
       return session;
@@ -38,14 +40,14 @@ export async function generateNewSession(fakeJwt: FakeJwtToken): Promise<UserWit
 export async function iniTracksFromFileServerFixture(jwtToken: FakeJwtToken, sessionId: string): Promise<void> {
   await test.step('init tracks from fileserver using api', async () => {
     try {
-      const res = await fetch(`http://localhost:8099/maestro/sessions/${sessionId}/tracks`, {
+      const res = await fetch(`${RPG_MAESTRO_URL}/maestro/sessions/${sessionId}/tracks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${jwtToken.token}`,
         },
         body: JSON.stringify({
-          url: 'http://localhost:8099/public/race1.ogg',
+          url: `${RPG_MAESTRO_URL}/public/race1.ogg`,
         }),
       });
       if (!res.ok) {
@@ -65,6 +67,6 @@ export async function iniTracksFromFileServerFixture(jwtToken: FakeJwtToken, ses
 }
 export async function initUsersFixtureSpec(){
   return await test.step('init tracks from fileserver using api', async () => {
-    return initUsersFixture('http://localhost:8099');
+    return initUsersFixture(RPG_MAESTRO_URL);
   });
 }
