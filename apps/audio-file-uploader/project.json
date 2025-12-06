@@ -86,9 +86,15 @@
       "options": {
         "command": "docker push acevedor/$NX_TASK_TARGET_PROJECT:preview"
       },
-      "dependsOn": [
-        "docker-build-preview"
-      ]
+      "dependsOn": ["docker-build-preview"]
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "configFile": "apps/audio-file-uploader/vite.config.mts",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/apps/audio-file-uploader"
+      }
     }
   }
 }
