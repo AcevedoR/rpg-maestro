@@ -97,8 +97,8 @@
     "tslib": "^2.3.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.46.1",
-    "vite": "7.1.9",
-    "vite-plugin-dts": "4.5.4",
+    "vite": "^7.2.6",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.0",
     "wait-on": "^8.0.3",
     "webpack-cli": "^5.1.4"
