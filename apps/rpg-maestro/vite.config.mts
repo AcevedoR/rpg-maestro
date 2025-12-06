@@ -1,9 +1,9 @@
+/// <reference types='vitest' />
 import { defineConfig } from 'vite';
-
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
-export default defineConfig({
+export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/rpg-maestro',
   plugins: [nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
@@ -11,4 +11,16 @@ export default defineConfig({
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
   // },
-});
+  test: {
+    name: 'rpg-maestro',
+    watch: false,
+    globals: true,
+    environment: 'node',
+    include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    reporters: ['default'],
+    coverage: {
+      reportsDirectory: '../../coverage/apps/rpg-maestro',
+      provider: 'v8' as const,
+    },
+  },
+}));
