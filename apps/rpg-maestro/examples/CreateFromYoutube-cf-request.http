@@ -1,6 +1,6 @@
 
 ###
-POST https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks/from-youtube
+POST https://rpgmaestro.app/api/maestro/sessions/default-current-session/tracks/from-youtube
 Content-Type: application/json
 Authorization: Bearer XXX-replace-with-token-xXX
 

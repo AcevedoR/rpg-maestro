@@ -43,9 +43,9 @@ export async function bootstrap(): Promise<INestApplication> {
       new DocumentBuilder()
         .setTitle('rpg-maestro API')
         .setDescription(
-          'For /maestro API, use your CF_Authorization cookie, for example: curl -H "Authorization: Bearer XXXX" https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks\nthis doc is WIP, bodies and responses are not documented yet'
+          'For /maestro API, use your auth cookie, for example: curl -H "Authorization: Bearer XXXX" https://rpgmaestro.app/api/maestro/sessions/default-current-session/tracks\nthis doc is WIP, bodies and responses are not documented yet'
         )
-        .addCookieAuth('CF_Authorization')
+        .addCookieAuth('Authorization')
         .build()
     );
   SwaggerModule.setup('api', app, documentFactory);

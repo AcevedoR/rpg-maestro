@@ -10,7 +10,7 @@
 
 ## ideas
 - Youtube to mp3
-  - upload on fourgate.cloud.private by default <--- figure out a way to either:
+  - upload on rpgmaestro.app.private by default <--- figure out a way to either:
     - have a private url for my own usage, only available in France && make the public one available to all &&
       disable track uploading <-- demo version ?
     - secure mp3 files behind auth

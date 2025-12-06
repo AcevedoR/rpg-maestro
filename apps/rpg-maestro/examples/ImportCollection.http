@@ -1,5 +1,5 @@
 ###
-POST https://fourgate.cloud/api/track-collections/import-from/session
+POST https://rpgmaestro.app/api/track-collections/import-from/session
 Content-Type: application/json
 Authorization: Bearer fdzfze
 

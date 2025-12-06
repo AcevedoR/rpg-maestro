@@ -86,6 +86,6 @@ Content-Type: application/json
 Authorization: Bearer {{an_admin_user.token}}
 
 {
-  "directoryUrl": "https://fourgate.cloud/public/musics",
+  "directoryUrl": "https://rpgmaestro.app/public/musics",
   "tags": ["combat", "travel"]
 }
