@@ -22,7 +22,7 @@ export async function generateNewSession(fakeJwt: FakeJwtToken): Promise<UserWit
         },
       });
       if (!response.ok) {
-        console.error(`POST /maestro/sessions failed for user: ${fakeJwt.email} ${response.status} ${response.statusText}, TODO remove: Bearer ${fakeJwt.token}`);
+        console.error(`POST /maestro/sessions failed for user: ${fakeJwt.email} ${response.status} ${response.statusText}`);
         throw new Error('fetch failed for error: ' + response);
       }
       const sessionPlayingTracks = (await response.json()) as SessionPlayingTracks;
