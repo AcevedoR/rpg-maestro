@@ -182,9 +182,9 @@ async function checkFileIfActuallyUsable(url: string) {
     if (error instanceof TypeError) {
       Logger.error(error);
       if (error.message && error.message === 'fetch failed') {
-        throw new Error(`Fetch network error: ${error}`);
+        throw new Error(`GET ${url} Fetch network error: ${error}`);
       } else {
-        throw new Error(`Fetch unhandled error: ${error}`);
+        throw new Error(`GET ${url} Fetch unhandled error: ${error}`);
       }
     } else {
       Logger.error(error);

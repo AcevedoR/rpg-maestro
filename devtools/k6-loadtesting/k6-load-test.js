@@ -6,7 +6,7 @@ export const options = {
 };
 
 export default function () {
-  const url = 'https://fourgate.cloud/api/maestro/sessions/I7tyU8i/playing-tracks';
+  const url = 'https://rpgmaestro.app/api/maestro/sessions/I7tyU8i/playing-tracks';
 
   const payload = JSON.stringify({
     currentTrack: {
@@ -20,10 +20,10 @@ export default function () {
     'accept': '*/*',
     'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
     'content-type': 'application/json',
-    'cookie': 'CF_AppSession=XXXX_toreplace_XXXX; CF_Authorization=XXXX_toreplace_XXXX',
-    'origin': 'https://fourgate.cloud',
+    'Authorization': 'CF_AppSession=XXXX_toreplace_XXXX; Bearer XXXX_toreplace_XXXX',
+    'origin': 'https://rpgmaestro.app',
     'priority': 'u=1, i',
-    'referer': 'https://fourgate.cloud/maestro/I7tyU8i',
+    'referer': 'https://rpgmaestro.app/maestro/I7tyU8i',
     'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"macOS"',

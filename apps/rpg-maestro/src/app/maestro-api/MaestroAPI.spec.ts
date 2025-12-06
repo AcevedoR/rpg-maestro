@@ -72,7 +72,7 @@ describe('CreateTrack API', () => {
 });
 describe('ManageCurrentlyPlaying track API', () => {
   it('change current track', async () => {
-    jest.useFakeTimers().setSystemTime(CURRENT_DATE);
+    vitest.useFakeTimers().setSystemTime(CURRENT_DATE);
     const session = 'my-test-session-1';
 
     database.tracksDatabase = [

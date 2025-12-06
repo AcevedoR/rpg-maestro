@@ -10,8 +10,8 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "npx nx run rpg-maestro:dev --configuration=e2e-tests --no-cloud  --verbose | tee e2e-tests.rpg-maestro.log",
-          "npx wait-on http://localhost:8099/health --timeout 5000",
+          "npx nx run rpg-maestro:dev-e2e --configuration=e2e-tests --no-cloud  --verbose | tee e2e-tests.rpg-maestro.log",
+          "npx wait-on http://localhost:8099/health --timeout 15000",
           "PORT=8098 npx nx run audio-file-uploader:dev --configuration=e2e-tests --no-cloud  --verbose | tee e2e-tests.audio-file-uploader.log",
           "npx nx run rpg-maestro-ui:preview --configuration=e2e-tests --no-cloud"
         ]
@@ -56,9 +56,15 @@
       "options": {
         "command": "docker push acevedor/$NX_TASK_TARGET_PROJECT:preview"
       },
-      "dependsOn": [
-        "docker-build-preview"
-      ]
+      "dependsOn": ["docker-build-preview"]
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "configFile": "apps/rpg-maestro-ui/vite.config.mts",
+      "options": {
+        "reportsDirectory": "../../coverage/apps/rpg-maestro-ui"
+      }
     }
   }
 }

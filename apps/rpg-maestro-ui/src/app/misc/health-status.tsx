@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { getHealth, RPGMaestroHealthStatus } from './misc-api';
+import DiscordInviteLink from '../ui-components/discord-invite-link/discord-invite-link';
 
 export function HealthStatus() {
   const [health, setHealth] = useState<RPGMaestroHealthStatus | undefined>(undefined);
@@ -41,7 +42,7 @@ export function HealthStatus() {
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
         <h1 style={{ margin: 0 }}>RPG Maestro health status!</h1>
-        {/*  TODO discord link*/}
+        <DiscordInviteLink/>
       </div>
       {health ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

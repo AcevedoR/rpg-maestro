@@ -5,19 +5,18 @@ process.env.PORT = '3011';
 process.env.NODE_ENV = 'unit-tests';
 process.env.CONFIGURATION_ENV = 'unit-tests';
 
-import { AppModule } from './app.module';
-import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 
-const request = require('supertest');
+import request from 'supertest';
 
 describe('testing healthcheck respond ok and 200', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication();
-    await app.init();
+    process.env.AUTH_ISSUER = 'http://localhost:3014/test-utils/fake-idp';
+    process.env.AUTH_JWT_AUDIENCE = 'http://localhost:3014';
+    const { bootstrap } = await import('../app-bootstrap');
+    app = await bootstrap();
   });
 
   it(`GET: /health`, () => {

@@ -4,11 +4,13 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import { clearUserFromSessionStorage } from '../cache/session-storage.service';
+import { useAuth0 } from '@auth0/auth0-react';
 
 export default function BasicMenu() {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const { logout } = useAuth0();
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -41,11 +43,7 @@ export default function BasicMenu() {
       >
         <MenuItem onClick={() => navigate('/maestro/infos')}>My account</MenuItem>
         <MenuItem
-          onClick={() => {
-            clearUserFromSessionStorage();
-            window.location.href =
-              `https://fourgate.cloudflareaccess.com/cdn-cgi/access/logout`;
-          }}
+          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
         >
           Logout
         </MenuItem>

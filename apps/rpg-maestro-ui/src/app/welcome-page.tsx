@@ -22,7 +22,8 @@ export function WelcomePage() {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <p>This app is currently in Beta and free to use.</p>
-        <p>Public account creation is coming soon, in the mean time, contact me via Discord to have access: <DiscordInviteLink/></p>
+        <p>Public account creation is coming soon, in the mean time, contact me via Discord to have access</p>
+        <DiscordInviteLink/>
         <GithubSourceCodeLink />
       </div>
       <ToastContainer limit={5} />

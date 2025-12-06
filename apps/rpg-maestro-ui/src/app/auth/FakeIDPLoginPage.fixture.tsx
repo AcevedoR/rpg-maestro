@@ -3,12 +3,26 @@ import Button from '@mui/material/Button';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { displayError } from '../error-utils';
-import { generateFakeJwtToken, initUsersFixture, TestUsersFixture, randomEmail } from '@rpg-maestro/test-utils';
+import { initUsersFixture, TestUsersFixture } from '@rpg-maestro/test-utils';
 
+const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
+
+export async function getFakeToken(): Promise<string> {
+  const token = getCookie('FAKE_TOKEN');
+  if (!token) {
+    throw new Error('no fake token found in query params');
+  }
+  return Promise.resolve(token);
+}
+
+export async function simulateAuthenticated(userFixtureKey: keyof TestUsersFixture) {
+  // simulate login
+  const testUsersFixture = await initUsersFixture(rpgmaestroapiurl);
+  const token = testUsersFixture[userFixtureKey].token;
+  document.cookie = `FAKE_TOKEN=${token}; path=/;`;
+}
 
 export function FakeIDPLoginPage() {
-  const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
-
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const routeToRedirectTo = params.get('routeToRedirectTo') ?? '';
@@ -19,23 +33,14 @@ export function FakeIDPLoginPage() {
 
   const navigate = useNavigate();
 
-  const onLogin = async (userFixtureKey: keyof TestUsersFixture | 'a_new_user') => {
-    // simulate Cloudflare login
-    const testUsersFixture = await initUsersFixture(rpgmaestroapiurl);
-    const appSession = Math.floor(Math.random() * 1_000_000_000).toString();
-    let token: string;
-    if(userFixtureKey === 'a_new_user') {
-      token = (await generateFakeJwtToken(randomEmail())).token
-    } else {
-      token = testUsersFixture[userFixtureKey].token;
-    }
-    document.cookie = `CF_Authorization=${token}; CF_AppSession=${appSession}; path=/;`;
-
+  const onLogin = async (userFixtureKey: keyof TestUsersFixture) => {
+    await simulateAuthenticated(userFixtureKey);
     // Optionally wait a tick to ensure cookie is set
     setTimeout(() => {
       // simulate Cloudflare login redirection to the original page
+      console.info(`simulate redirection to ${routeToRedirectTo}`);
       navigate(routeToRedirectTo);
-    }, 10);
+    }, 1000);
   };
   return (
     <div
@@ -70,4 +75,8 @@ export function FakeIDPLoginPage() {
       </div>
     </div>
   );
+}
+function getCookie(key: string) {
+  const b = document.cookie.match('(^|;)\\s*' + key + '\\s*=\\s*([^;]+)');
+  return b ? b.pop() : undefined;
 }

@@ -3,7 +3,7 @@ import { PlayingTrack } from "./PlayingTrack";
 const NOW = new Date(1730000015000);
 
 beforeAll(() => {
-  jest.useFakeTimers().setSystemTime(NOW);
+  vitest.useFakeTimers().setSystemTime(NOW);
 });
 
 describe("PlayingTrack getCurrentPlayTime()", () => {

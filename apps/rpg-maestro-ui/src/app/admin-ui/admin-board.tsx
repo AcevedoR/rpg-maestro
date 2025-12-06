@@ -13,8 +13,11 @@ import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 import { getUser } from '../cache/user.cache';
 import { getAllSessions, getAllUsers } from './admin-api';
 import { formatTodayDate } from '../utils/time';
+import { withAuthenticationRequired } from '@auth0/auth0-react';
+import { Loading } from '../auth/Loading';
+import { isDevModeEnabled } from '../../FeaturesConfiguration';
 
-export function AdminBoard() {
+function AdminBoardComponent() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [sessions, setSessions] = useState<SessionPlayingTracks[] | undefined>(undefined);
   const [users, setUsers] = useState<User[] | undefined>(undefined);
@@ -132,6 +135,10 @@ export function AdminBoard() {
     </div>
   );
 }
+
+export const AdminBoard = isDevModeEnabled ? AdminBoardComponent : withAuthenticationRequired(AdminBoardComponent, {
+  onRedirecting: () => <Loading />,
+});
 
 interface SessionAccessRow {
   id: string;

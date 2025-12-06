@@ -13,7 +13,7 @@ POST http://localhost:3000/test-utils/create-test-users-fixtures
 ### create a session
 POST http://localhost:3000/maestro/sessions
 Content-Type: application/json
-Cookie: CF_Authorization={{an_admin_user.token}}
+Authorization: Bearer {{an_admin_user.token}}
 
 > {%
   client.global.set("session_id", response.body.sessionId);
@@ -23,7 +23,7 @@ Cookie: CF_Authorization={{an_admin_user.token}}
 ### create a track
 POST http://localhost:3000/maestro/sessions/{{session_id}}/tracks
 Content-Type: application/json
-Cookie: CF_Authorization={{an_admin_user.token}}
+Authorization: Bearer {{an_admin_user.token}}
 
 {
   "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
@@ -39,7 +39,7 @@ Cookie: CF_Authorization={{an_admin_user.token}}
 ###
 ### Get one
 GET http://localhost:3000/tracks/{{last_created_track_id}}
-Cookie: CF_Authorization={{an_admin_user.token}}
+Authorization: Bearer {{an_admin_user.token}}
 
 > {%
   client.test("Request executed successfully", function() {
@@ -52,7 +52,7 @@ Cookie: CF_Authorization={{an_admin_user.token}}
 ### Set created track to current playing
 PUT http://localhost:3000/maestro/sessions/{{session_id}}/playing-tracks
 Content-Type: application/json
-Cookie: CF_Authorization={{an_admin_user.token}}
+Authorization: Bearer {{an_admin_user.token}}
 
 {
   "currentTrack":{
@@ -70,7 +70,7 @@ Cookie: CF_Authorization={{an_admin_user.token}}
 
 ### get playing track
 GET http://localhost:3000/sessions/{{session_id}}/playing-tracks
-Cookie: CF_Authorization={{an_admin_user.token}}
+Authorization: Bearer {{an_admin_user.token}}
 
 > {%
   client.test("Request executed successfully", function() {
@@ -83,9 +83,9 @@ Cookie: CF_Authorization={{an_admin_user.token}}
 POST http://localhost:3000/maestro/sessions/{{session_id}}/tracks/from-directory
 Accept: application/json
 Content-Type: application/json
-Cookie: CF_Authorization={{an_admin_user.token}}
+Authorization: Bearer {{an_admin_user.token}}
 
 {
-  "directoryUrl": "https://fourgate.cloud/public/musics",
+  "directoryUrl": "https://rpgmaestro.app/public/musics",
   "tags": ["combat", "travel"]
 }

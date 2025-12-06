@@ -3,10 +3,14 @@
 - fix auth:
   - check onboarding nominal path does work
   - add a way to promote a maestro from UI?
+  - add a way to load collections from UI?
+    - as a Maestro
+    - as an Admin for other Maestros
+    - as a Minstrel ?
 
 ## ideas
 - Youtube to mp3
-  - upload on fourgate.cloud.private by default <--- figure out a way to either:
+  - upload on rpgmaestro.app.private by default <--- figure out a way to either:
     - have a private url for my own usage, only available in France && make the public one available to all &&
       disable track uploading <-- demo version ?
     - secure mp3 files behind auth

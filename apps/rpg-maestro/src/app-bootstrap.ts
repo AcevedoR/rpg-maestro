@@ -6,13 +6,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { NetworkingConfiguration } from './app/NetworkingConfiguration';
 import { LogLevel } from '@nestjs/common/services/logger.service';
+import { checkValidConfig } from './config';
 
 export async function bootstrap(): Promise<INestApplication> {
   const env = process.env['NODE' + '_ENV'] || 'development';
   const configurationEnv = process.env['CONFIGURATION_ENV'] || 'development';
   Logger.log(`starting app in env: ${env} or ${configurationEnv}`);
+  checkValidConfig();
 
-  const logLevels: Record<string, LogLevel[]>  = {
+  const logLevels: Record<string, LogLevel[]> = {
     TRACE: ['log', 'error', 'warn', 'debug', 'verbose'],
     DEBUG: ['log', 'error', 'warn', 'debug'],
     INFO: ['log', 'error', 'warn'],
@@ -20,10 +22,12 @@ export async function bootstrap(): Promise<INestApplication> {
   };
   let configuredLogLevel: LogLevel[] | null;
   if (process.env.LOG_LEVEL) {
-    if(logLevels[process.env.LOG_LEVEL]){
+    if (logLevels[process.env.LOG_LEVEL]) {
       configuredLogLevel = logLevels[process.env.LOG_LEVEL];
     } else {
-      throw new Error(`invalid LOG_LEVEL value configured: ${process.env.LOG_LEVEL}, available levels are: ${Object.keys(logLevels)}`);
+      throw new Error(
+        `invalid LOG_LEVEL value configured: ${process.env.LOG_LEVEL}, available levels are: ${Object.keys(logLevels)}`
+      );
     }
   }
 
@@ -39,9 +43,9 @@ export async function bootstrap(): Promise<INestApplication> {
       new DocumentBuilder()
         .setTitle('rpg-maestro API')
         .setDescription(
-          'For /maestro API, use your CF_Authorization cookie, for example: curl -H "cookie: CF_Authorization=XXXX" https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks\nthis doc is WIP, bodies and responses are not documented yet'
+          'For /maestro API, use your auth cookie, for example: curl -H "Authorization: Bearer XXXX" https://rpgmaestro.app/api/maestro/sessions/default-current-session/tracks\nthis doc is WIP, bodies and responses are not documented yet'
         )
-        .addCookieAuth('CF_Authorization')
+        .addCookieAuth('Authorization')
         .build()
     );
   SwaggerModule.setup('api', app, documentFactory);

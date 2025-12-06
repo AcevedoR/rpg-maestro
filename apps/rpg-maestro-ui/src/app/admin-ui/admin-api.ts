@@ -1,11 +1,11 @@
 import { SessionPlayingTracks, User } from '@rpg-maestro/rpg-maestro-api-contract';
-import { fetchClient } from '../utils/fetch-client';
+import { authenticatedFetch } from '../utils/authenticated-fetch';
 
 const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL; // TODO centralize
 
 export async function getAllSessions(): Promise<SessionPlayingTracks[]> {
   try {
-    const response = await fetchClient(`${rpgmaestroapiurl}/maestro/admin/sessions`, {
+    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/admin/sessions`, {
       credentials: 'include',
     });
     return response as SessionPlayingTracks[];
@@ -17,7 +17,7 @@ export async function getAllSessions(): Promise<SessionPlayingTracks[]> {
 
 export async function getAllUsers(): Promise<User[]> {
   try {
-    const response = await fetchClient(`${rpgmaestroapiurl}/maestro/admin/users`, {
+    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/admin/users`, {
       credentials: 'include',
     });
     return response as User[];

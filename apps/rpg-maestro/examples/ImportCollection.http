@@ -1,7 +1,7 @@
 ###
-POST https://fourgate.cloud/api/track-collections/import-from/session
+POST https://rpgmaestro.app/api/track-collections/import-from/session
 Content-Type: application/json
-Cookie: CF_AppSession=dfsdf; CF_Authorization=fdzfze
+Authorization: Bearer fdzfze
 
 {
   "sessionId": "default-current-session",

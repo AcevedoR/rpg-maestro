@@ -20,8 +20,11 @@ import { MaestroAudioPlayer, MaestroAudioPlayerRef } from './maestro-audio-playe
 import { getUser } from '../cache/user.cache';
 import { toastError } from '../ui-components/toast-popup';
 import BasicMenu from '../ui-components/menu';
+import { withAuthenticationRequired } from '@auth0/auth0-react';
+import { Loading } from '../auth/Loading';
+import { isDevModeEnabled } from '../../FeaturesConfiguration';
 
-export function MaestroSoundboard() {
+function MaestroSoundboardComponent() {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
   const [trackFilters, setTrackFilters] = useState<TrackFilters>({});
@@ -69,7 +72,9 @@ export function MaestroSoundboard() {
     }
     dispatchTrackWasManuallyChanged(changedTracks);
   };
-  const requestEditTrackToPlay = async (trackToPlay: TrackToPlay): Promise<SessionPlayingTracks | AbortedRequestError> => {
+  const requestEditTrackToPlay = async (
+    trackToPlay: TrackToPlay
+  ): Promise<SessionPlayingTracks | AbortedRequestError> => {
     return await setTrackToPlay(sessionId, { currentTrack: trackToPlay });
   };
 
@@ -147,7 +152,7 @@ export function MaestroSoundboard() {
             materialUiIcon={LyricsTwoTone}
           />
         ) : (
-          <></>
+          ''
         )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
@@ -232,10 +237,13 @@ export function MaestroSoundboard() {
           onSetTrackToPlay={requestSetTrackToPlay}
           filters={trackFilters}
           onRefreshRequested={refreshTracks}
-          currentTrack={currentPlayingTrack}
         />
       </div>
       <ToastContainer limit={5} />
     </div>
   );
 }
+
+export const MaestroSoundboard = isDevModeEnabled ? MaestroSoundboardComponent : withAuthenticationRequired(MaestroSoundboardComponent, {
+  onRedirecting: () => <Loading />,
+});

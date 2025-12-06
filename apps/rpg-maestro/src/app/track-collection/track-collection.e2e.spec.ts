@@ -1,12 +1,3 @@
-process.env.DATABASE = 'in-memory';
-process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL = 'http://localhost:8098/not-used-in-this-test';
-process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-test';
-process.env.PORT = '3014';
-process.env.NODE_ENV = 'unit-tests';
-process.env.CONFIGURATION_ENV = 'unit-tests';
-process.env.LOG_LEVEL = 'WARN';
-// keep env var first
-
 import { FakeJwtToken, TestUsersFixture } from '@rpg-maestro/test-utils';
 import express, { Express } from 'express';
 import {
@@ -15,7 +6,6 @@ import {
   TrackCollectionCreation,
   TrackCollectionImportFromSession, TrackCreation
 } from '@rpg-maestro/rpg-maestro-api-contract';
-import { bootstrap } from '../../app-bootstrap';
 import { INestApplication } from '@nestjs/common';
 
 import request from 'supertest';
@@ -50,12 +40,23 @@ describe('TrackCollection', () => {
   let A_MAESTRO_USER: FakeJwtToken;
 
   beforeAll(async () => {
+    process.env.DATABASE = 'in-memory';
+    process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL = 'http://localhost:8098/not-used-in-this-test';
+    process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-test';
+    process.env.AUTH_ISSUER = 'http://localhost:3014/test-utils/fake-idp';
+    process.env.AUTH_JWT_AUDIENCE = 'http://localhost:3014';
+    process.env.PORT = '3014';
+    process.env.NODE_ENV = 'unit-tests';
+    process.env.CONFIGURATION_ENV = 'unit-tests';
+    process.env.LOG_LEVEL = 'WARN';
+
     staticServerApp.use('/public', express.static(path.join(__dirname, '../../assets')));
     staticServer = staticServerApp.listen(staticServerPort, () => {
       console.info(`[server]: Server serving static files is running at http://localhost:${staticServerPort}`);
     });
   })
   beforeEach(async () => {
+    const { bootstrap } = await import('../../app-bootstrap');
     app = await bootstrap();
     const users = await request(app.getHttpServer())
       .post('/test-utils/create-test-users-fixtures')
@@ -70,7 +71,7 @@ describe('TrackCollection', () => {
       .post('/track-collections')
       .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(201)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
@@ -86,7 +87,7 @@ describe('TrackCollection', () => {
 
     await request(app.getHttpServer())
       .get('/track-collections/' + trackCollectionCreateRequest.id)
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(200)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
@@ -98,7 +99,7 @@ describe('TrackCollection', () => {
       .post('/track-collections')
       .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(201)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
@@ -107,7 +108,7 @@ describe('TrackCollection', () => {
 
     await request(app.getHttpServer())
       .get('/track-collections/' + trackCollectionCreateRequest.id)
-      .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+      .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
       .expect(200)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
@@ -120,7 +121,7 @@ describe('TrackCollection', () => {
       .post('/maestro/sessions')
       .send({})
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(201)).body as SessionPlayingTracks;
 
     const trackCreationRequest: TrackCreation = {
@@ -133,7 +134,7 @@ describe('TrackCollection', () => {
       .post('/maestro/sessions/:sessionId/tracks'.replace(':sessionId', session.sessionId))
       .send(trackCreationRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(201)).body as Track;
 
     const importRequest: TrackCollectionImportFromSession = {
@@ -145,7 +146,7 @@ describe('TrackCollection', () => {
       .post('/track-collections/import-from/session')
       .send(importRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(201)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
@@ -160,7 +161,7 @@ describe('TrackCollection', () => {
 
     await request(app.getHttpServer())
       .get('/track-collections/' + importRequest.id)
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(200)
       .then((httpResponse) => {
         const res = httpResponse.body as TrackCollection;
@@ -172,7 +173,7 @@ describe('TrackCollection', () => {
       .post('/track-collections')
       .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${A_MAESTRO_USER.token}`)
+      .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
       .expect(403);
   }, 10000);
   it('cannot create with already existing id', async () => {
@@ -180,14 +181,14 @@ describe('TrackCollection', () => {
       .post('/track-collections')
       .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(201);
 
     await request(app.getHttpServer())
       .post('/track-collections')
       .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(409)
       .then((httpResponse) => {
         expect(httpResponse.body.message).toContain('already exists');

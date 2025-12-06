@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   TrackCollection,
   TrackCollectionCreation,
   TrackCollectionImportFromSession,
-  TrackCollectionUpdate
+  TrackCollectionUpdate,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { TrackCollectionService } from './track-collection.service';
 import { Role } from '../auth/role.enum';
@@ -16,7 +16,7 @@ import { RolesGuard } from '../auth/roles.guard';
 @Controller('track-collections')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class TrackCollectionController {
-  constructor(private readonly trackCollectionService: TrackCollectionService) {}
+  constructor(@Inject(TrackCollectionService) private readonly trackCollectionService: TrackCollectionService) {}
 
   @Post()
   @Roles([Role.ADMIN])
@@ -36,7 +36,10 @@ export class TrackCollectionController {
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @ApiResponse({ status: 403, description: 'Forbidden. Admin role required.' })
   @ApiBearerAuth()
-  async importFromSession(@Body() importFromSessionRequest: TrackCollectionImportFromSession, @Request() req: any): Promise<TrackCollection> {
+  async importFromSession(
+    @Body() importFromSessionRequest: TrackCollectionImportFromSession,
+    @Request() req: any
+  ): Promise<TrackCollection> {
     return this.trackCollectionService.importFromSession(importFromSessionRequest, req.user.id);
   }
 

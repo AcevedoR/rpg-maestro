@@ -1,5 +1,5 @@
 /// <reference types='vitest' />
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import dts from 'vite-plugin-dts';
 import * as path from 'path';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
@@ -7,7 +7,7 @@ import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
 export default defineConfig({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/libs/rpg-maestro-api-contract',
+  cacheDir: '../../node_modules/.vite/libs/audio-file-uploader-api-contract',
   logLevel: 'warn',
   plugins: [
     nxViteTsPaths(),
@@ -21,7 +21,7 @@ export default defineConfig({
   // Configuration for building your library.
   // See: https://vitejs.dev/guide/build.html#library-mode
   build: {
-    outDir: '../../dist/libs/rpg-maestro-api-contract',
+    outDir: '../../dist/libs/audio-file-uploader-api-contract',
     emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: {
@@ -30,7 +30,7 @@ export default defineConfig({
     lib: {
       // Could also be a dictionary or array of multiple entry points.
       entry: 'src/index.ts',
-      name: 'rpg-maestro-api-contract',
+      name: 'audio-file-uploader-api-contract',
       fileName: 'index',
       // Change this to the formats you want to support.
       // Don't forget to update your package.json as well.
@@ -39,6 +39,18 @@ export default defineConfig({
     rollupOptions: {
       // External packages that should not be bundled into your library.
       external: [],
+    },
+  },
+  test: {
+    name: 'audio-file-uploader-api-contract',
+    watch: false,
+    globals: true,
+    environment: 'jsdom',
+    include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    reporters: ['default'],
+    coverage: {
+      reportsDirectory: '../../coverage/libs/audio-file-uploader-api-contract',
+      provider: 'v8' as const,
     },
   },
 });

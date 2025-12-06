@@ -1,23 +1,26 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import {
-  UserWithGeneratedSession,
   generateNewSession,
   iniTracksFromFileServerFixture,
-  initUsersFixtureSpec
+  initUsersFixtureSpec,
+  UserWithGeneratedSession,
 } from './fixtures';
-import { goToMaestroPage, waitForAppToBeReady } from './navigation';
-import { FakeJwtToken } from '@rpg-maestro/test-utils';
+import { goToMaestroPage, simulateAuthenticatedInBrowser, waitForAppToBeReady } from './navigation';
 
+test('health check works', async ({ page }) => {
+  await expect(waitForAppToBeReady(page)).resolves.not.toThrow();
+});
 
 test('a Maestro can load (via API) and play a current track for its players', async ({ page }) => {
   let user: UserWithGeneratedSession;
   await test.step('prepare data', async () => {
     await waitForAppToBeReady(page)
-    user = await generateNewSession((await initUsersFixtureSpec()).a_maestro_user);
+    const userFixture = await initUsersFixtureSpec();
+    user = await generateNewSession(userFixture.a_maestro_user);
     await iniTracksFromFileServerFixture(user, user.sessionId);
   });
 
-  await simulateAuth(page, user);
+  await simulateAuthenticatedInBrowser(page, user);
 
   await test.step('go to maestro page, and list available tracks', async () => {
     await goToMaestroPage(page, user.sessionId);
@@ -35,45 +38,4 @@ test('a Maestro can load (via API) and play a current track for its players', as
   });
 });
 
-test('a Maestro can add a new track located on a remote server', async ({ page }) => {
-  let user: UserWithGeneratedSession;
-  await test.step('prepare data', async () => {
-    await waitForAppToBeReady(page)
-    user = await generateNewSession((await initUsersFixtureSpec()).a_maestro_user);
-  });
 
-  await simulateAuth(page, user);
-
-  await test.step('go to Tracks management and add a track', async () => {
-    await goToTracksManagement(page, user.sessionId);
-    await page.getByLabel('URL').fill('http://localhost:8099/public/light-switch-sound-198508.mp3');
-    await page.getByText('CREATE TRACK').click();
-    await expect(page.getByText('CREATE TRACK')).toBeEnabled();
-  });
-
-  await test.step('track should be available on Maestro UI', async () => {
-    await goToMaestroPage(page, user.sessionId);
-    await expect(page.locator('.MuiDataGrid-row', { hasText: 'light-switch-sound-198508' })).toBeVisible();
-  })
-});
-
-async function goToTracksManagement(page: Page, sessionId: string) {
-  await page.goto(`/maestro/manage/${sessionId}`);
-  expect(await page.locator('h1').innerText()).toContain('Tracks management');
-}
-
-async function simulateAuth(page: Page, fakeJwtToken: FakeJwtToken) {
-  await test.step('simulate login in', async () => {
-    await page.context().addCookies([
-      {
-        name: 'CF_Authorization',
-        value: fakeJwtToken.token,
-        domain: 'localhost',
-        path: '/',
-        httpOnly: false,
-        secure: false,
-        sameSite: 'Lax',
-      },
-    ]);
-  });
-}

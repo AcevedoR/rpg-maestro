@@ -17,7 +17,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "directoryUrl": "https://fourgate.cloud/public/musics"
+  "directoryUrl": "https://rpgmaestro.app/public/musics"
 }
 
 ###

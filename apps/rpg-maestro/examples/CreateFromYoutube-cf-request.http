@@ -1,8 +1,8 @@
 
 ###
-POST https://fourgate.cloud/api/maestro/sessions/default-current-session/tracks/from-youtube
+POST https://rpgmaestro.app/api/maestro/sessions/default-current-session/tracks/from-youtube
 Content-Type: application/json
-cookie: CF_Authorization=XXX-replace-with-token-xXX
+Authorization: Bearer XXX-replace-with-token-xXX
 
 {
   "urls": [

@@ -13,6 +13,7 @@ import { TrackCollectionModule } from './track-collection/track-collection.modul
 import { AuthGuardsModule } from './auth/auth-guards.module';
 import { SessionModule } from './sessions/sessions.module';
 import { AdminModule } from './admin/admin.module';
+import { TestsUtilsModule } from './test-utils/tests-utils.module';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { AdminModule } from './admin/admin.module';
     AdminModule,
     HealthModule,
     AuthGuardsModule,
-    ...(isDevOrTestEnv() ? [require('./test-utils/tests-utils.module').TestsUtilsModule] : []),
+    ...(isDevOrTestEnv() ? [TestsUtilsModule] : []),
   ],
   controllers: [AuthenticatedMaestroController, PlayersController],
   providers: [

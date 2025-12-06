@@ -1,12 +1,3 @@
-process.env.DATABASE = 'in-memory';
-process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL = 'http://localhost:8098/not-used-in-this-test';
-process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-test';
-process.env.PORT = '3012';
-process.env.NODE_ENV = 'unit-tests';
-process.env.CONFIGURATION_ENV = 'unit-tests';
-process.env.LOG_LEVEL = 'WARN';
-// keep env var first
-
 import { FakeJwtToken, TestUsersFixture } from '@rpg-maestro/test-utils';
 import express, { Express } from 'express';
 import {
@@ -14,9 +5,8 @@ import {
   parseAndValidateDto,
   SessionPlayingTracks,
   Track,
-  TrackCollectionCreation
+  TrackCollectionCreation,
 } from '@rpg-maestro/rpg-maestro-api-contract';
-import { bootstrap } from '../../app-bootstrap';
 import { INestApplication } from '@nestjs/common';
 
 import request from 'supertest';
@@ -38,12 +28,23 @@ describe('Onboarding API e2e', () => {
   const EMPTY_SESSION_BODY = {};
 
   beforeAll(async () => {
+    process.env.DATABASE = 'in-memory';
+    process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL = 'http://localhost:8098/not-used-in-this-test';
+    process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-test';
+    process.env.AUTH_JWT_AUDIENCE = 'http://localhost:3012';
+    process.env.AUTH_ISSUER = 'http://localhost:3012/test-utils/fake-idp';
+    process.env.PORT = '3012';
+    process.env.NODE_ENV = 'unit-tests';
+    process.env.CONFIGURATION_ENV = 'unit-tests';
+    process.env.LOG_LEVEL = 'WARN';
+
     staticServerApp.use('/public', express.static(path.join(__dirname, '../../assets')));
     staticServer = staticServerApp.listen(staticServerPort, () => {
       console.info(`[server]: Server serving static files is running at http://localhost:${staticServerPort}`);
     });
   });
   beforeEach(async () => {
+    const { bootstrap } = await import('../../app-bootstrap');
     app = await bootstrap();
     const users = await request(app.getHttpServer())
       .post('/test-utils/create-test-users-fixtures')
@@ -61,7 +62,7 @@ describe('Onboarding API e2e', () => {
         .post('/maestro/sessions')
         .send(EMPTY_SESSION_BODY)
         .set('Content-Type', 'application/json')
-        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
+        .set('Authorization', `Bearer ${MAESTRO_B.token}`)
         .expect(201)
     ).body as SessionPlayingTracks;
 
@@ -71,7 +72,7 @@ describe('Onboarding API e2e', () => {
     const fetched = (
       await request(app.getHttpServer())
         .get('/sessions/:sessionId/playing-tracks'.replace(':sessionId', created.sessionId))
-        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
+        .set('Authorization', `Bearer ${MAESTRO_B.token}`)
         .expect(200)
     ).body as SessionPlayingTracks;
     expect(fetched.sessionId).toEqual(created.sessionId);
@@ -82,8 +83,8 @@ describe('Onboarding API e2e', () => {
       .post('/maestro/sessions')
       .send(EMPTY_SESSION_BODY)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${A_MINSTREL_USER.token}`)
-      .expect(403)
+      .set('Authorization', `Bearer ${A_MINSTREL_USER.token}`)
+      .expect(403);
   }, 10000);
 
   it('a Maestro can create a session with a default collection', async () => {
@@ -108,7 +109,7 @@ describe('Onboarding API e2e', () => {
       .put('/track-collections/default')
       .send(trackCollectionCreateRequest)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${AN_ADMIN_USER.token}`)
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
       .expect(200);
 
     const createSessionRequest: CreateSession = await parseAndValidateDto(CreateSession, {
@@ -120,7 +121,7 @@ describe('Onboarding API e2e', () => {
         .post('/maestro/sessions')
         .send(createSessionRequest)
         .set('Content-Type', 'application/json')
-        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
+        .set('Authorization', `Bearer ${MAESTRO_B.token}`)
         .expect(201)
     ).body as SessionPlayingTracks;
 
@@ -130,7 +131,7 @@ describe('Onboarding API e2e', () => {
     const sessionTracks = (
       await request(app.getHttpServer())
         .get('/maestro/sessions/:sessionId/tracks'.replace(':sessionId', created.sessionId))
-        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
+        .set('Authorization', `Bearer ${MAESTRO_B.token}`)
         .expect(200)
     ).body as Track[];
     expect(sessionTracks).toBeDefined();
@@ -151,7 +152,7 @@ describe('Onboarding API e2e', () => {
         .post('/maestro/sessions')
         .send(EMPTY_SESSION_BODY)
         .set('Content-Type', 'application/json')
-        .set('Cookie', `CF_Authorization=${MAESTRO_A.token}`)
+        .set('Authorization', `Bearer ${MAESTRO_A.token}`)
         .expect(201)
     ).body as SessionPlayingTracks;
     const sessionB = (
@@ -159,7 +160,7 @@ describe('Onboarding API e2e', () => {
         .post('/maestro/sessions')
         .send(EMPTY_SESSION_BODY)
         .set('Content-Type', 'application/json')
-        .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
+        .set('Authorization', `Bearer ${MAESTRO_B.token}`)
         .expect(201)
     ).body as SessionPlayingTracks;
 
@@ -167,18 +168,18 @@ describe('Onboarding API e2e', () => {
     await request(app.getHttpServer())
       .get(`/maestro/sessions/${sessionA.sessionId}/tracks`)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${MAESTRO_A.token}`)
+      .set('Authorization', `Bearer ${MAESTRO_A.token}`)
       .expect(200);
     await request(app.getHttpServer())
       .get(`/maestro/sessions/${sessionB.sessionId}/tracks`)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${MAESTRO_B.token}`)
+      .set('Authorization', `Bearer ${MAESTRO_B.token}`)
       .expect(200);
     // but maestro A cannot get maestro B session
     await request(app.getHttpServer())
       .get(`/maestro/sessions/${sessionB.sessionId}/tracks`)
       .set('Content-Type', 'application/json')
-      .set('Cookie', `CF_Authorization=${MAESTRO_A.token}`)
+      .set('Authorization', `Bearer ${MAESTRO_A.token}`)
       .expect(403);
   });
 

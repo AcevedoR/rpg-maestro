@@ -21,8 +21,6 @@ const SYNC_TRACK_INTERVAL_MS = 5000;
 export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, ref: Ref<MaestroAudioPlayerRef>) => {
   const { sessionId, onCurrentTrackEdit } = props;
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
-  const [syncCurrentTrackRequested, setSyncCurrentTrackRequested] = useState<Promise<void> | null>(null);
   const [currentTrackEditRequested, setCurrentTrackEditRequested] = useState<Promise<void> | null>(null);
   const isInUIResync = useRef(false);
   const audioPlayer = useRef<H5AudioPlayer>();
@@ -44,57 +42,60 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
     };
   }
 
-  const resyncCurrentTrackOnUi = useCallback(async (trackFromServer: PlayingTrack | null) => {
-    if (currentTrackEditRequested === null && !isInUIResync.current) {
-      try {
-        isInUIResync.current = true;
-        if (trackFromServer) {
-          console.info('synchronizing track');
-          setCurrentTrack(trackFromServer);
-          if (!trackFromServer) {
-            throw new Error('Current track is not defined');
-          }
-          if (audioPlayer.current?.audio?.current) {
-            if (audioPlayer.current.audio.current.src !== trackFromServer.url) {
-              // this avoids the player to 'blink' in the UI
-              audioPlayer.current.audio.current.src = trackFromServer.url;
+  const resyncCurrentTrackOnUi = useCallback(
+    async (trackFromServer: PlayingTrack | null) => {
+      if (currentTrackEditRequested === null && !isInUIResync.current) {
+        try {
+          isInUIResync.current = true;
+          if (trackFromServer) {
+            console.info('synchronizing track');
+            setCurrentTrack(trackFromServer);
+            if (!trackFromServer) {
+              throw new Error('Current track is not defined');
             }
-            audioPlayer.current.audio.current.title = trackFromServer.name;
-            const currentPlayTime = trackFromServer.getCurrentPlayTime();
-            if (currentPlayTime) {
-              audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
-            }
-            if (trackFromServer.isPaused) {
-              // paused
-              audioPlayer.current.audio.current.pause();
-            } else {
-              // playing
-              try {
-                await audioPlayer.current.audio.current.play();
-              } catch (error) {
-                if (error instanceof DOMException && error.name === 'NotAllowedError') {
-                  console.error(
-                    `Play failed: User interaction with the document is required first. Original error: ${error}`
-                  );
-                  displayError('This is your first time using the app, please accept autoplay by hitting play :)');
-                } else {
-                  console.error('An unexpected error occurred:', error);
+            if (audioPlayer.current?.audio?.current) {
+              if (audioPlayer.current.audio.current.src !== trackFromServer.url) {
+                // this avoids the player to 'blink' in the UI
+                audioPlayer.current.audio.current.src = trackFromServer.url;
+              }
+              audioPlayer.current.audio.current.title = trackFromServer.name;
+              const currentPlayTime = trackFromServer.getCurrentPlayTime();
+              if (currentPlayTime) {
+                audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
+              }
+              if (trackFromServer.isPaused) {
+                // paused
+                audioPlayer.current.audio.current.pause();
+              } else {
+                // playing
+                try {
+                  await audioPlayer.current.audio.current.play();
+                } catch (error) {
+                  if (error instanceof DOMException && error.name === 'NotAllowedError') {
+                    console.error(
+                      `Play failed: User interaction with the document is required first. Original error: ${error}`
+                    );
+                    displayError('This is your first time using the app, please accept autoplay by hitting play :)');
+                  } else {
+                    console.error('An unexpected error occurred:', error);
+                  }
                 }
               }
+            } else {
+              console.warn('audio player not available yet');
             }
           } else {
-            console.warn('audio player not available yet');
+            isInUIResync.current = false;
           }
-        } else {
+        } catch (err) {
+          console.error('An unexpected error occurred:', err);
+        } finally {
           isInUIResync.current = false;
         }
-      } catch (err) {
-        console.error('An unexpected error occurred:', err);
-      } finally {
-        isInUIResync.current = false;
       }
-    }
-  }, []);
+    },
+    [currentTrackEditRequested]
+  );
 
   const requestCurrentTrackEdit = async (editedCurrentTrack: TrackToPlay): Promise<void> => {
     const requestFunc = () =>
@@ -128,13 +129,8 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
         }
         return Promise.resolve();
       });
-    try {
-      const request = requestFunc();
-      setSyncCurrentTrackRequested(request);
-      await request;
-    } finally {
-      setSyncCurrentTrackRequested(null);
-    }
+    const request = requestFunc();
+    await request;
   }, [currentTrackEditRequested, sessionId, currentTrack, resyncCurrentTrackOnUi]);
 
   useEffect(() => {
@@ -142,7 +138,6 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
     const id = setInterval(() => {
       periodicallySyncCurrentTrack();
     }, SYNC_TRACK_INTERVAL_MS);
-    setIntervalId(id);
     return () => clearInterval(id);
   }, [periodicallySyncCurrentTrack, sessionId, currentTrack]);
 
