@@ -14,6 +14,13 @@
         "tsConfig": "libs/rpg-maestro-api-contract/tsconfig.lib.json",
         "assets": ["libs/rpg-maestro-api-contract/*.md"]
       }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/libs/rpg-maestro-api-contract"
+      }
     }
   }
 }
