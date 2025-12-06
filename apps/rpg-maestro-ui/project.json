@@ -56,9 +56,15 @@
       "options": {
         "command": "docker push acevedor/$NX_TASK_TARGET_PROJECT:preview"
       },
-      "dependsOn": [
-        "docker-build-preview"
-      ]
+      "dependsOn": ["docker-build-preview"]
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "configFile": "apps/rpg-maestro-ui/vite.config.mts",
+      "options": {
+        "reportsDirectory": "../../coverage/apps/rpg-maestro-ui"
+      }
     }
   }
 }
