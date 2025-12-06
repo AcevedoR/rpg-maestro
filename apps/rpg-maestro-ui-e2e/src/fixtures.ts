@@ -67,6 +67,6 @@ export async function iniTracksFromFileServerFixture(jwtToken: FakeJwtToken, ses
 }
 export async function initUsersFixtureSpec(){
   return await test.step('init tracks from fileserver using api', async () => {
-    return initUsersFixture(RPG_MAESTRO_URL);
+    return await initUsersFixture(RPG_MAESTRO_URL);
   });
 }

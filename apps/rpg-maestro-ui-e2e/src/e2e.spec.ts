@@ -15,7 +15,8 @@ test('a Maestro can load (via API) and play a current track for its players', as
   let user: UserWithGeneratedSession;
   await test.step('prepare data', async () => {
     await waitForAppToBeReady(page)
-    user = await generateNewSession((await initUsersFixtureSpec()).a_maestro_user);
+    const userFixture = await initUsersFixtureSpec();
+    user = await generateNewSession(userFixture.a_maestro_user);
     await iniTracksFromFileServerFixture(user, user.sessionId);
   });
 
@@ -41,7 +42,8 @@ test('a Maestro can add a new track located on a remote server', async ({ page }
   let user: UserWithGeneratedSession;
   await test.step('prepare data', async () => {
     await waitForAppToBeReady(page)
-    user = await generateNewSession((await initUsersFixtureSpec()).a_maestro_user);
+    const userFixture = await initUsersFixtureSpec();
+    user = await generateNewSession(userFixture.a_maestro_user);
   });
 
   await simulateAuthenticatedInBrowser(page, user);
