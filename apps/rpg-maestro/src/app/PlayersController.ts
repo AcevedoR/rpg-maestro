@@ -7,6 +7,11 @@ import { TrackService } from './maestro-api/TrackService';
 export class PlayersController {
   constructor(@Inject(SessionsService) private sessionsService: SessionsService, @Inject(TrackService) private trackService: TrackService) {}
 
+  @Get('/migrate')
+  async migrate(): Promise<string> {
+    await this.trackService.migrateTracksTmp();
+    return 'done';
+  }
   @Get('/tracks/:id')
   getTrack(@Param('id') id: string): Promise<Track> {
     return this.trackService.get(id);
