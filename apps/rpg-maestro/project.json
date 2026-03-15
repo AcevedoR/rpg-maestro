@@ -19,7 +19,7 @@
       },
       "configurations": {
         "development": {
-          "envFile": "apps/rpg-maestro/.env.dev"
+          "envFile": "apps/rpg-maestro/.env.development"
         },
         "production": {
           "envFile": "apps/rpg-maestro/.env.production"

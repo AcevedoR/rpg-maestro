@@ -92,6 +92,26 @@ export class TrackService {
     return track;
   }
 
+  async migrateTracksTmp(){
+    const allSessions = await this.database.getAllSessions();
+    Logger.warn("migrating tracks for allSessions: "+allSessions)
+
+    for (const session of allSessions) {
+      Logger.warn("\tmigrating session "+session.sessionId)
+      const tracks = await this.database.getAllTracks(session.sessionId);
+      for (const track of tracks) {
+        Logger.warn("\t\tmigrating track "+track.id)
+        if (track.url?.startsWith('https://fourgate.cloud')) {
+          track.url = track.url.replace(
+            'https://fourgate.cloud',
+            'https://rpgmaestro.app')
+          track.updated_at = Date.now();
+          await this.database.save(track);
+        }
+      }
+    }
+  }
+
   async updateTrack(id: string, trackUpdate: TrackUpdate): Promise<Track> {
     const existing = await this.database.getTrack(id);
 
