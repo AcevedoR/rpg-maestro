@@ -1,12 +1,14 @@
 
 ## urgent
 - fix auth:
-  - check onboarding nominal path does work
+  - check onboarding nominal path does work <<<<<< this
   - add a way to promote a maestro from UI?
   - add a way to load collections from UI?
     - as a Maestro
     - as an Admin for other Maestros
     - as a Minstrel ?
+  - redirect after login
+  - create a homepage and self onboarding
 
 ## ideas
 - Youtube to mp3
