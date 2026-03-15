@@ -5,7 +5,7 @@ import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 
 let getAccessTokenSilentlyFunction: (() => Promise<string>) | undefined;
 
-export function initAuthRequirements(getAccessTokenSilentlyFunctionParam: (() => Promise<string>)){
+export function initAuthRequirements(getAccessTokenSilentlyFunctionParam: () => Promise<string>) {
   getAccessTokenSilentlyFunction = getAccessTokenSilentlyFunctionParam;
 }
 
@@ -14,7 +14,9 @@ export async function authenticatedFetch<T = unknown>(url: string, options: Fetc
   if (getAccessTokenSilentlyFunction) {
     headers.Authorization = `Bearer ${await getAccessTokenSilentlyFunction()}`;
   } else {
-    return Promise.reject(new Error('Unhandled error, getAccessTokenSilentlyFunction not available yet '+ getAccessTokenSilentlyFunction));
+    return Promise.reject(
+      new Error('Unhandled error, getAccessTokenSilentlyFunction not available yet ' + getAccessTokenSilentlyFunction)
+    );
   }
   const fetchOptions: RequestInit = {
     method,
@@ -46,7 +48,8 @@ export async function authenticatedFetch<T = unknown>(url: string, options: Fetc
       return Promise.reject(new Error('Forbidden. Redirecting to account infos'));
     } else if (response.status === 401) {
       clearUserFromSessionStorage();
-      return Promise.reject(new Error('Unauthenticated. Redirecting to account infos'));
+      window.location.assign('/login');
+      return Promise.reject(new Error('Unauthenticated. Redirecting to login'));
     }
     displayError(
       `fetch error: ${method} ${url}, response status: ${response.status}, message: ${JSON.stringify(data)}`
