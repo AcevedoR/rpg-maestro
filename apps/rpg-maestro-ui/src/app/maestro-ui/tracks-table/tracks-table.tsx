@@ -4,7 +4,7 @@ import { DataGrid, GridActionsCellItem, GridColDef, GridRowSelectionModel } from
 import EditIcon from '@mui/icons-material/Edit';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
-import { durationInMsToString } from '../../utils/time';
+import { durationInMsToString, formatTodayDate } from '../../utils/time';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { EditTrackSideForm } from './edit-track-side-form';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -19,7 +19,7 @@ export interface TrackFilters {
 export interface TracksTableProps {
   sessionId: string;
   tracks: Track[];
-  onSetTrackToPlay: (trackId: string, options?: {paused?: boolean}) => Promise<void>;
+  onSetTrackToPlay: (trackId: string, options?: { paused?: boolean }) => Promise<void>;
   onRefreshRequested: () => unknown;
   filters: TrackFilters;
 }
@@ -47,6 +47,12 @@ export function TracksTable(props: TracksTableProps) {
   };
   const columns: GridColDef[] = [
     { field: 'name', minWidth: 600 },
+    {
+      field: 'updated_at',
+      type: 'string',
+      width: 140,
+      valueGetter: (value: number) => formatTodayDate(value),
+    },
     {
       field: 'duration',
       type: 'number',
@@ -107,7 +113,10 @@ export function TracksTable(props: TracksTableProps) {
         <DataGrid
           rows={filter(tracks, filters)}
           columns={columns}
-          initialState={{ pagination: { paginationModel } }}
+          initialState={{
+            pagination: { paginationModel },
+            sorting: { sortModel: [{ field: 'updated_at', sort: 'desc' }] },
+          }}
           pageSizeOptions={[10, 25, 50]}
           sx={{ border: 0 }}
           onRowSelectionModelChange={onRowSelection}
