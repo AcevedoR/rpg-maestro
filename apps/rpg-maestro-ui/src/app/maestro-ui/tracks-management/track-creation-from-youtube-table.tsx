@@ -47,9 +47,12 @@ export function TrackCreationFromYoutubeTable(props: TrackCreationFromYoutubeTab
       <div style={{ minHeight: 200, height: '40vh', width: '90%' }}>
         <ThemeProvider theme={theme}>
           <DataGrid
-            rows={[...trackCreationsFromYoutube].sort((a, b) => b.updatedDate.getTime() - a.updatedDate.getTime())}
+            rows={trackCreationsFromYoutube}
             columns={columns}
-            initialState={{ pagination: { paginationModel } }}
+            initialState={{
+              pagination: { paginationModel },
+              sorting: { sortModel: [{ field: 'updatedDate', sort: 'desc' }] },
+            }}
             pageSizeOptions={[10, 25, 50]}
             sx={{ border: 0 }}
           />

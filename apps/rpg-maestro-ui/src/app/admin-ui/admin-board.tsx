@@ -87,6 +87,7 @@ function AdminBoardComponent() {
     },
   });
   const paginationModel = { page: 0, pageSize: 10 };
+  const sortingModel = [{ field: 'updated_at', sort: 'desc' as const }];
 
   return (
     <div
@@ -97,48 +98,67 @@ function AdminBoardComponent() {
         justifyContent: 'start',
         gap: '1rem',
         padding: '1rem',
+        boxSizing: 'border-box',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
         <h1 style={{ margin: 0, display: 'inline-block' }}>Admin board</h1>
         <h4>connected as: {user?.id}</h4>
       </div>
-      <hr style={{ width: '100vw', borderColor: 'var(--gold-color)' }} />
-      <div style={{ minHeight: 200, margin: '0 auto', width: '90%' }}>
-        <ThemeProvider theme={theme}>
-          <DataGrid
-            rows={users}
-            columns={usersGridColumns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[10, 25, 50]}
-            sx={{ border: 0 }}
-          />
-          <DataGrid
-            rows={getSessionsAccess(users ?? [])}
-            columns={sessionAccessColumns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[10, 25, 50]}
-            sx={{ border: 0 }}
-          />
-          <DataGrid
-            rows={sessions?.map((x) => {
-              return { ...x, id: x.sessionId };
-            })}
-            columns={sessionsGridColumns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[10, 25, 50]}
-            sx={{ border: 0 }}
-          />
-        </ThemeProvider>
-      </div>
+      <hr style={{ width: '100%', borderColor: 'var(--gold-color)' }} />
+      <ThemeProvider theme={theme}>
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            margin: '0 auto',
+            width: '90%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+          }}
+        >
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <DataGrid
+              rows={users}
+              columns={usersGridColumns}
+              initialState={{ pagination: { paginationModel }, sorting: { sortModel: sortingModel } }}
+              pageSizeOptions={[10, 25, 50]}
+              sx={{ border: 0, height: '100%' }}
+            />
+          </div>
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <DataGrid
+              rows={getSessionsAccess(users ?? [])}
+              columns={sessionAccessColumns}
+              initialState={{ pagination: { paginationModel }, sorting: { sortModel: sortingModel } }}
+              pageSizeOptions={[10, 25, 50]}
+              sx={{ border: 0, height: '100%' }}
+            />
+          </div>
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <DataGrid
+              rows={sessions?.map((x) => {
+                return { ...x, id: x.sessionId };
+              })}
+              columns={sessionsGridColumns}
+              initialState={{ pagination: { paginationModel } }}
+              pageSizeOptions={[10, 25, 50]}
+              sx={{ border: 0, height: '100%' }}
+            />
+          </div>
+        </div>
+      </ThemeProvider>
       <ToastContainer limit={5} />
     </div>
   );
 }
 
-export const AdminBoard = isDevModeEnabled ? AdminBoardComponent : withAuthenticationRequired(AdminBoardComponent, {
-  onRedirecting: () => <Loading />,
-});
+export const AdminBoard = isDevModeEnabled
+  ? AdminBoardComponent
+  : withAuthenticationRequired(AdminBoardComponent, {
+      onRedirecting: () => <Loading />,
+    });
 
 interface SessionAccessRow {
   id: string;

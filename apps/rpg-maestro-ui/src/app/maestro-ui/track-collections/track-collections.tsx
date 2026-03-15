@@ -7,6 +7,7 @@ import { getAllTrackCollections } from '../maestro-api';
 import { Loading } from '../../auth/Loading';
 import { TextLinkWithIconWrapper } from '../../ui-components/text-link-with-icon-wrapper';
 import { isDevModeEnabled } from '../../../FeaturesConfiguration';
+import { formatTodayDate } from '../../utils/time';
 
 type TrackCollectionsContentProps = {
   trackCollections: TrackCollection[];
@@ -40,17 +41,21 @@ export function TrackCollectionsContent({ trackCollections, isLoading, errorMess
             <tr>
               <th style={{ textAlign: 'left', padding: '0.5rem' }}>Name</th>
               <th style={{ textAlign: 'left', padding: '0.5rem' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem' }}>Updated</th>
               <th style={{ textAlign: 'right', padding: '0.5rem' }}>Tracks</th>
             </tr>
           </thead>
           <tbody>
-            {trackCollections.map((collection) => (
-              <tr key={collection.id}>
-                <td style={{ padding: '0.5rem' }}>{collection.name}</td>
-                <td style={{ padding: '0.5rem' }}>{collection.description ?? '-'}</td>
-                <td style={{ padding: '0.5rem', textAlign: 'right' }}>{collection.tracks.length}</td>
-              </tr>
-            ))}
+            {[...trackCollections]
+              .sort((a, b) => b.updated_at - a.updated_at)
+              .map((collection) => (
+                <tr key={collection.id}>
+                  <td style={{ padding: '0.5rem' }}>{collection.name}</td>
+                  <td style={{ padding: '0.5rem' }}>{collection.description ?? '-'}</td>
+                  <td style={{ padding: '0.5rem' }}>{formatTodayDate(collection.updated_at)}</td>
+                  <td style={{ padding: '0.5rem', textAlign: 'right' }}>{collection.tracks.length}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       )}
