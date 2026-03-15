@@ -15,7 +15,7 @@ export async function authenticatedFetch<T = unknown>(url: string, options: Fetc
     headers.Authorization = `Bearer ${await getAccessTokenSilentlyFunction()}`;
   } else {
     return Promise.reject(
-      new Error('Unhandled error, getAccessTokenSilentlyFunction not available yet ' + getAccessTokenSilentlyFunction)
+      new Error('Unhandled error, getAccessTokenSilentlyFunction not available yet ' + getAccessTokenSilentlyFunction),
     );
   }
   const fetchOptions: RequestInit = {
@@ -39,7 +39,7 @@ export async function authenticatedFetch<T = unknown>(url: string, options: Fetc
   }
   if (!response.ok) {
     if (data?.errorCode === 'NOT_YET_ONBOARDED') {
-      window.location.assign('/onboarding');
+      window.location.assign('/onboarding/setup-session');
       // Optionally, return a rejected promise to halt further processing
       return Promise.reject(new Error('Redirecting to onboarding'));
     }
@@ -52,7 +52,7 @@ export async function authenticatedFetch<T = unknown>(url: string, options: Fetc
       return Promise.reject(new Error('Unauthenticated. Redirecting to login'));
     }
     displayError(
-      `fetch error: ${method} ${url}, response status: ${response.status}, message: ${JSON.stringify(data)}`
+      `fetch error: ${method} ${url}, response status: ${response.status}, message: ${JSON.stringify(data)}`,
     );
     throw new Error(data?.message || response.statusText);
   }

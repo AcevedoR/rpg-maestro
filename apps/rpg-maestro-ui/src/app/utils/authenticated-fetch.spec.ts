@@ -36,7 +36,7 @@ describe('authenticatedFetch', () => {
         headers: expect.objectContaining({
           Authorization: 'Bearer token-123',
         }),
-      })
+      }),
     );
   });
 
@@ -51,7 +51,7 @@ describe('authenticatedFetch', () => {
 
     await expect(authenticatedFetch('/api/forbidden')).rejects.toThrow('Redirecting to onboarding');
 
-    expect(assignMock).toHaveBeenCalledWith('/onboarding');
+    expect(assignMock).toHaveBeenCalledWith('/onboarding/setup-session');
   });
 
   it('redirects to account infos on 403 without onboarding error code', async () => {
