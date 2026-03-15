@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "precommit": "npx nx run-many --target=lint --all --maxParallel=100"
+    "precommit": "npx nx run-many --target=lint --all --maxParallel=100",
+    "storybook": "storybook dev -p 6006 -c apps/rpg-maestro-ui/.storybook",
+    "test-storybook": "test-storybook -c apps/rpg-maestro-ui/.storybook"
   },
   "private": true,
   "dependencies": {
@@ -66,6 +68,11 @@
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "@testing-library/react": "16.1.0",
+    "@storybook/react": "^10.2.19",
+    "@storybook/react-vite": "^10.2.19",
+    "@storybook/test-runner": "^0.24.1",
+    "@storybook/jest": "^0.2.3",
+    "@storybook/testing-library": "^0.2.2",
     "@theunderscorer/nx-semantic-release": "^2.12.0",
     "@types/cookie-parser": "^1.4.8",
     "@types/ms": "^2.1.0",
@@ -100,6 +107,7 @@
     "vite": "^7.2.6",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.0",
+    "storybook": "^10.2.19",
     "wait-on": "^8.0.3",
     "webpack-cli": "^5.1.4"
   },

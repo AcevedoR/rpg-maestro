@@ -6,6 +6,7 @@ import {
   Track,
   TrackCreation,
   TrackCreationFromYoutubeDto,
+  TrackCollection,
   TrackUpdate,
   UploadAndCreateTracksFromYoutubeRequest,
   User,
@@ -27,6 +28,19 @@ export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
   }
 };
 
+export const getAllTrackCollections = async (): Promise<TrackCollection[]> => {
+  try {
+    const response = await authenticatedFetch(`${rpgmaestroapiurl}/track-collections`, {
+      credentials: 'include',
+    });
+    return response as TrackCollection[];
+  } catch (error) {
+    console.error(error);
+    displayError(`Fetch /track-collections error: ${error}`);
+    return [];
+  }
+};
+
 export type AbortedRequestError = 'AbortedRequestError';
 interface OngoingSetTrackToPlayRequest {
   abortController: AbortController;
@@ -43,7 +57,7 @@ export const setTrackToPlay = async (
   }
   ongoingSetTrackToPlayRequest = {
     abortController: new AbortController(),
-    startTimeMs: Date.now()
+    startTimeMs: Date.now(),
   };
   try {
     const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/playing-tracks`, {
@@ -173,8 +187,8 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
   }
 };
 
-export type UserAlreadyExistsError = "UserAlreadyExistsError";
-export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExistsError > => {
+export type UserAlreadyExistsError = 'UserAlreadyExistsError';
+export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExistsError> => {
   try {
     const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/onboard`, {
       method: 'POST',
@@ -184,7 +198,7 @@ export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExist
       },
       credentials: 'include',
     });
-    return await (response) as SessionPlayingTracks;
+    return (await response) as SessionPlayingTracks;
   } catch (error) {
     console.error(error);
     displayError(`Fetch error: ${JSON.stringify(error)}`);
@@ -192,7 +206,7 @@ export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExist
   }
 };
 
-export const getMaestroInfos = async(): Promise<User> => {
+export const getMaestroInfos = async (): Promise<User> => {
   try {
     const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro`, {
       credentials: 'include',
@@ -202,7 +216,7 @@ export const getMaestroInfos = async(): Promise<User> => {
     console.error(error);
     return Promise.reject();
   }
-}
+};
 
 export const getUserFromAPI = async (): Promise<User> => {
   try {
