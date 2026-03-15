@@ -47,4 +47,37 @@ describe('TrackCollectionsComponent', () => {
     expect(screen.getByText('Busy market loops')).toBeTruthy();
     expect(screen.getByText('1')).toBeTruthy();
   });
+
+  it('sorts track collections by updated_at desc', async () => {
+    getAllTrackCollectionsMock.mockResolvedValue([
+      {
+        id: 'collection-1',
+        name: 'Older',
+        description: null,
+        tracks: [],
+        created_at: 0,
+        updated_at: 100,
+        created_by: 'user-1',
+      },
+      {
+        id: 'collection-2',
+        name: 'Newer',
+        description: null,
+        tracks: [],
+        created_at: 0,
+        updated_at: 200,
+        created_by: 'user-1',
+      },
+    ]);
+
+    render(<TrackCollectionsComponent />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Newer')).toBeTruthy();
+    });
+
+    const rows = screen.getAllByRole('row');
+    const firstDataRow = rows[1];
+    expect(firstDataRow.textContent).toContain('Newer');
+  });
 });
