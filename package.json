@@ -3,10 +3,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "precommit": "npx nx run-many --target=lint --all --maxParallel=100",
-    "storybook": "storybook dev -p 6006 -c apps/rpg-maestro-ui/.storybook",
-    "test-storybook": "test-storybook -c apps/rpg-maestro-ui/.storybook",
-    "build-storybook": "storybook build -c apps/rpg-maestro-ui/.storybook"
+    "precommit": "npx nx run-many --target=lint --all --maxParallel=100"
   },
   "private": true,
   "dependencies": {
