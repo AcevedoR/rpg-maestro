@@ -15,7 +15,7 @@ vi.mock('../utils/time', () => ({
 }));
 
 describe('AdminBoardView', () => {
-  it('sorts users by updated_at and shows March dates', () => {
+  it('formats updated_at using valueFormatter and shows March dates', () => {
     const users: User[] = [
       {
         id: 'user-1',
