@@ -18,6 +18,12 @@ export class AppController {
     this.fileUploadService = fileUploadService;
   }
 
+  @Get('/health')
+  @HttpCode(HttpStatus.OK)
+  health(): { status: string } {
+    return { status: 'ok' };
+  }
+
   @Post('/upload/audio')
   @UseInterceptors(FileInterceptor('file'))
   uploadAudio(@UploadedFile() file: Express.Multer.File) {

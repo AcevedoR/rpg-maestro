@@ -5,6 +5,17 @@
   "projectType": "application",
   "tags": [],
   "targets": {
+    "dev-e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [{ "command": "nx run audio-file-uploader:serve --no-cloud" }]
+      },
+      "configurations": {
+        "e2e-tests": {
+          "envFile": "apps/audio-file-uploader/.env.e2e-tests"
+        }
+      }
+    },
     "dev": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",

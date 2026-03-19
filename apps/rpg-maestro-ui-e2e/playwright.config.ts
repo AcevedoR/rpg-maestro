@@ -24,14 +24,32 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npx nx run rpg-maestro-ui:init-e2e-setup --no-cloud',
-    url: 'http://localhost:4300',
-    reuseExistingServer: !process.env.CI,
-    cwd: workspaceRoot,
-    stderr: 'pipe',
-    stdout: 'pipe',
-  },
+  webServer: [
+    {
+      command: 'npx nx run rpg-maestro:dev-e2e --configuration=e2e-tests --no-cloud',
+      url: 'http://localhost:8099/health',
+      reuseExistingServer: !process.env.CI,
+      cwd: workspaceRoot,
+      stderr: 'pipe',
+      stdout: 'pipe',
+    },
+    {
+      command: 'npx nx run audio-file-uploader:dev-e2e --configuration=e2e-tests --no-cloud',
+      url: 'http://localhost:8098/api/health',
+      reuseExistingServer: !process.env.CI,
+      cwd: workspaceRoot,
+      stderr: 'pipe',
+      stdout: 'pipe',
+    },
+    {
+      command: 'npx nx run rpg-maestro-ui:preview --configuration=e2e-tests --no-cloud',
+      url: 'http://localhost:4300',
+      reuseExistingServer: !process.env.CI,
+      cwd: workspaceRoot,
+      stderr: 'pipe',
+      stdout: 'pipe',
+    },
+  ],
   expect: { timeout: 10_000 },
   reporter: [['html', { open: 'never' }], process.env.CI ? ['github'] : ['list']],
   projects: [
