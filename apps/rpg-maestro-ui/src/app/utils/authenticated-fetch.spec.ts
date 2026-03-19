@@ -68,9 +68,9 @@ describe('authenticatedFetch', () => {
     expect(assignMock).toHaveBeenCalledWith('/maestro/infos');
   });
 
-  it('clears session storage and redirects to login on 401', async () => {
+  it('clears session storage and redirects to login with returnTo on 401', async () => {
     const assignMock = vi.fn();
-    vi.stubGlobal('location', { ...window.location, assign: assignMock });
+    vi.stubGlobal('location', { ...window.location, assign: assignMock, pathname: '/maestro/manage/abc123', search: '?foo=bar' });
     fetchMock.mockResolvedValue({
       ok: false,
       status: 401,
@@ -80,6 +80,6 @@ describe('authenticatedFetch', () => {
     await expect(authenticatedFetch('/api/unauthorized')).rejects.toThrow('Unauthenticated. Redirecting to login');
 
     expect(clearUserFromSessionStorage).toHaveBeenCalled();
-    expect(assignMock).toHaveBeenCalledWith('/login');
+    expect(assignMock).toHaveBeenCalledWith('/login?returnTo=%2Fmaestro%2Fmanage%2Fabc123%3Ffoo%3Dbar');
   });
 });

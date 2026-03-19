@@ -48,7 +48,8 @@ export async function authenticatedFetch<T = unknown>(url: string, options: Fetc
       return Promise.reject(new Error('Forbidden. Redirecting to account infos'));
     } else if (response.status === 401) {
       clearUserFromSessionStorage();
-      window.location.assign('/login');
+      const returnTo = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.assign(`/login?returnTo=${returnTo}`);
       return Promise.reject(new Error('Unauthenticated. Redirecting to login'));
     }
     displayError(
