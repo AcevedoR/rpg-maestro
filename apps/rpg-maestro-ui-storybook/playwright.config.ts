@@ -12,7 +12,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'npm run storybook',
+    command: 'npx nx run rpg-maestro-ui:storybook',
     url: storybookUrl,
     reuseExistingServer: !process.env.CI,
     cwd: workspaceRoot,
