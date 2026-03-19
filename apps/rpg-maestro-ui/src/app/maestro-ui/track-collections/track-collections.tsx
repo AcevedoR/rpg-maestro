@@ -9,7 +9,7 @@ import { TextLinkWithIconWrapper } from '../../ui-components/text-link-with-icon
 import { isDevModeEnabled } from '../../../FeaturesConfiguration';
 import { formatTodayDate } from '../../utils/time';
 import { useSearchParams } from 'react-router';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 type TrackCollectionsContentProps = {
   trackCollections: TrackCollection[];
@@ -102,6 +102,7 @@ export function TrackCollectionsContent({
           </tbody>
         </table>
       )}
+      <ToastContainer limit={5} />
     </div>
   );
 }
