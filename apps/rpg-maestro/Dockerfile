@@ -17,6 +17,12 @@ RUN --mount=type=bind,source=./dist/apps/rpg-maestro/package.json,target=package
     npm ci --omit=dev
 
 
+# Build-time version info
+ARG APP_VERSION
+ARG BUILD_DATE
+ENV APP_VERSION=$APP_VERSION
+ENV BUILD_DATE=$BUILD_DATE
+
 # Run the application as a non-root user.
 USER node
 

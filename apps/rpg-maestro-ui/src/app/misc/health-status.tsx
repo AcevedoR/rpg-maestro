@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
-import { getHealth, RPGMaestroHealthStatus } from './misc-api';
+import { getHealth, getVersion, RPGMaestroHealthStatus } from './misc-api';
 import DiscordInviteLink from '../ui-components/discord-invite-link/discord-invite-link';
+import { AppVersion } from '@rpg-maestro/rpg-maestro-api-contract';
 
 export function HealthStatus() {
   const [health, setHealth] = useState<RPGMaestroHealthStatus | undefined>(undefined);
+  const [version, setVersion] = useState<AppVersion | undefined>(undefined);
 
   const fetchHealth = () => {
     getHealth().then((x) => {
@@ -13,6 +15,8 @@ export function HealthStatus() {
   };
 
   useEffect(() => {
+    getVersion().then((v) => setVersion(v));
+
     let count = 0;
     // eslint-disable-next-line prefer-const
     let intervalId: NodeJS.Timeout;
@@ -53,7 +57,10 @@ export function HealthStatus() {
           <span>Fetching health status... {health}</span>
         </div>
       )}
-      <div></div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+        <div>version: {version?.version ?? 'N/A'}</div>
+        <div>build date: {version?.buildDate ?? 'N/A'}</div>
+      </div>
       <ToastContainer limit={5} />
     </div>
   );
