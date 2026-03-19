@@ -5,7 +5,8 @@
   "scripts": {
     "precommit": "npx nx run-many --target=lint --all --maxParallel=100",
     "storybook": "storybook dev -p 6006 -c apps/rpg-maestro-ui/.storybook",
-    "test-storybook": "test-storybook -c apps/rpg-maestro-ui/.storybook"
+    "test-storybook": "test-storybook -c apps/rpg-maestro-ui/.storybook",
+    "build-storybook": "storybook build -c apps/rpg-maestro-ui/.storybook"
   },
   "private": true,
   "dependencies": {
@@ -57,19 +58,20 @@
     "@nx/node": "22.1.3",
     "@nx/playwright": "22.1.3",
     "@nx/react": "22.1.3",
+    "@nx/storybook": "22.1.3",
     "@nx/vite": "22.1.3",
     "@nx/vitest": "22.1.3",
     "@nx/web": "22.1.3",
     "@nx/webpack": "22.1.3",
     "@nx/workspace": "22.1.3",
+    "@storybook/react": "^10.2.19",
+    "@storybook/react-vite": "^10.2.19",
     "@playwright/test": "^1.36.0",
     "@swc-node/register": "~1.9.1",
     "@swc/cli": "0.6.0",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "@testing-library/react": "16.1.0",
-    "@storybook/react": "^10.2.19",
-    "@storybook/react-vite": "^10.2.19",
     "@storybook/test-runner": "^0.24.1",
     "@storybook/jest": "^0.2.3",
     "@storybook/testing-library": "^0.2.2",
