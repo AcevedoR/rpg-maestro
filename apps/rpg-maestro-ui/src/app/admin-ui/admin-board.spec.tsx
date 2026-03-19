@@ -38,14 +38,15 @@ describe('AdminBoardView', () => {
       throw new Error('updated_at column is missing expected configuration');
     }
 
-    const olderDisplay = updatedAtColumn.valueFormatter(users[1].updated_at, users[1], updatedAtColumn, null as never);
-    const newerDisplay = updatedAtColumn.valueFormatter(users[0].updated_at, users[0], updatedAtColumn, null as never);
+    const format = updatedAtColumn.valueFormatter as (value: number) => string;
+
+    const olderDisplay = format(users[1].updated_at);
+    const newerDisplay = format(users[0].updated_at);
 
     expect(olderDisplay).toBe('9 March');
     expect(newerDisplay).toBe('13 March');
 
-    // Sorting is handled by MUI DataGrid using raw updated_at numbers — no custom comparator needed.
-    // Verify raw values sort correctly.
-    expect((users[1].updated_at ?? 0) - (users[0].updated_at ?? 0)).toBeLessThan(0);
+    // Sorting is done natively on raw numeric timestamps
+    expect(users[1].updated_at).toBeLessThan(users[0].updated_at);
   });
 });

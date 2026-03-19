@@ -16,3 +16,4 @@ export * from './lib/TrackCollection';
 export * from './lib/admin-api/admin-api-dtos';
 
 export * from './lib/type-utils';
+export * from './lib/AppVersion';
