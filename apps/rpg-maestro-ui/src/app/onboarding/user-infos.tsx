@@ -36,7 +36,6 @@ function UserInfosComponent() {
       return <p>error we do not see you authenticated</p>;
     } else {
       const userInfos = (
-        // TODO centralize this styledbox
         <StyledBox>
           <Grid2>
             <Typography variant="h6" component="div" style={{ textAlign: 'center' }}>
