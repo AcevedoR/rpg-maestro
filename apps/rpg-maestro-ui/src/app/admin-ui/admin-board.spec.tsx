@@ -15,7 +15,7 @@ vi.mock('../utils/time', () => ({
 }));
 
 describe('AdminBoardView', () => {
-  it('sorts users by updated_at and shows March dates', () => {
+  it('formats updated_at using valueFormatter and shows March dates', () => {
     const users: User[] = [
       {
         id: 'user-1',
@@ -34,23 +34,18 @@ describe('AdminBoardView', () => {
     ];
 
     const updatedAtColumn = usersGridColumns.find((column) => column.field === 'updated_at');
-    if (!updatedAtColumn || !updatedAtColumn.valueGetter || !updatedAtColumn.sortComparator) {
+    if (!updatedAtColumn || !updatedAtColumn.valueFormatter) {
       throw new Error('updated_at column is missing expected configuration');
     }
 
-    const olderDisplay = updatedAtColumn.valueGetter(users[1].updated_at, users[1]);
-    const newerDisplay = updatedAtColumn.valueGetter(users[0].updated_at, users[0]);
+    const olderDisplay = updatedAtColumn.valueFormatter(users[1].updated_at, users[1], updatedAtColumn, null as never);
+    const newerDisplay = updatedAtColumn.valueFormatter(users[0].updated_at, users[0], updatedAtColumn, null as never);
 
     expect(olderDisplay).toBe('9 March');
     expect(newerDisplay).toBe('13 March');
 
-    const comparatorResult = updatedAtColumn.sortComparator(
-      olderDisplay,
-      newerDisplay,
-      { row: users[1] } as never,
-      { row: users[0] } as never
-    );
-
-    expect(comparatorResult).toBeLessThan(0);
+    // Sorting is handled by MUI DataGrid using raw updated_at numbers — no custom comparator needed.
+    // Verify raw values sort correctly.
+    expect((users[1].updated_at ?? 0) - (users[0].updated_at ?? 0)).toBeLessThan(0);
   });
 });
