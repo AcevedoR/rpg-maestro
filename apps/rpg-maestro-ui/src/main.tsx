@@ -24,6 +24,9 @@ root.render(
         redirect_uri: window.location.origin,
         audience: import.meta.env.VITE_RPG_MAESTRO_API_URL,
       }}
+      onRedirectCallback={(appState) => {
+        window.location.replace(appState?.returnTo ?? '/');
+      }}
     >
       {app}
     </Auth0Provider>
