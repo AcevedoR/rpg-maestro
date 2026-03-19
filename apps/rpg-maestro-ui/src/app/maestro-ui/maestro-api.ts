@@ -12,12 +12,11 @@ import {
   User,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { authenticatedFetch } from '../utils/authenticated-fetch';
-
-const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL; // TODO centralize
+import { rpgMaestroApiUrl } from '../utils/api-config';
 
 export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
   try {
-    const response = await authenticatedFetch(rpgmaestroapiurl + `/maestro/sessions/${sessionId}/tracks`, {
+    const response = await authenticatedFetch(rpgMaestroApiUrl + `/maestro/sessions/${sessionId}/tracks`, {
       credentials: 'include',
     });
     return response as Track[];
@@ -30,7 +29,7 @@ export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
 
 export const getAllTrackCollections = async (): Promise<TrackCollection[]> => {
   try {
-    const response = await authenticatedFetch(`${rpgmaestroapiurl}/track-collections`, {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/track-collections`, {
       credentials: 'include',
     });
     return response as TrackCollection[];
@@ -60,7 +59,7 @@ export const setTrackToPlay = async (
     startTimeMs: Date.now(),
   };
   try {
-    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/playing-tracks`, {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/maestro/sessions/${sessionId}/playing-tracks`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -100,7 +99,7 @@ export const setTrackToPlay = async (
 
 export const createTrack = async (sessionId: string, trackCreation: TrackCreation): Promise<Track> => {
   try {
-    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks`, {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/maestro/sessions/${sessionId}/tracks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -119,7 +118,7 @@ export const createTrack = async (sessionId: string, trackCreation: TrackCreatio
 export const createTrackFromYoutube = async (sessionId: string, url: string): Promise<void> => {
   try {
     const request: UploadAndCreateTracksFromYoutubeRequest = { urls: [url] };
-    await authenticatedFetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/from-youtube`, {
+    await authenticatedFetch(`${rpgMaestroApiUrl}/maestro/sessions/${sessionId}/tracks/from-youtube`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -138,7 +137,7 @@ export const createTrackFromYoutube = async (sessionId: string, url: string): Pr
 
 export const getTrackCreationFromYoutube = async (sessionId: string): Promise<TrackCreationFromYoutubeDto[]> => {
   try {
-    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/from-youtube`, {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/maestro/sessions/${sessionId}/tracks/from-youtube`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -171,7 +170,7 @@ export const getTrackCreationFromYoutube = async (sessionId: string): Promise<Tr
 
 export const updateTrack = async (sessionId: string, trackId: string, trackUpdate: TrackUpdate): Promise<Track> => {
   try {
-    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/${trackId}`, {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/maestro/sessions/${sessionId}/tracks/${trackId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -190,7 +189,7 @@ export const updateTrack = async (sessionId: string, trackId: string, trackUpdat
 export type UserAlreadyExistsError = 'UserAlreadyExistsError';
 export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExistsError> => {
   try {
-    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro/onboard`, {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/maestro/onboard`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -208,7 +207,7 @@ export const onboard = async (): Promise<SessionPlayingTracks | UserAlreadyExist
 
 export const getMaestroInfos = async (): Promise<User> => {
   try {
-    const response = await authenticatedFetch(`${rpgmaestroapiurl}/maestro`, {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/maestro`, {
       credentials: 'include',
     });
     return response as User;
@@ -220,7 +219,7 @@ export const getMaestroInfos = async (): Promise<User> => {
 
 export const getUserFromAPI = async (): Promise<User> => {
   try {
-    const response = await authenticatedFetch(`${rpgmaestroapiurl}/users/me`, {});
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/users/me`, {});
     return response as User;
   } catch (error) {
     console.error(error);
