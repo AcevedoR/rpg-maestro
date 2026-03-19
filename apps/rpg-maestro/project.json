@@ -59,7 +59,8 @@
       },
       "configurations": {
         "development": {
-          "buildTarget": "rpg-maestro:build:development"
+          "buildTarget": "rpg-maestro:build:development",
+          "inspect": false
         },
         "debug": {
           "buildTarget": "rpg-maestro:build:development",

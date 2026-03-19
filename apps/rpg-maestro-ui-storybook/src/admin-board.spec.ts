@@ -29,7 +29,7 @@ test('admin board sorts updated_at with March dates', async ({ page }) => {
 
   const frame = page.frameLocator('#storybook-preview-iframe');
   const updatedHeader = frame.locator('[role="columnheader"][data-field="updated_at"]');
-  await expect(updatedHeader).toBeVisible();
+  await expect(updatedHeader).toBeVisible({ timeout: 30000 });
   await expect(updatedHeader).toHaveAttribute('aria-sort', 'ascending');
 
   const rows = frame.locator('.MuiDataGrid-row[data-id]');

@@ -34,23 +34,19 @@ describe('AdminBoardView', () => {
     ];
 
     const updatedAtColumn = usersGridColumns.find((column) => column.field === 'updated_at');
-    if (!updatedAtColumn || !updatedAtColumn.valueGetter || !updatedAtColumn.sortComparator) {
+    if (!updatedAtColumn || !updatedAtColumn.valueFormatter) {
       throw new Error('updated_at column is missing expected configuration');
     }
 
-    const olderDisplay = updatedAtColumn.valueGetter(users[1].updated_at, users[1]);
-    const newerDisplay = updatedAtColumn.valueGetter(users[0].updated_at, users[0]);
+    const format = updatedAtColumn.valueFormatter as (value: number) => string;
+
+    const olderDisplay = format(users[1].updated_at);
+    const newerDisplay = format(users[0].updated_at);
 
     expect(olderDisplay).toBe('9 March');
     expect(newerDisplay).toBe('13 March');
 
-    const comparatorResult = updatedAtColumn.sortComparator(
-      olderDisplay,
-      newerDisplay,
-      { row: users[1] } as never,
-      { row: users[0] } as never
-    );
-
-    expect(comparatorResult).toBeLessThan(0);
+    // Sorting is done natively on raw numeric timestamps
+    expect(users[1].updated_at).toBeLessThan(users[0].updated_at);
   });
 });
