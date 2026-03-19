@@ -23,11 +23,8 @@ export const usersGridColumns: GridColDef[] = [
   { field: 'created_at', type: 'string', width: 120, valueGetter: (value: number) => formatTodayDate(value) },
   {
     field: 'updated_at',
-    type: 'string',
     width: 120,
-    valueGetter: (value: number) => (value ? formatTodayDate(value) : ''),
-    sortComparator: (_valueA, _valueB, cellParamsA, cellParamsB) =>
-      (cellParamsA?.row?.updated_at ?? 0) - (cellParamsB?.row?.updated_at ?? 0),
+    valueFormatter: (value: number) => (value ? formatTodayDate(value) : ''),
   },
   { field: 'role' },
   {
@@ -79,12 +76,6 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
   const usersInitialState = usersSortModel
     ? { pagination: { paginationModel }, sorting: { sortModel: usersSortModel } }
     : { pagination: { paginationModel } };
-  const usersSortProps = usersSortModel
-    ? {
-        sortModel: usersSortModel,
-        onSortModelChange: () => undefined,
-      }
-    : {};
   return (
     <div
       style={{
@@ -139,7 +130,6 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
                 initialState={usersInitialState}
                 pageSizeOptions={[10, 25, 50]}
                 sx={{ border: 0, height: '100%' }}
-                {...usersSortProps}
               />
             </div>
           </div>
