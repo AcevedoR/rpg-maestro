@@ -1,0 +1,13 @@
+{
+  "name": "rpg-maestro-ui-storybook",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/rpg-maestro-ui-storybook/src",
+  "implicitDependencies": ["rpg-maestro-ui"],
+  "// targets": "to see all targets run: nx show project rpg-maestro-ui-storybook --web",
+  "targets": {
+    "e2e": {
+      "dependsOn": []
+    }
+  }
+}

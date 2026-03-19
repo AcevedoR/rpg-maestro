@@ -2,7 +2,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 .nx/cache
 .nx
-
+.claude/settings.local.json
 uploads
 
 .idea/
