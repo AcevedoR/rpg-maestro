@@ -176,6 +176,43 @@ describe('TrackCollection', () => {
       .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
       .expect(403);
   }, 10000);
+  it('a Maestro can import a TrackCollection into an existing session', async () => {
+    // given a collection
+    await request(app.getHttpServer())
+      .post('/track-collections')
+      .send(trackCollectionCreateRequest)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
+      .expect(201);
+
+    // and a session owned by the maestro
+    const session = (await request(app.getHttpServer())
+      .post('/maestro/sessions')
+      .send({})
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
+      .expect(201)).body as SessionPlayingTracks;
+
+    // when
+    const importedTracks = (await request(app.getHttpServer())
+      .post(`/maestro/sessions/${session.sessionId}/tracks/from-collection/${trackCollectionCreateRequest.id}`)
+      .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
+      .expect(201)).body as Track[];
+
+    expect(importedTracks).toBeDefined();
+    expect(importedTracks.length).toEqual(trackCollectionCreateRequest.tracks.length);
+    expect(importedTracks[0].name).toEqual(trackCollectionCreateRequest.tracks[0].name);
+    expect(importedTracks[0].tags).toEqual(trackCollectionCreateRequest.tracks[0].tags);
+
+    // and the tracks appear in the session
+    const sessionTracks = (await request(app.getHttpServer())
+      .get(`/maestro/sessions/${session.sessionId}/tracks`)
+      .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
+      .expect(200)).body as Track[];
+
+    expect(sessionTracks.length).toEqual(importedTracks.length);
+  }, 10000);
+
   it('cannot create with already existing id', async () => {
     await request(app.getHttpServer())
       .post('/track-collections')

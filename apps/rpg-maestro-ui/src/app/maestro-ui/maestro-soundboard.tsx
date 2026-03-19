@@ -5,7 +5,7 @@ import { AbortedRequestError, getAllTracks, setTrackToPlay } from './maestro-api
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
-import { LyricsTwoTone, Visibility } from '@mui/icons-material';
+import { CollectionsBookmarkTwoTone, LyricsTwoTone, Visibility } from '@mui/icons-material';
 import SearchTags from './tracks-table/SearchTags';
 import { QuickTagSelection } from './tracks-table/quick-tag-selection';
 import ShieldIcon from '@mui/icons-material/Shield';
@@ -146,11 +146,18 @@ function MaestroSoundboardComponent() {
           materialUiIcon={Visibility}
         />
         {user && (user.role === 'MAESTRO' || user.role === 'ADMIN') ? (
-          <TextLinkWithIconWrapper
-            link={`/maestro/manage/${sessionId}`}
-            text={'Manage your tracks'}
-            materialUiIcon={LyricsTwoTone}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <TextLinkWithIconWrapper
+              link={`/maestro/manage/${sessionId}`}
+              text={'Manage your tracks'}
+              materialUiIcon={LyricsTwoTone}
+            />
+            <TextLinkWithIconWrapper
+              link={`/maestro/track-collections?sessionId=${sessionId}`}
+              text={'Track collections'}
+              materialUiIcon={CollectionsBookmarkTwoTone}
+            />
+          </div>
         ) : (
           ''
         )}

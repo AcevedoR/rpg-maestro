@@ -67,3 +67,38 @@ export const Empty: Story = {
     trackCollections: [],
   },
 };
+
+export const WithSessionId: Story = {
+  args: {
+    isLoading: false,
+    errorMessage: null,
+    sessionId: 'session-123',
+    onImport: async (collectionId: string) => {
+      console.log('Import collection', collectionId);
+    },
+    trackCollections: [
+      {
+        id: 'collection-1',
+        name: 'Dungeon Crawl',
+        description: 'Dark and tense loops',
+        tracks: [
+          {
+            id: 'track-1',
+            source: { origin_media: 'remote', origin_url: 'http://localhost/intro', origin_name: 'Remote' },
+            name: 'Intro',
+            tags: ['dungeon'],
+            url: 'http://localhost/intro',
+            duration: 120,
+          },
+        ],
+        created_at: 0,
+        updated_at: 0,
+        created_by: 'user-1',
+      },
+    ],
+  },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Import to session')).toBeTruthy();
+  },
+};
