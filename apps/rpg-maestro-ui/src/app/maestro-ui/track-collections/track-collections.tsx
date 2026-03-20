@@ -8,7 +8,7 @@ import { Loading } from '../../auth/Loading';
 import { TextLinkWithIconWrapper } from '../../ui-components/text-link-with-icon-wrapper';
 import { isDevModeEnabled } from '../../../FeaturesConfiguration';
 import { formatTodayDate } from '../../utils/time';
-import { useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 
 type TrackCollectionsContentProps = {
