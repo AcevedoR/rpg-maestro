@@ -124,7 +124,7 @@ export function TrackCollectionsComponent() {
         if (isActive) {
           setTrackCollections(collections);
         }
-      } catch (error) {
+      } catch {
         if (isActive) {
           setErrorMessage('Unable to load track collections.');
         }
