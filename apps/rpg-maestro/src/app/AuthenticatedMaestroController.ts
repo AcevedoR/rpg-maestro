@@ -136,6 +136,17 @@ export class AuthenticatedMaestroController {
     return this.trackService.getAll(sessionId);
   }
 
+  @Get('/maestro/sessions/:sessionId/soundboard-tracks')
+  @Roles([Role.MAESTRO, Role.MINSTREL])
+  async getSoundboardTracks(
+    @Request() req: { user: AuthenticatedUser },
+    @Param('sessionId') sessionId: string
+  ): Promise<Track[]> {
+    await this.checkAccessOnSession(req.user, sessionId);
+    const all = await this.trackService.getAll(sessionId);
+    return all.filter((t) => t.tags.includes('soundboard'));
+  }
+
   @Put('/maestro/sessions/:sessionId/playing-tracks')
   @Roles([Role.MAESTRO, Role.MINSTREL])
   async changeCurrentTrack(

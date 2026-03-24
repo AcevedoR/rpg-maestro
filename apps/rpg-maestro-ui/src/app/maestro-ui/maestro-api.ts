@@ -27,6 +27,19 @@ export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
   }
 };
 
+export const getSoundboardTracks = async (sessionId: string): Promise<Track[]> => {
+  try {
+    const response = await authenticatedFetch(rpgMaestroApiUrl + `/maestro/sessions/${sessionId}/soundboard-tracks`, {
+      credentials: 'include',
+    });
+    return response as Track[];
+  } catch (error) {
+    console.error(error);
+    displayError(`Fetch /maestro/sessions/${sessionId}/soundboard-tracks error: ${error}`);
+    return [];
+  }
+};
+
 export const getAllTrackCollections = async (): Promise<TrackCollection[]> => {
   try {
     const response = await authenticatedFetch(`${rpgMaestroApiUrl}/track-collections`, {
