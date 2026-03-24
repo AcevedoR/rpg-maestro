@@ -1,7 +1,7 @@
 import { filter, TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useRef, useState } from 'react';
 import { SessionPlayingTracks, Tag, Track, TrackToPlay, User } from '@rpg-maestro/rpg-maestro-api-contract';
-import { AbortedRequestError, getAllTracks, setTrackToPlay } from './maestro-api';
+import { AbortedRequestError, getAllTracks, getSoundboardTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
@@ -28,7 +28,8 @@ import { Soundboard } from './soundboard/soundboard';
 function MaestroSoundboardComponent() {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
-  const [trackFilters, setTrackFilters] = useState<TrackFilters>({});
+  const [soundboardTracks, setSoundboardTracks] = useState<Track[] | undefined>(undefined);
+  const [trackFilters, setTrackFilters] = useState<TrackFilters>({ excludeTags: ['soundboard'] });
   const sessionId = useParams().sessionId ?? '';
   if (sessionId === '') {
     displayError('no session found in URL (it should be https://{URL}/maestro/{sessionId})');
@@ -44,6 +45,9 @@ function MaestroSoundboardComponent() {
   useEffect(() => {
     if (allTracks === undefined) {
       refreshTracks();
+    }
+    if (soundboardTracks === undefined) {
+      getSoundboardTracks(sessionId).then(setSoundboardTracks);
     }
     if (user === undefined) {
       getUser().then((user) => {
@@ -165,7 +169,9 @@ function MaestroSoundboardComponent() {
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <Soundboard />
+        {soundboardTracks && soundboardTracks.length > 0 && (
+          <Soundboard tracks={soundboardTracks} onPlay={requestSetTrackToPlay} />
+        )}
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
           <h5
             style={{
