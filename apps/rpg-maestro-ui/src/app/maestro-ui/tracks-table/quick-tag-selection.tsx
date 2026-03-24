@@ -1,6 +1,5 @@
 import { SvgIconComponent } from '@mui/icons-material';
 import React from 'react';
-
 import Button from '@mui/material/Button';
 
 type RGB = `rgb(${number}, ${number}, ${number})`;
@@ -8,7 +7,6 @@ type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
 type HEX = `#${string}`;
 
 export type Color = RGB | RGBA | HEX;
-// export type Color = RGB
 
 export interface QuickTagSelectionProps {
   text: string;
@@ -24,7 +22,7 @@ export function QuickTagSelection(props: QuickTagSelectionProps) {
   const iconInstance = React.createElement(icon, { sx: { fontSize: 50 } });
   return (
     <Button
-      style={{
+      sx={{
         display: 'flex',
         textDecoration: 'none',
         color: color,

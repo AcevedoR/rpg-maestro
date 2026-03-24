@@ -132,7 +132,7 @@ function MaestroSoundboardComponent() {
         <div>
           <div style={{ display: 'flex', gap: '2rem' }}>
             <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
-            <BasicMenu></BasicMenu>
+            <BasicMenu />
           </div>
           <p>As the Maestro, control what current track is playing for the session: {sessionId}</p>
           <p>
@@ -162,7 +162,7 @@ function MaestroSoundboardComponent() {
               textOrientation: 'upright',
               writingMode: 'vertical-rl',
               margin: '0',
-              color: 'var(--gold-color',
+              color: 'var(--gold-color)',
               textAlign: 'center',
             }}
           >

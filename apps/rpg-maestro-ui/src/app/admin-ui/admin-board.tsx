@@ -9,7 +9,8 @@ import {
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { DataGrid, GridColDef, GridSortModel } from '@mui/x-data-grid';
 import { Tab, Tabs } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
+import { theme } from '../theme';
 import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 import { getUser } from '../cache/user.cache';
 import { getAllSessions, getAllUsers } from './admin-api';
@@ -57,11 +58,6 @@ const sessionsGridColumns: GridColDef[] = [
     },
   },
 ];
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
 const paginationModel = { page: 0, pageSize: 10 };
 
 interface AdminBoardViewProps {

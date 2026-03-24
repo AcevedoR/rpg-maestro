@@ -1,0 +1,35 @@
+.rhap_progress-filled {
+    background: var(--gold-color);
+    border-radius: 4px;
+}
+
+.rhap_time {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.rhap_button-clear {
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.rhap_button-clear:hover {
+    color: var(--gold-color);
+}
+
+.rhap_additional-controls {
+    display: none;
+}
+
+.rhap_volume-controls {
+    flex: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.rhap_volume-container {
+    flex: none;
+    min-width: 100px;
+    width: 10vw;
+}

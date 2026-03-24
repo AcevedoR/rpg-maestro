@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { Divider, Grid2, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
 import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
-import { StyledBox } from './sytled-box';
+import { StyledBox } from './styled-box';
 import { getURLToShareToPlayers } from './setup-session';
 import { toastError } from '../ui-components/toast-popup';
 
@@ -36,13 +36,12 @@ function UserInfosComponent() {
       return <p>error we do not see you authenticated</p>;
     } else {
       const userInfos = (
-        // TODO centralize this styledbox
         <StyledBox>
           <Grid2>
-            <Typography variant="h6" component="div" style={{ textAlign: 'center' }}>
+            <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
               Your infos
             </Typography>
-            <Divider style={{ borderColor: 'var(--gold-color)' }} />
+            <Divider sx={{ borderColor: 'var(--gold-color)' }} />
             <div style={{ textAlign: 'center' }}>
               <p>username: {rpgMaestroUser.id}</p>
               <p>role: {rpgMaestroUser.role}</p>
@@ -65,15 +64,15 @@ function UserInfosComponent() {
               {userInfos}
               <StyledBox>
                 <Grid2>
-                  <Typography variant="h6" component="div" style={{ textAlign: 'center' }}>
+                  <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
                     Your sessions
                   </Typography>
-                  <Divider style={{ borderColor: 'var(--gold-color)' }} />
+                  <Divider sx={{ borderColor: 'var(--gold-color)' }} />
                   <List dense={true}>
                     {Object.entries(rpgMaestroUser.sessions).map(([sessionId, session]) => (
                       <ListItem
                         key={sessionId}
-                        style={{ display: 'flex', justifyContent: 'space-around', gap: '4rem' }}
+                        sx={{ display: 'flex', justifyContent: 'space-around', gap: '4rem' }}
                       >
                         <ListItemButton key={sessionId} href={`${window.location.origin}/maestro/${sessionId}`}>
                           <ArrowForwardIcon color="secondary" />
@@ -104,11 +103,11 @@ function UserInfosComponent() {
         gap: '1rem',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
         <h1 style={{ margin: 0 }}>Account</h1>
       </div>
       <div>
-        <Content></Content>
+        <Content />
       </div>
       <div>
         <LogoutButton />

@@ -1,3 +1,23 @@
+.audio-player-readonly {
+    min-width: 300px;
+    min-height: 300px;
+    max-width: 600px;
+    width: 40vw;
+    height: 30vh;
+    padding: 1.5rem;
+    overflow-wrap: break-word;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+    transition: all 0.3s ease;
+    background: rgba(26, 11, 46, 0.6);
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
 .audio-player-readonly .rhap_controls-section {
     display: flex;
     justify-content: space-evenly;
@@ -16,34 +36,9 @@
     text-align: center;
     align-content: center;
 }
-.audio-player-readonly .rhap_main-controls {
-    /*gap: 1rem;*/
-
-}
-
-.audio-player-readonly .rhap_volume-controls {
-    flex: none;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    transition: background-color 0.3s ease;
-}
-
-.audio-player-readonly .rhap_volume-controls:hover {
-}
-
-.audio-player-readonly .rhap_volume-container {
-    flex: none;
-    min-width: 100px;
-    width: 10vw;
-}
-
-.audio-player-readonly .rhap_additional-controls {
-    display: none;
-}
 
 .audio-player-readonly .rhap_progress-section {
     cursor: not-allowed;
-    /*margin: 1rem 0;*/
     max-height: 50px;
 }
 
@@ -57,25 +52,5 @@
 .audio-player-readonly .rhap_progress-section .rhap_progress-bar,
 .audio-player-readonly .rhap_progress-section .rhap_progress-container {
     pointer-events: none;
-    /*background: color-mix(in srgb, var(--gold-color) 70%, white);*/
     border-radius: 4px;
-}
-
-.audio-player-readonly .rhap_progress-filled {
-    background: var(--gold-color);
-    border-radius: 4px;
-}
-
-.audio-player-readonly .rhap_time {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.audio-player-readonly .rhap_button-clear {
-    color: var(--text-primary);
-    transition: color 0.3s ease;
-}
-
-.audio-player-readonly .rhap_button-clear:hover {
-    color: var(--gold-color);
 }
