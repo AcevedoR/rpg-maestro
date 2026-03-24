@@ -7,7 +7,6 @@ import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import { durationInMsToString, formatTodayDate } from '../../utils/time';
 import { Track } from '@rpg-maestro/rpg-maestro-api-contract';
 import { EditTrackSideForm } from './edit-track-side-form';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const paginationModel = { page: 0, pageSize: 10 };
 
@@ -102,40 +101,33 @@ export function TracksTable(props: TracksTableProps) {
       onSetTrackToPlay(String(rowSelection[0]));
     }
   };
-  const theme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  });
   return (
     <div className={'tracks-table'} style={{ height: 650, width: '100%' }}>
-      <ThemeProvider theme={theme}>
-        <DataGrid
-          rows={filter(tracks, filters)}
-          columns={columns}
-          initialState={{
-            pagination: { paginationModel },
-            sorting: { sortModel: [{ field: 'updated_at', sort: 'desc' }] },
-          }}
-          pageSizeOptions={[10, 25, 50]}
-          sx={{ border: 0 }}
-          onRowSelectionModelChange={onRowSelection}
-          /*getRowClassName={(params) => TODO not working well for now, probably need a proper store
-            currentTrack && currentTrack?.id === params.id ? 'highlighted-row' : ''
-          }*/
+      <DataGrid
+        rows={filter(tracks, filters)}
+        columns={columns}
+        initialState={{
+          pagination: { paginationModel },
+          sorting: { sortModel: [{ field: 'updated_at', sort: 'desc' }] },
+        }}
+        pageSizeOptions={[10, 25, 50]}
+        sx={{ border: 0 }}
+        onRowSelectionModelChange={onRowSelection}
+        /*getRowClassName={(params) => TODO not working well for now, probably need a proper store
+          currentTrack && currentTrack?.id === params.id ? 'highlighted-row' : ''
+        }*/
+      />
+      {selectedTrackToEdit ? (
+        <EditTrackSideForm
+          trackToEdit={selectedTrackToEdit}
+          sessionId={sessionId}
+          open={true}
+          onClose={onEditTrackSideFormClose}
+          onTrackUpdated={onTrackUpdated}
         />
-        {selectedTrackToEdit ? (
-          <EditTrackSideForm
-            trackToEdit={selectedTrackToEdit}
-            sessionId={sessionId}
-            open={true}
-            onClose={onEditTrackSideFormClose}
-            onTrackUpdated={onTrackUpdated}
-          ></EditTrackSideForm>
-        ) : (
-          ''
-        )}
-      </ThemeProvider>
+      ) : (
+        ''
+      )}
     </div>
   );
 }

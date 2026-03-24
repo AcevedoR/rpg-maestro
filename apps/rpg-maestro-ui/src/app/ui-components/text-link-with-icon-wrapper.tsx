@@ -17,10 +17,10 @@ export function TextLinkWithIconWrapper(props: TextLinkWithIconProps) {
   return (
     <Button
       href={link}
-      style={{
+      sx={{
         display: 'flex',
         textDecoration: 'none',
-        color: theme ? '#9f2d2d': 'var(--gold-color)',
+        color: theme ? '#9f2d2d' : 'var(--gold-color)',
         height: '100px',
         width: '170px',
         border: '1px solid',

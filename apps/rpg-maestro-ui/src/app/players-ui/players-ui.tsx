@@ -2,7 +2,6 @@ import AudioPlayer from 'react-h5-audio-player';
 import H5AudioPlayer from 'react-h5-audio-player';
 import { ToastContainer } from 'react-toastify';
 import React, { LegacyRef, useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
 import { resyncCurrentTrackIfNeeded } from '../track-sync/track-sync';
 import { displayError } from '../error-utils';
 import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
@@ -12,75 +11,7 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
 import SpatialAudioOffIcon from '@mui/icons-material/SpatialAudioOff';
 import { useParams } from 'react-router';
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
-  //background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-`;
-
-const Title = styled.h1`
-  text-align: center;
-  color: var(--text-primary);
-  font-size: 2.5rem;
-  font-weight: 700;
-  background: linear-gradient(to bottom, #daa520 0%, #f4e4bc 30%, #8b4513 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 4px 20px rgba(218, 165, 32, 0.2);
-`;
-
-const MaestroLink = styled.div`
-  width: 30%;
-  min-width: 170px;
-  display: flex;
-  justify-content: flex-end;
-`;
-
-const WelcomeText = styled.div`
-  text-align: center;
-  max-width: 800px;
-  margin: 2rem auto;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  
-  p {
-    margin: 1rem 0;
-    font-size: 1.1rem;
-  }
-`;
-
-const StyledAudioPlayer = styled(AudioPlayer)`
-    min-width: 300px;
-    min-height: 300px;
-    max-width: 600px;
-    width: 40vw;
-    height: 30vh;
-    padding: 1.5rem;
-    overflow-wrap: break-word;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
-    transition: all 0.3s ease;
-    background: rgba(26, 11, 46, 0.6);
-    border: 1px solid rgba(218, 165, 32, 0.3);
-    border-radius: 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-`;
+import { Typography } from '@mui/material';
 
 export const SYNC_TRACK_INTERVAL_MS = 1000;
 
@@ -144,28 +75,42 @@ export function PlayersUi() {
   }, [currentTrack, sessionId]);
 
   return (
-    <Container>
-      <Header>
-        <div style={{ width: '30%', minWidth: '0' }}></div>
-        <Title>RPG-Maestro player UI</Title>
-        <MaestroLink>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+        <div style={{ width: '30%', minWidth: 0 }} />
+        <Typography
+          variant="h1"
+          sx={{
+            textAlign: 'center',
+            fontSize: '2.5rem',
+            fontWeight: 700,
+            background: 'linear-gradient(to bottom, #daa520 0%, #f4e4bc 30%, #8b4513 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textShadow: '0 4px 20px rgba(218, 165, 32, 0.2)',
+          }}
+        >
+          RPG-Maestro player UI
+        </Typography>
+        <div style={{ width: '30%', minWidth: '170px', display: 'flex', justifyContent: 'flex-end' }}>
           <TextLinkWithIconWrapper
             link={`/maestro/${sessionId}`}
             text={'Maestro interface is available here'}
             materialUiIcon={SpatialAudioOffIcon}
           />
-        </MaestroLink>
-      </Header>
+        </div>
+      </div>
 
-      <WelcomeText>
-        <p>
+      <div style={{ textAlign: 'center', maxWidth: 800, margin: '2rem auto', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+        <p style={{ margin: '1rem 0', fontSize: '1.1rem' }}>
           Welcome! This app is primarily meant for TTRPG games: a Maestro manages the current track being played, the
           track is synced between all Players on this page.
         </p>
-        <p>To avoid sync issues, Players can only change their volume.</p>
-      </WelcomeText>
+        <p style={{ margin: '1rem 0', fontSize: '1.1rem' }}>To avoid sync issues, Players can only change their volume.</p>
+      </div>
 
-      <StyledAudioPlayer
+      <AudioPlayer
         ref={audioPlayer as LegacyRef<H5AudioPlayer>}
         loop={true}
         showJumpControls={false}
@@ -183,6 +128,7 @@ export function PlayersUi() {
                 textOverflow: 'revert',
                 overflow: 'hidden',
                 wordBreak: 'break-all',
+                margin: 0,
               }}
             >
               {currentTrack?.name}
@@ -190,12 +136,12 @@ export function PlayersUi() {
           </div>
         }
         customIcons={{
-          pause: <MusicNoteIcon style={{ cursor: 'not-allowed' }} />,
+          pause: <MusicNoteIcon sx={{ cursor: 'not-allowed' }} />,
         }}
       />
 
       <GithubSourceCodeLink />
       <ToastContainer limit={5} />
-    </Container>
+    </div>
   );
 }

@@ -4,20 +4,12 @@ import { getMaestroInfos, onboard, UserAlreadyExistsError } from '../maestro-ui/
 import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
 import SpatialAudioOffIcon from '@mui/icons-material/SpatialAudioOff';
-import styled from 'styled-components';
 import Button from '@mui/material/Button';
 import { ToastContainer } from 'react-toastify';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
-import { StyledBox } from './sytled-box';
+import { StyledBox } from './styled-box';
 import { useNavigate } from 'react-router-dom';
 import { getUserAndForceRefresh } from '../cache/user.cache';
-
-const MaestroLink = styled.div`
-  width: 30%;
-  min-width: 170px;
-  display: flex;
-  justify-content: flex-end;
-`;
 
 export const getURLToShareToPlayers = (sessionId: string): string => {
   return `${window.location.origin}/${sessionId}`;
@@ -84,15 +76,15 @@ export function SetupSession() {
               </p>
             </div>
           </StyledBox>
-          <ArrowCircleDownIcon style={{ color: 'var(--gold-color)' }} fontSize={'large'} />
+          <ArrowCircleDownIcon sx={{ color: 'var(--gold-color)' }} fontSize={'large'} />
           <StyledBox>
-            <MaestroLink>
+            <div style={{ width: '30%', minWidth: '170px', display: 'flex', justifyContent: 'flex-end' }}>
               <TextLinkWithIconWrapper
                 link={`/maestro/${newlyCreatedSession.sessionId}`}
                 text={'Enter your Maestro Session'}
                 materialUiIcon={SpatialAudioOffIcon}
               />
-            </MaestroLink>
+            </div>
           </StyledBox>
         </div>
       );
@@ -116,12 +108,12 @@ export function SetupSession() {
         gap: '1rem',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
         <h1 style={{ margin: 0 }}>Account created!</h1>
         <h4>Onboarding almost finished</h4>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>{getMainContent()}</div>
-      <div></div>
+      <div />
       <ToastContainer limit={5} />
     </div>
   );

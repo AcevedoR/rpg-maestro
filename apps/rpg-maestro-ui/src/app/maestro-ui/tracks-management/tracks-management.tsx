@@ -85,7 +85,7 @@ function TracksManagementComponent() {
             padding: '0 30px',
           }}
         >
-          <ArrowForward sx={{ fontSize: '50px' }}></ArrowForward>
+          <ArrowForward sx={{ fontSize: '50px' }} />
           <p>Then create it on the default playlist</p>
           <p>Or directly reference a track from a remote and public URL</p>
         </div>
