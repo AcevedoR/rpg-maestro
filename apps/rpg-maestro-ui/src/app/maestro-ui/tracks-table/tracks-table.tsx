@@ -14,6 +14,7 @@ const paginationModel = { page: 0, pageSize: 10 };
 export interface TrackFilters {
   trackIdToFilterOn?: string;
   tagsToFilterOn?: string[];
+  excludeTags?: string[];
 }
 
 export interface TracksTableProps {
@@ -142,6 +143,9 @@ export function TracksTable(props: TracksTableProps) {
 
 export function filter(tracks: Track[], filters: TrackFilters): Track[] {
   let filteredTracks = [...tracks];
+  if (filters.excludeTags?.length) {
+    filteredTracks = filteredTracks.filter((x) => !filters.excludeTags!.some((tag) => x.tags.includes(tag)));
+  }
   if (filters.trackIdToFilterOn) {
     const foundTrack = filteredTracks.find((x) => x.id === filters.trackIdToFilterOn);
     return foundTrack ? [foundTrack] : [];

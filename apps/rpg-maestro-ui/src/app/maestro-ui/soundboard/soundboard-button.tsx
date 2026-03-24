@@ -3,20 +3,15 @@ import React from 'react';
 import Button from '@mui/material/Button';
 import { Color } from '../tracks-table/quick-tag-selection';
 
-const MOCK_SOUND_URL = 'https://cdn.freesound.org/previews/848/848968_17559721-lq.mp3';
-
 interface SoundboardButtonProps {
   text: string;
   icon: SvgIconComponent;
   color: Color;
+  onPlay: () => void;
 }
 
-export function SoundboardButton({ text, icon, color }: SoundboardButtonProps) {
+export function SoundboardButton({ text, icon, color, onPlay }: SoundboardButtonProps) {
   const iconInstance = React.createElement(icon, { sx: { fontSize: 50 } });
-
-  const handleClick = () => {
-    new Audio(MOCK_SOUND_URL).play();
-  };
 
   return (
     <Button
@@ -31,7 +26,7 @@ export function SoundboardButton({ text, icon, color }: SoundboardButtonProps) {
         fontWeight: '500',
         backgroundColor: 'rgba(57,57,57,0.15)',
       }}
-      onClick={handleClick}
+      onClick={onPlay}
     >
       <div style={{ display: 'flex', alignItems: 'center' }}>
         {iconInstance}
