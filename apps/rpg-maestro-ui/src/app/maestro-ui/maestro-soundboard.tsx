@@ -23,6 +23,7 @@ import BasicMenu from '../ui-components/menu';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../auth/Loading';
 import { isDevModeEnabled } from '../../FeaturesConfiguration';
+import { Soundboard } from './soundboard/soundboard';
 
 function MaestroSoundboardComponent() {
   const [user, setUser] = useState<User | undefined>(undefined);
@@ -163,6 +164,8 @@ function MaestroSoundboardComponent() {
         )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <Soundboard />
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
           <h5
             style={{
@@ -219,6 +222,7 @@ function MaestroSoundboardComponent() {
               onQuickTagDoubleClick={onQuickTagChange}
             />
           </div>
+        </div>
         </div>
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', minWidth: '330px' }}>
           <MaestroAudioPlayer
