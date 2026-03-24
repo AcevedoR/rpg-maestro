@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 
 import { TrackCollectionsComponent } from './track-collections';
@@ -36,7 +37,11 @@ describe('TrackCollectionsComponent', () => {
       },
     ]);
 
-    render(<TrackCollectionsComponent />);
+    render(
+      <MemoryRouter>
+        <TrackCollectionsComponent />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Loading track collections...')).toBeTruthy();
 

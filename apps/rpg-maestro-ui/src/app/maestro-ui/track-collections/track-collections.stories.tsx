@@ -74,7 +74,7 @@ export const WithSessionId: Story = {
     errorMessage: null,
     sessionId: 'session-123',
     onImport: async (collectionId: string) => {
-      console.log('Import collection', collectionId);
+      console.info('Import collection', collectionId);
     },
     trackCollections: [
       {

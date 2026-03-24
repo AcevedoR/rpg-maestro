@@ -49,6 +49,7 @@ export function SetupSession() {
 
   useEffect(() => {
     sendOnboardRequest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

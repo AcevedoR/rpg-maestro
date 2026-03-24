@@ -3,7 +3,6 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
-import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 import { useAuth0 } from '@auth0/auth0-react';
 
 export default function BasicMenu() {
