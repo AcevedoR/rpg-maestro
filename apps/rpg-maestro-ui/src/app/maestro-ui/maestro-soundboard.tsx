@@ -37,6 +37,7 @@ function MaestroSoundboardComponent() {
     throw new Error('no session found in URL');
   }
   const maestroAudioPlayerChildRef = useRef<MaestroAudioPlayerRef>(null);
+  const effectAudioRef = useRef<HTMLAudioElement>(null);
   const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks): void => {
     maestroAudioPlayerChildRef?.current?.dispatchTrackWasManuallyChanged(newTracks);
   };
@@ -83,6 +84,11 @@ function MaestroSoundboardComponent() {
       const result = await setTrackToPlay(sessionId, { shortEffectTrack: { trackId } });
       if (result === 'AbortedRequestError') {
         return;
+      }
+      if (result.shortEffectTrack && effectAudioRef.current) {
+        effectAudioRef.current.src = result.shortEffectTrack.url;
+        effectAudioRef.current.currentTime = 0;
+        await effectAudioRef.current.play();
       }
     } catch (err) {
       return Promise.reject(err);
@@ -267,6 +273,7 @@ function MaestroSoundboardComponent() {
           onRefreshRequested={refreshTracks}
         />
       </div>
+      <audio ref={effectAudioRef} style={{ display: 'none' }} />
       <ToastContainer limit={5} />
     </div>
   );
