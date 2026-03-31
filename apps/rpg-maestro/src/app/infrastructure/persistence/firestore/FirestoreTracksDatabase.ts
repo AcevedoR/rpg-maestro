@@ -20,6 +20,7 @@ export class FirestoreTracksDatabase implements TracksDatabase {
     const newSession: SessionPlayingTrackEntity = {
       id: sessionId,
       currentTrack: null,
+      shortEffectTrack: null,
     };
     await this.db.collection(RPG_MAESTRO_SESSIONS_DB).doc(sessionId).set(newSession);
     return await Promise.resolve();
@@ -50,17 +51,25 @@ export class FirestoreTracksDatabase implements TracksDatabase {
   }
 
   async upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
+    const existing = await this.getSession(sessionId);
     const sessionEntity: SessionPlayingTrackEntity = {
       id: sessionId,
-      currentTrack: {
-        id: playingTrack.id,
-        name: playingTrack.name,
-        url: playingTrack.url,
-        duration: playingTrack.duration,
-        isPaused: playingTrack.isPaused,
-        playTimestamp: playingTrack.playTimestamp,
-        trackStartTime: playingTrack.trackStartTime,
-      },
+      currentTrack: playingTrackToEntity(playingTrack),
+      shortEffectTrack: existing?.shortEffectTrack ? playingTrackToEntity(existing.shortEffectTrack) : null,
+    };
+    await this.db
+      .collection(RPG_MAESTRO_SESSIONS_DB)
+      .doc(sessionId)
+      .set(sessionEntity);
+    return entityToSession(sessionEntity);
+  }
+
+  async upsertShortEffectTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
+    const existing = await this.getSession(sessionId);
+    const sessionEntity: SessionPlayingTrackEntity = {
+      id: sessionId,
+      currentTrack: existing?.currentTrack ? playingTrackToEntity(existing.currentTrack) : null,
+      shortEffectTrack: playingTrackToEntity(playingTrack),
     };
     await this.db
       .collection(RPG_MAESTRO_SESSIONS_DB)
@@ -88,6 +97,7 @@ export class FirestoreTracksDatabase implements TracksDatabase {
 interface SessionPlayingTrackEntity {
   id: string;
   currentTrack: PlayingTrackEntity | null;
+  shortEffectTrack: PlayingTrackEntity | null;
 }
 
 interface PlayingTrackEntity {
@@ -101,18 +111,34 @@ interface PlayingTrackEntity {
   trackStartTime: number;
 }
 
-function entityToSession(entity: SessionPlayingTrackEntity): SessionPlayingTracks{
-  const session: SessionPlayingTracks = {
+function playingTrackToEntity(track: PlayingTrack): PlayingTrackEntity {
+  return {
+    id: track.id,
+    name: track.name,
+    url: track.url,
+    duration: track.duration,
+    isPaused: track.isPaused,
+    playTimestamp: track.playTimestamp,
+    trackStartTime: track.trackStartTime,
+  };
+}
+
+function entityToPlayingTrack(entity: PlayingTrackEntity): PlayingTrack {
+  return new PlayingTrack(
+    entity.id,
+    entity.name,
+    entity.url,
+    entity.duration,
+    entity.isPaused,
+    entity.playTimestamp,
+    entity.trackStartTime
+  );
+}
+
+function entityToSession(entity: SessionPlayingTrackEntity): SessionPlayingTracks {
+  return {
     sessionId: entity.id,
-    currentTrack: entity.currentTrack ? new PlayingTrack(
-      entity.currentTrack.id,
-      entity.currentTrack.name,
-      entity.currentTrack.url,
-      entity.currentTrack.duration,
-      entity.currentTrack.isPaused,
-      entity.currentTrack.playTimestamp,
-      entity.currentTrack.trackStartTime
-    ) : null,
-  }
-  return session;
+    currentTrack: entity.currentTrack ? entityToPlayingTrack(entity.currentTrack) : null,
+    shortEffectTrack: entity.shortEffectTrack ? entityToPlayingTrack(entity.shortEffectTrack) : null,
+  };
 }

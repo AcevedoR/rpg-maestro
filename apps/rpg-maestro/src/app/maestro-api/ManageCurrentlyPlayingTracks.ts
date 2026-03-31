@@ -26,6 +26,24 @@ export class ManageCurrentlyPlayingTracks {
       throw new Error('when changeSessionPlayingTracks, request is required');
     }
 
+    if (changeSessionPlayingTracksRequest.shortEffectTrack) {
+      const track = await this.database.getTrack(changeSessionPlayingTracksRequest.shortEffectTrack.trackId);
+      const playingTrack = new PlayingTrack(
+        track.id,
+        track.name,
+        track.url,
+        track.duration,
+        false,
+        Date.now(),
+        0
+      );
+      return this.sessionsService.upsertShortEffectTrack(sessionId, playingTrack);
+    }
+
+    if (!changeSessionPlayingTracksRequest.currentTrack) {
+      throw new Error('when changeSessionPlayingTracks, either currentTrack or shortEffectTrack is required');
+    }
+
     const track = await this.database.getTrack(changeSessionPlayingTracksRequest.currentTrack.trackId);
     const playingTrack = new PlayingTrack(
       track.id,

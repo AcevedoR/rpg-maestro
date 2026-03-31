@@ -1,37 +1,69 @@
-import { getCurrentTrack } from '../tracks-api';
-import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
+import { getSessionPlayingTracks } from '../tracks-api';
+import { PlayingTrack, SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
 import { AbortedRequestError } from '../maestro-ui/maestro-api';
+
+export interface SyncResult {
+  currentTrack: PlayingTrack | null;
+  shortEffectTrack: PlayingTrack | null;
+}
 
 /**
  *
  * @param sessionId
  * @param currentTrackPlayTime the requested play time of the track
  * @param currentTrack the current track in the browser
- * @param options
+ * @param localShortEffectTrack the current short effect track in the browser
  */
-export const resyncCurrentTrackIfNeeded = async (
+export const resyncIfNeeded = async (
   sessionId: string,
   currentTrackPlayTime: number | null,
   currentTrack: PlayingTrack | null,
-): Promise<PlayingTrack | null | AbortedRequestError> => {
-  const optServerTrack = await getCurrentTrack(sessionId);
-  if(optServerTrack==='AbortedRequestError'){
-    return optServerTrack;
+  localShortEffectTrack: PlayingTrack | null,
+): Promise<SyncResult | AbortedRequestError> => {
+  const serverState = await getSessionPlayingTracks(sessionId);
+  if (serverState === 'AbortedRequestError') {
+    return serverState;
   }
-  if (!optServerTrack) {
+
+  const newCurrentTrack = resolveCurrentTrackSync(currentTrackPlayTime, currentTrack, serverState);
+  const newShortEffect = resolveShortEffectSync(localShortEffectTrack, serverState.shortEffectTrack);
+
+  return { currentTrack: newCurrentTrack, shortEffectTrack: newShortEffect };
+};
+
+function resolveCurrentTrackSync(
+  currentTrackPlayTime: number | null,
+  currentTrack: PlayingTrack | null,
+  serverState: SessionPlayingTracks,
+): PlayingTrack | null {
+  const serverTrack = serverState.currentTrack;
+  if (!serverTrack) {
     return null;
   }
   if (
     currentTrackPlayTime === null ||
     currentTrackPlayTime === undefined ||
     !currentTrack ||
-    isCurrentTrackOutOfDate(currentTrack, optServerTrack) ||
-    isCurrentTrackTooMuchDesynchronizedFromServer(currentTrackPlayTime * 1000, optServerTrack)
+    isCurrentTrackOutOfDate(currentTrack, serverTrack) ||
+    isCurrentTrackTooMuchDesynchronizedFromServer(currentTrackPlayTime * 1000, serverTrack)
   ) {
-    return optServerTrack;
+    return serverTrack;
   }
   return null;
-};
+}
+
+function resolveShortEffectSync(
+  localEffectTrack: PlayingTrack | null,
+  serverEffectTrack: PlayingTrack | null,
+): PlayingTrack | null {
+  if (!serverEffectTrack) {
+    return null;
+  }
+  if (!localEffectTrack || localEffectTrack.playTimestamp !== serverEffectTrack.playTimestamp) {
+    return serverEffectTrack;
+  }
+  return null;
+}
 
 export const isCurrentTrackTooMuchDesynchronizedFromServer = (
   currentTrackPlayTime: number,

@@ -6,7 +6,7 @@ export class InMemoryTracksDatabase implements TracksDatabase {
   sessionDatabase: { [name: SessionID]: SessionPlayingTracks } = {};
 
   createSession(sessionId: SessionID): Promise<void> {
-    this.sessionDatabase[sessionId] = { sessionId: sessionId, currentTrack: null };
+    this.sessionDatabase[sessionId] = { sessionId: sessionId, currentTrack: null, shortEffectTrack: null };
     return Promise.resolve();
   }
 
@@ -18,6 +18,7 @@ export class InMemoryTracksDatabase implements TracksDatabase {
     return Promise.resolve({
       sessionId: sessionId,
       currentTrack: this.sessionDatabase[sessionId]?.currentTrack,
+      shortEffectTrack: this.sessionDatabase[sessionId]?.shortEffectTrack ?? null,
     });
   }
 
@@ -33,9 +34,18 @@ export class InMemoryTracksDatabase implements TracksDatabase {
 
   upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
     if (!this.sessionDatabase[sessionId]) {
-      this.sessionDatabase[sessionId] = { sessionId: sessionId, currentTrack: playingTrack };
+      this.sessionDatabase[sessionId] = { sessionId: sessionId, currentTrack: playingTrack, shortEffectTrack: null };
     } else {
       this.sessionDatabase[sessionId].currentTrack = playingTrack;
+    }
+    return Promise.resolve(this.sessionDatabase[sessionId]);
+  }
+
+  upsertShortEffectTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
+    if (!this.sessionDatabase[sessionId]) {
+      this.sessionDatabase[sessionId] = { sessionId: sessionId, currentTrack: null, shortEffectTrack: playingTrack };
+    } else {
+      this.sessionDatabase[sessionId].shortEffectTrack = playingTrack;
     }
     return Promise.resolve(this.sessionDatabase[sessionId]);
   }

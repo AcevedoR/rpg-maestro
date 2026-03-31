@@ -77,6 +77,17 @@ function MaestroSoundboardComponent() {
     }
     dispatchTrackWasManuallyChanged(changedTracks);
   };
+
+  const requestPlaySoundEffect = async (trackId: string) => {
+    try {
+      const result = await setTrackToPlay(sessionId, { shortEffectTrack: { trackId } });
+      if (result === 'AbortedRequestError') {
+        return;
+      }
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  };
   const requestEditTrackToPlay = async (
     trackToPlay: TrackToPlay
   ): Promise<SessionPlayingTracks | AbortedRequestError> => {
@@ -170,7 +181,7 @@ function MaestroSoundboardComponent() {
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {soundboardTracks && soundboardTracks.length > 0 && (
-          <Soundboard tracks={soundboardTracks} onPlay={requestSetTrackToPlay} />
+          <Soundboard tracks={soundboardTracks} onPlay={requestPlaySoundEffect} />
         )}
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
           <h5
