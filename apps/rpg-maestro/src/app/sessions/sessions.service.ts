@@ -46,6 +46,12 @@ export class SessionsService {
     return updatedSession;
   }
 
+  async upsertShortEffectTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
+    const updatedSession = await this.tracksDatabase.upsertShortEffectTrack(sessionId, playingTrack);
+    await this.cache.set(updatedSession);
+    return updatedSession;
+  }
+
   // only for admin
   async getAll(): Promise<SessionPlayingTracks[]> {
     return this.tracksDatabase.getAllSessions();

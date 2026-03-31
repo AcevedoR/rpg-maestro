@@ -97,6 +97,17 @@ export const setTrackToPlay = async (
             rawSerialized.currentTrack.playTimestamp,
             rawSerialized.currentTrack.trackStartTime
           ),
+      shortEffectTrack: !rawSerialized.shortEffectTrack
+        ? null
+        : new PlayingTrack(
+            rawSerialized.shortEffectTrack.id,
+            rawSerialized.shortEffectTrack.name,
+            rawSerialized.shortEffectTrack.url,
+            rawSerialized.shortEffectTrack.duration,
+            rawSerialized.shortEffectTrack.isPaused,
+            rawSerialized.shortEffectTrack.playTimestamp,
+            rawSerialized.shortEffectTrack.trackStartTime
+          ),
     };
   } catch (error) {
     if ((error as DOMException).name === 'AbortError') {

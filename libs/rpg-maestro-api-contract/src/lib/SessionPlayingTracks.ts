@@ -5,6 +5,7 @@ import { IsString, IsOptional, IsArray } from 'class-validator';
 export interface SessionPlayingTracks {
   sessionId: SessionID;
   currentTrack: PlayingTrack | null;
+  shortEffectTrack: PlayingTrack | null;
 }
 
 export type SessionID = string;
