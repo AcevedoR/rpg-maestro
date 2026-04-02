@@ -31,7 +31,7 @@ test('a new User can become a Maestro and have his own session', async ({ page }
 
   await test.step('a track should be playing', async () => {
     await expect(page.getByText('No tracks selected to play')).toBeHidden();
-    const audio = page.locator('audio');
+    const audio = page.locator('audio').first();
     // Wait until the audio element is ready and has a source
     await expect.poll(async () => {
       return await audio.evaluate((el: HTMLAudioElement) => el.readyState >= 2 && el.src !== '');
