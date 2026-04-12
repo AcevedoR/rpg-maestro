@@ -10,7 +10,7 @@
   - redirect after login
   - create a homepage and self onboarding
   - for track collections
-    - I'm pretting sure I am missing something!
+    - I'm pretty sure I am missing something!
     - I'm wondering if I should not have a dedicated DB for TrackFile (!= from a SessionTrack)
 
 ## ideas
