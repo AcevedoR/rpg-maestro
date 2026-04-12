@@ -244,7 +244,7 @@ export const getMaestroInfos = async (): Promise<User> => {
 export const importCollectionToSession = async (sessionId: string, collectionId: string): Promise<Track[]> => {
   try {
     const response = await authenticatedFetch(
-      `${rpgmaestroapiurl}/maestro/sessions/${sessionId}/tracks/from-collection/${collectionId}`,
+      `${rpgMaestroApiUrl}/maestro/sessions/${sessionId}/tracks/from-collection/${collectionId}`,
       {
         method: 'POST',
         credentials: 'include',
