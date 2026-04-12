@@ -174,11 +174,6 @@ function MaestroSoundboardComponent() {
               text={'Manage your tracks'}
               materialUiIcon={LyricsTwoTone}
             />
-            <TextLinkWithIconWrapper
-              link={`/maestro/track-collections?sessionId=${sessionId}`}
-              text={'Track collections'}
-              materialUiIcon={CollectionsBookmarkTwoTone}
-            />
           </div>
         ) : (
           ''
