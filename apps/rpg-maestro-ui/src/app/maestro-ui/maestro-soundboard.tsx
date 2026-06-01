@@ -1,11 +1,11 @@
 import { filter, TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useRef, useState } from 'react';
 import { SessionPlayingTracks, Tag, Track, TrackToPlay, User } from '@rpg-maestro/rpg-maestro-api-contract';
-import { AbortedRequestError, getAllTracks, setTrackToPlay } from './maestro-api';
+import { AbortedRequestError, getAllTracks, getSoundboardTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
-import { LyricsTwoTone, Visibility } from '@mui/icons-material';
+import { CollectionsBookmarkTwoTone, LyricsTwoTone, Visibility } from '@mui/icons-material';
 import SearchTags from './tracks-table/SearchTags';
 import { QuickTagSelection } from './tracks-table/quick-tag-selection';
 import ShieldIcon from '@mui/icons-material/Shield';
@@ -23,11 +23,13 @@ import BasicMenu from '../ui-components/menu';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../auth/Loading';
 import { isDevModeEnabled } from '../../FeaturesConfiguration';
+import { Soundboard } from './soundboard/soundboard';
 
 function MaestroSoundboardComponent() {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
-  const [trackFilters, setTrackFilters] = useState<TrackFilters>({});
+  const [soundboardTracks, setSoundboardTracks] = useState<Track[] | undefined>(undefined);
+  const [trackFilters, setTrackFilters] = useState<TrackFilters>({ excludeTags: ['soundboard'] });
   const sessionId = useParams().sessionId ?? '';
   if (sessionId === '') {
     displayError('no session found in URL (it should be https://{URL}/maestro/{sessionId})');
@@ -35,6 +37,7 @@ function MaestroSoundboardComponent() {
     throw new Error('no session found in URL');
   }
   const maestroAudioPlayerChildRef = useRef<MaestroAudioPlayerRef>(null);
+  const effectAudioRef = useRef<HTMLAudioElement>(null);
   const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks): void => {
     maestroAudioPlayerChildRef?.current?.dispatchTrackWasManuallyChanged(newTracks);
   };
@@ -43,6 +46,9 @@ function MaestroSoundboardComponent() {
   useEffect(() => {
     if (allTracks === undefined) {
       refreshTracks();
+    }
+    if (soundboardTracks === undefined) {
+      getSoundboardTracks(sessionId).then(setSoundboardTracks);
     }
     if (user === undefined) {
       getUser().then((user) => {
@@ -71,6 +77,22 @@ function MaestroSoundboardComponent() {
       return Promise.reject(err);
     }
     dispatchTrackWasManuallyChanged(changedTracks);
+  };
+
+  const requestPlaySoundEffect = async (trackId: string) => {
+    try {
+      const result = await setTrackToPlay(sessionId, { shortEffectTrack: { trackId } });
+      if (result === 'AbortedRequestError') {
+        return;
+      }
+      if (result.shortEffectTrack && effectAudioRef.current) {
+        effectAudioRef.current.src = result.shortEffectTrack.url;
+        effectAudioRef.current.currentTime = 0;
+        await effectAudioRef.current.play();
+      }
+    } catch (err) {
+      return Promise.reject(err);
+    }
   };
   const requestEditTrackToPlay = async (
     trackToPlay: TrackToPlay
@@ -146,16 +168,22 @@ function MaestroSoundboardComponent() {
           materialUiIcon={Visibility}
         />
         {user && (user.role === 'MAESTRO' || user.role === 'ADMIN') ? (
-          <TextLinkWithIconWrapper
-            link={`/maestro/manage/${sessionId}`}
-            text={'Manage your tracks'}
-            materialUiIcon={LyricsTwoTone}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <TextLinkWithIconWrapper
+              link={`/maestro/manage/${sessionId}`}
+              text={'Manage your tracks'}
+              materialUiIcon={LyricsTwoTone}
+            />
+          </div>
         ) : (
           ''
         )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {soundboardTracks && soundboardTracks.length > 0 && (
+          <Soundboard tracks={soundboardTracks} onPlay={requestPlaySoundEffect} />
+        )}
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', width: '250px' }}>
           <h5
             style={{
@@ -213,6 +241,7 @@ function MaestroSoundboardComponent() {
             />
           </div>
         </div>
+        </div>
         <div style={{ display: 'inline-flex', justifyContent: 'flex-start', minWidth: '330px' }}>
           <MaestroAudioPlayer
             sessionId={sessionId}
@@ -239,6 +268,7 @@ function MaestroSoundboardComponent() {
           onRefreshRequested={refreshTracks}
         />
       </div>
+      <audio ref={effectAudioRef} style={{ display: 'none' }} />
       <ToastContainer limit={5} />
     </div>
   );

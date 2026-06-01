@@ -11,6 +11,8 @@ export interface TracksDatabase {
 
   upsertCurrentTrack: (sessionId: string, playingTrack: PlayingTrack) => Promise<SessionPlayingTracks>;
 
+  upsertShortEffectTrack: (sessionId: string, playingTrack: PlayingTrack) => Promise<SessionPlayingTracks>;
+
   getTrack(trackId: string): Promise<Track>;
 
   getAllTracks(sessionId: string): Promise<Track[]>;

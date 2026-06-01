@@ -2,7 +2,7 @@ import AudioPlayer from 'react-h5-audio-player';
 import H5AudioPlayer from 'react-h5-audio-player';
 import { ToastContainer } from 'react-toastify';
 import React, { LegacyRef, useEffect, useRef, useState } from 'react';
-import { resyncCurrentTrackIfNeeded } from '../track-sync/track-sync';
+import { resyncIfNeeded } from '../track-sync/track-sync';
 import { displayError } from '../error-utils';
 import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
 import GithubSourceCodeLink from '../ui-components/github-source-code-link/github-source-code-link';
@@ -17,25 +17,31 @@ export const SYNC_TRACK_INTERVAL_MS = 1000;
 
 export function PlayersUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
+  const [shortEffectTrack, setShortEffectTrack] = useState<PlayingTrack | null>(null);
   const audioPlayer = useRef<H5AudioPlayer>();
+  const effectAudioRef = useRef<HTMLAudioElement>(null);
   const sessionId = useParams().sessionId ?? '';
   if (sessionId === '') {
     displayError('no session found in URL (it should be https://{URL}/session/{sessionId})');
   }
 
   useEffect(() => {
-    async function resyncCurrentTrackOnUi() {
-      const newerServerTrack = await resyncCurrentTrackIfNeeded(
+    async function resyncOnUi() {
+      const syncResult = await resyncIfNeeded(
         sessionId,
         audioPlayer.current?.audio?.current?.currentTime ?? null,
-        currentTrack
+        currentTrack,
+        shortEffectTrack,
       );
-      if (newerServerTrack && newerServerTrack !== 'AbortedRequestError') {
+      if (syncResult === 'AbortedRequestError') {
+        return;
+      }
+
+      // Handle current track sync
+      const newerServerTrack = syncResult.currentTrack;
+      if (newerServerTrack) {
         console.info('synchronizing track');
         setCurrentTrack(newerServerTrack);
-        if (!newerServerTrack) {
-          throw new Error('Current track is not defined');
-        }
         if (audioPlayer.current?.audio?.current) {
           if (audioPlayer.current.audio.current.src !== newerServerTrack.url) {
             audioPlayer.current.audio.current.src = newerServerTrack.url;
@@ -44,10 +50,8 @@ export function PlayersUi() {
           const currentPlayTime = newerServerTrack.getCurrentPlayTime();
           audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
           if (newerServerTrack.isPaused) {
-            // paused
             audioPlayer.current.audio.current.pause();
           } else {
-            // playing
             try {
               await audioPlayer.current.audio.current.play();
             } catch (error) {
@@ -65,14 +69,28 @@ export function PlayersUi() {
           console.warn('audio player not available yet');
         }
       }
+
+      // Handle short effect track
+      const newEffect = syncResult.shortEffectTrack;
+      if (newEffect && effectAudioRef.current) {
+        console.info('playing short effect track:', newEffect.name);
+        setShortEffectTrack(newEffect);
+        effectAudioRef.current.src = newEffect.url;
+        effectAudioRef.current.currentTime = 0;
+        try {
+          await effectAudioRef.current.play();
+        } catch (error) {
+          console.error('Failed to play short effect track:', error);
+        }
+      }
     }
 
-    resyncCurrentTrackOnUi();
+    resyncOnUi();
     const id = setInterval(() => {
-      resyncCurrentTrackOnUi();
+      resyncOnUi();
     }, SYNC_TRACK_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [currentTrack, sessionId]);
+  }, [currentTrack, shortEffectTrack, sessionId]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>
@@ -140,6 +158,7 @@ export function PlayersUi() {
         }}
       />
 
+      <audio ref={effectAudioRef} style={{ display: 'none' }} />
       <GithubSourceCodeLink />
       <ToastContainer limit={5} />
     </div>

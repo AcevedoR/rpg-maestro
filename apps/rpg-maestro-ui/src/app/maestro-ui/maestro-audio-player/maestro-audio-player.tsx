@@ -2,7 +2,7 @@ import { PlayingTrack, SessionPlayingTracks, TrackToPlay } from '@rpg-maestro/rp
 import AudioPlayer from 'react-h5-audio-player';
 import H5AudioPlayer from 'react-h5-audio-player';
 import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { resyncCurrentTrackIfNeeded } from '../../track-sync/track-sync';
+import { resyncIfNeeded } from '../../track-sync/track-sync';
 import { displayError } from '../../error-utils';
 import './maestro-audio-player.css';
 import { AbortedRequestError } from '../maestro-api';
@@ -119,13 +119,14 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
       return Promise.resolve();
     }
     const requestFunc = () =>
-      resyncCurrentTrackIfNeeded(
+      resyncIfNeeded(
         sessionId,
         audioPlayer.current?.audio?.current?.currentTime ?? null,
-        currentTrack
-      ).then((newerServerTrack) => {
-        if (newerServerTrack !== 'AbortedRequestError') {
-          return resyncCurrentTrackOnUi(newerServerTrack);
+        currentTrack,
+        null,
+      ).then((syncResult) => {
+        if (syncResult !== 'AbortedRequestError') {
+          return resyncCurrentTrackOnUi(syncResult.currentTrack);
         }
         return Promise.resolve();
       });

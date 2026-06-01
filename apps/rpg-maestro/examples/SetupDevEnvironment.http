@@ -78,14 +78,63 @@ Authorization: Bearer {{an_admin_user.token}}
   });
 %}
 
-####
-#### create from directory
-POST http://localhost:3000/maestro/sessions/{{session_id}}/tracks/from-directory
-Accept: application/json
+###
+### Create Soundboard track collection
+POST http://localhost:3000/track-collections
 Content-Type: application/json
 Authorization: Bearer {{an_admin_user.token}}
 
 {
-  "directoryUrl": "https://rpgmaestro.app/public/musics",
-  "tags": ["combat", "travel"]
+  "id": "soundboard-collection",
+  "name": "Soundboard",
+  "description": "Quick sound effects for the soundboard",
+  "tracks": [
+    {
+      "name": "Sword Clash",
+      "tags": ["soundboard"],
+      "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
+      "source": { "origin_media": "freesound", "origin_url": "https://freesound.org/s/763587/", "origin_name": "Sword Clash" }
+    },
+    {
+      "name": "Thunder Crack",
+      "tags": ["soundboard"],
+      "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
+      "source": { "origin_media": "freesound", "origin_url": "https://freesound.org/s/763587/", "origin_name": "Thunder Crack" }
+    },
+    {
+      "name": "Door Creak",
+      "tags": ["soundboard"],
+      "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
+      "source": { "origin_media": "freesound", "origin_url": "https://freesound.org/s/763587/", "origin_name": "Door Creak" }
+    },
+    {
+      "name": "Coin Pouch",
+      "tags": ["soundboard"],
+      "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
+      "source": { "origin_media": "freesound", "origin_url": "https://freesound.org/s/763587/", "origin_name": "Coin Pouch" }
+    },
+    {
+      "name": "Arrow Whoosh",
+      "tags": ["soundboard"],
+      "url": "https://cdn.freesound.org/previews/763/763587_10152894-lq.mp3",
+      "source": { "origin_media": "freesound", "origin_url": "https://freesound.org/s/763587/", "origin_name": "Arrow Whoosh" }
+    }
+  ]
 }
+
+> {%
+  client.test("Request executed successfully", function() {
+    client.assert(response.status === 201, "response status code was: " + response.status);
+  });
+%}
+
+###
+### Import Soundboard collection into the session
+POST http://localhost:3000/maestro/sessions/{{session_id}}/tracks/from-collection/soundboard-collection
+Authorization: Bearer {{an_admin_user.token}}
+
+> {%
+  client.test("Request executed successfully", function() {
+    client.assert(response.status === 201, "response status code was: " + response.status);
+  });
+%}

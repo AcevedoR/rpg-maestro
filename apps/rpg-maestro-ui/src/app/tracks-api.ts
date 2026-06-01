@@ -10,11 +10,26 @@ interface OngoingRequest {
   startTimeMs: number;
 }
 
+function deserializePlayingTrack(track: PlayingTrack): PlayingTrack {
+  return new PlayingTrack(
+    track.id,
+    track.name,
+    track.url,
+    track.duration,
+    track.isPaused,
+    track.playTimestamp,
+    track.trackStartTime
+  );
+}
+
 let ongoingRequest: OngoingRequest | null = null;
-export const getCurrentTrack = async (sessionId: string, options?: {manuallyRequested?: boolean}): Promise<PlayingTrack | null | AbortedRequestError> => {
+export const getSessionPlayingTracks = async (
+  sessionId: string,
+  options?: { manuallyRequested?: boolean }
+): Promise<SessionPlayingTracks | AbortedRequestError> => {
   // Abort previous request if any
   if (ongoingRequest) {
-    if(options?.manuallyRequested){
+    if (options?.manuallyRequested) {
       ongoingRequest.abortController.abort();
     } else {
       const ongoingRequestDuration = Date.now() - ongoingRequest.startTimeMs;
@@ -33,21 +48,12 @@ export const getCurrentTrack = async (sessionId: string, options?: {manuallyRequ
     });
     if (response.ok) {
       const res = (await response.json()) as SessionPlayingTracks;
-      const track = res.currentTrack;
       ongoingRequest = null;
-      if (track != null) {
-        return new PlayingTrack(
-          track.id,
-          track.name,
-          track.url,
-          track.duration,
-          track.isPaused,
-          track.playTimestamp,
-          track.trackStartTime
-        );
-      } else {
-        return null;
-      }
+      return {
+        sessionId: res.sessionId,
+        currentTrack: res.currentTrack ? deserializePlayingTrack(res.currentTrack) : null,
+        shortEffectTrack: res.shortEffectTrack ? deserializePlayingTrack(res.shortEffectTrack) : null,
+      };
     } else {
       console.error(response.status, response.statusText);
       console.error(response);
@@ -60,6 +66,6 @@ export const getCurrentTrack = async (sessionId: string, options?: {manuallyRequ
     }
     console.error(error);
     displayError(`Fetch current/tracks error: ${error}`);
-    return null;
+    return { sessionId, currentTrack: null, shortEffectTrack: null };
   }
 };

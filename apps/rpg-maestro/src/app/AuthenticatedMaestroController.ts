@@ -37,6 +37,7 @@ import { RolesGuard } from './auth/roles.guard';
 import { Roles } from './auth/roles.decorator';
 import { Role } from './auth/role.enum';
 import { SessionsService } from './sessions/sessions.service';
+import { TrackCollectionService } from './track-collection/track-collection.service';
 
 @ApiCookieAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -49,7 +50,8 @@ export class AuthenticatedMaestroController {
     @Inject(SessionsService) sessionsService: SessionsService,
     @Inject(TrackService) private trackService: TrackService,
     @Inject(OnboardingService) private onboardingService: OnboardingService,
-    @Inject(UsersService) private userService: UsersService
+    @Inject(UsersService) private userService: UsersService,
+    @Inject(TrackCollectionService) private trackCollectionService: TrackCollectionService
   ) {
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(
       databaseWrapper.getTracksDB(),
@@ -134,6 +136,17 @@ export class AuthenticatedMaestroController {
     return this.trackService.getAll(sessionId);
   }
 
+  @Get('/maestro/sessions/:sessionId/soundboard-tracks')
+  @Roles([Role.MAESTRO, Role.MINSTREL])
+  async getSoundboardTracks(
+    @Request() req: { user: AuthenticatedUser },
+    @Param('sessionId') sessionId: string
+  ): Promise<Track[]> {
+    await this.checkAccessOnSession(req.user, sessionId);
+    const all = await this.trackService.getAll(sessionId);
+    return all.filter((t) => t.tags.includes('soundboard'));
+  }
+
   @Put('/maestro/sessions/:sessionId/playing-tracks')
   @Roles([Role.MAESTRO, Role.MINSTREL])
   async changeCurrentTrack(
@@ -143,6 +156,18 @@ export class AuthenticatedMaestroController {
   ): Promise<SessionPlayingTracks> {
     await this.checkAccessOnSession(req.user, sessionId);
     return await this.manageCurrentlyPlayingTracks.changeSessionPlayingTracks(sessionId, changeSessionPlayingTracks);
+  }
+
+  @Post('/maestro/sessions/:sessionId/tracks/from-collection/:collectionId')
+  @Roles([Role.MAESTRO])
+  async importTracksFromCollection(
+    @Request() req: { user: AuthenticatedUser },
+    @Param('sessionId') sessionId: string,
+    @Param('collectionId') collectionId: string
+  ): Promise<Track[]> {
+    await this.checkAccessOnSession(req.user, sessionId);
+    const collection = await this.trackCollectionService.get(collectionId);
+    return this.trackService.importTracksFromTrackCollection(sessionId, collection);
   }
 
   @Post('/maestro/sessions')

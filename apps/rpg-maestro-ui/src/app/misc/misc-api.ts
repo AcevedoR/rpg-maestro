@@ -1,8 +1,7 @@
 import { displayError } from '../error-utils';
 import { HealthCheckResult } from '@nestjs/terminus/dist/health-check/health-check-result.interface';
 import { AppVersion } from '@rpg-maestro/rpg-maestro-api-contract';
-
-const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL; // TODO centralize
+import { rpgMaestroApiUrl } from '../utils/api-config';
 
 export interface RPGMaestroHealthStatus {
   status: string;
@@ -10,7 +9,7 @@ export interface RPGMaestroHealthStatus {
 
 export const getVersion = async (): Promise<AppVersion> => {
   try {
-    const response = await fetch(rpgmaestroapiurl + `/health/version`, {
+    const response = await fetch(rpgMaestroApiUrl + `/health/version`, {
       credentials: 'include',
     });
     if (response.ok) {
@@ -28,7 +27,7 @@ export const getVersion = async (): Promise<AppVersion> => {
 
 export const getHealth = async (): Promise<RPGMaestroHealthStatus> => {
   try {
-    const response = await fetch(rpgmaestroapiurl + `/health`, {
+    const response = await fetch(rpgMaestroApiUrl + `/health`, {
       credentials: 'include',
     });
     if (response.ok) {

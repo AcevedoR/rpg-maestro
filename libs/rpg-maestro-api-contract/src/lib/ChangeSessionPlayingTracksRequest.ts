@@ -1,5 +1,6 @@
 import { TrackToPlay } from './TrackToPlay';
 
 export interface ChangeSessionPlayingTracksRequest {
-  currentTrack: TrackToPlay;
+  currentTrack?: TrackToPlay;
+  shortEffectTrack?: TrackToPlay;
 }
