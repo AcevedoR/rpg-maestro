@@ -7,13 +7,15 @@
   "targets": {
     "dev": {
       "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
       "options": {
         "commands": [
           {
-            "command": "nx run rpg-maestro:serve --no-cloud"
+            "command": "node dist/apps/rpg-maestro/main.js"
           },
           {
-            "command": "npx wait-on http://localhost:${PORT}/health --timeout 5000 && nx run rpg-maestro:setup-dev-env"
+            "command": "npx wait-on http://localhost:${PORT}/health --timeout 30000 && npx httpyac --all --bail apps/rpg-maestro/examples/SetupDevEnvironment.http"
           }
         ]
       },
