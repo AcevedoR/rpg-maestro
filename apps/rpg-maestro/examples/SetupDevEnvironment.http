@@ -78,18 +78,6 @@ Authorization: Bearer {{an_admin_user.token}}
   });
 %}
 
-####
-#### create from directory
-POST http://localhost:3000/maestro/sessions/{{session_id}}/tracks/from-directory
-Accept: application/json
-Content-Type: application/json
-Authorization: Bearer {{an_admin_user.token}}
-
-{
-  "directoryUrl": "https://rpgmaestro.app/public/musics",
-  "tags": ["combat", "travel"]
-}
-
 ###
 ### Create Soundboard track collection
 POST http://localhost:3000/track-collections
