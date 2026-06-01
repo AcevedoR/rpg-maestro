@@ -70,7 +70,7 @@ export function EditTrackSideForm(props: EditTrackSideFormProps) {
             onChange={(event: React.SyntheticEvent, newValue: string[] | null) => setInputTags(newValue)}
             renderInput={(params) => <TextField {...params} label="Tags (optional)" placeholder="Favorites" />}
           />
-          <Button variant="contained" onClick={onSubmit} disabled={isThereAnErrorInTheForm() || waitingForTrackEdition} sx={{ backgroundColor: 'var(--gold-color) !important' }}>
+          <Button variant="contained" onClick={onSubmit} disabled={isThereAnErrorInTheForm() || waitingForTrackEdition} sx={{ backgroundColor: 'var(--gold-color)' }}>
             Update track
           </Button>
         </div>

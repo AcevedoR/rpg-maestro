@@ -22,7 +22,7 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          background: 'rgba(26, 11, 46, 0.5) !important',
+          background: 'rgba(26, 11, 46, 0.5)',
         },
       },
     },
