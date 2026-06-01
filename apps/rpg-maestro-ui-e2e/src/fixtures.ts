@@ -70,3 +70,50 @@ export async function initUsersFixtureSpec(){
     return await initUsersFixture(RPG_MAESTRO_URL);
   });
 }
+
+export interface CreateTrackOptions {
+  url: string;
+  name?: string;
+  tags?: string[];
+}
+
+export async function createTrackViaApi(
+  jwtToken: FakeJwtToken,
+  sessionId: string,
+  options: CreateTrackOptions
+): Promise<{ id: string; name: string; tags: string[] }> {
+  return await test.step(`create track "${options.name ?? options.url}"`, async () => {
+    const res = await fetch(`${RPG_MAESTRO_URL}/maestro/sessions/${sessionId}/tracks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken.token}`,
+      },
+      body: JSON.stringify(options),
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to create track: ${res.status} ${res.statusText}`);
+    }
+    return res.json();
+  });
+}
+
+export async function setTrackToPlayViaApi(
+  jwtToken: FakeJwtToken,
+  sessionId: string,
+  trackId: string
+): Promise<void> {
+  await test.step(`set track ${trackId} to play via api`, async () => {
+    const res = await fetch(`${RPG_MAESTRO_URL}/maestro/sessions/${sessionId}/playing-tracks`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken.token}`,
+      },
+      body: JSON.stringify({ currentTrack: { trackId, paused: false } }),
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to set track to play: ${res.status} ${res.statusText}`);
+    }
+  });
+}
