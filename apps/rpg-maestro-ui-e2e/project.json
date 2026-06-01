@@ -3,13 +3,11 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "sourceRoot": "apps/rpg-maestro-ui-e2e/src",
-  "implicitDependencies": ["rpg-maestro-ui"],
+  "implicitDependencies": ["rpg-maestro-ui", "rpg-maestro", "audio-file-uploader"],
   "// targets": "to see all targets run: nx show project rpg-maestro-ui-e2e --web",
   "targets": {
     "e2e": {
-      "dependsOn": [
-        "rpg-maestro:build", "audio-file-uploader:build", "rpg-maestro-ui:build"
-      ]
+      "dependsOn": ["^build"]
     }
   }
 }

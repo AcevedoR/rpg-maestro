@@ -7,32 +7,10 @@
   "targets": {
     "dev-e2e": {
       "executor": "nx:run-commands",
+      "dependsOn": ["build"],
       "options": {
-        "commands": [{ "command": "nx run audio-file-uploader:serve --no-cloud" }]
-      },
-      "configurations": {
-        "e2e-tests": {
-          "envFile": "apps/audio-file-uploader/.env.e2e-tests"
-        }
-      }
-    },
-    "dev": {
-      "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
-      "dependsOn": [
-        "build"
-      ],
-      "options": {
-        "buildTarget": "audio-file-uploader:build",
-        "runBuildTargetDependencies": false
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "audio-file-uploader:build:development"
-        },
-        "production": {
-          "buildTarget": "audio-file-uploader:build:production"
-        }
+        "command": "node dist/apps/audio-file-uploader/main.js",
+        "envFile": "apps/audio-file-uploader/.env.e2e-tests"
       }
     },
     "serve": {
@@ -50,16 +28,6 @@
         "production": {
           "buildTarget": "audio-file-uploader:build:production"
         }
-      }
-    },
-    "audio-file-uploader:build": {
-      "configurations": {
-        "production": {}
-      }
-    },
-    "audio-file-uploader:preview:e2e-tests": {
-      "configurations": {
-        "e2e-tests": {}
       }
     },
     "semantic-release": {

@@ -26,7 +26,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: [
     {
-      command: 'npx nx run rpg-maestro:dev-e2e --configuration=e2e-tests --no-cloud',
+      command: 'npx nx run rpg-maestro:dev-e2e --no-cloud',
       url: 'http://localhost:8099/health',
       reuseExistingServer: !process.env.CI,
       cwd: workspaceRoot,
@@ -34,7 +34,7 @@ export default defineConfig({
       stdout: 'pipe',
     },
     {
-      command: 'npx nx run audio-file-uploader:dev-e2e --configuration=e2e-tests --no-cloud',
+      command: 'npx nx run audio-file-uploader:dev-e2e --no-cloud',
       url: 'http://localhost:8098/api/health',
       reuseExistingServer: !process.env.CI,
       cwd: workspaceRoot,
