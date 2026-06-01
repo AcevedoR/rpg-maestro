@@ -1,4 +1,3 @@
-import styled from 'styled-components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import 'react-h5-audio-player/lib/styles.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -6,8 +5,7 @@ import { MaestroSoundboard } from './maestro-ui/maestro-soundboard';
 import { PlayersUi } from './players-ui/players-ui';
 import { TracksManagement } from './maestro-ui/tracks-management/tracks-management';
 import './app.css';
-import './custom.datagrid.css';
-import './custom.autocomplete.css';
+import './audio-player-shared.css';
 import { Onboarding } from './onboarding/onboarding';
 import { FakeIDPLoginPage, getFakeToken } from './auth/FakeIDPLoginPage.fixture';
 import { SetupSession } from './onboarding/setup-session';
@@ -15,7 +13,7 @@ import { WelcomePage } from './welcome-page';
 import { isDevModeEnabled } from '../FeaturesConfiguration';
 import { HealthStatus } from './misc/health-status';
 import { UserInfos } from './onboarding/user-infos';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { AdminBoard } from './admin-ui/admin-board';
 import { LoginPage } from './auth/LoginPage';
 import { TrackCollections } from './maestro-ui/track-collections/track-collections';
@@ -23,20 +21,8 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { initAuthRequirements } from './utils/authenticated-fetch';
 import { getUserFromAPI } from './maestro-ui/maestro-api';
+import { theme } from './theme';
 
-const StyledApp = styled.div`
-  //  Your style here
-`;
-const theme = createTheme({
-  colorSchemes: {},
-  palette: {
-    mode: 'dark',
-
-    secondary: {
-      main: '#97723d',
-    },
-  },
-});
 export function App() {
   const [authReady, setAuthReady] = useState(false);
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
@@ -53,7 +39,7 @@ export function App() {
   return (
     // only load the whole app after auth is ready
     !authReady ? null : (
-      <StyledApp style={{ fontFamily: '"Roboto", "Helvetica", "Arial", "sans-serif"', height: '100vh' }}>
+      <div style={{ fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif', height: '100vh' }}>
         <ThemeProvider theme={theme}>
           {/* START: routes */}
           {/* These routes and navigation have been generated for you */}
@@ -76,7 +62,7 @@ export function App() {
           </Routes>
           {/* END: routes */}
         </ThemeProvider>
-      </StyledApp>
+      </div>
     )
   );
 }

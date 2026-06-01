@@ -196,7 +196,8 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
               maxHeight: '2em',
               textOverflow: 'ellipsis',
               overflow: 'hidden',
-              wordBreak: 'break-all'
+              wordBreak: 'break-all',
+              margin: 0,
             }}
           >
             {currentTrack?.name ?? 'No tracks selected to play'}

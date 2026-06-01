@@ -2,7 +2,6 @@ import * as React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { TrackCreationFromYoutubeDto } from '@rpg-maestro/rpg-maestro-api-contract';
 import { formatTime, formatTodayDate } from '../../utils/time';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const paginationModel = { page: 0, pageSize: 10 };
 
@@ -37,26 +36,19 @@ export function TrackCreationFromYoutubeTable(props: TrackCreationFromYoutubeTab
       },
     },
   ];
-  const theme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  });
   return (
     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
       <div style={{ minHeight: 200, height: '40vh', width: '90%' }}>
-        <ThemeProvider theme={theme}>
-          <DataGrid
-            rows={trackCreationsFromYoutube}
-            columns={columns}
-            initialState={{
-              pagination: { paginationModel },
-              sorting: { sortModel: [{ field: 'updatedDate', sort: 'desc' }] },
-            }}
-            pageSizeOptions={[10, 25, 50]}
-            sx={{ border: 0 }}
-          />
-        </ThemeProvider>
+        <DataGrid
+          rows={trackCreationsFromYoutube}
+          columns={columns}
+          initialState={{
+            pagination: { paginationModel },
+            sorting: { sortModel: [{ field: 'updatedDate', sort: 'desc' }] },
+          }}
+          pageSizeOptions={[10, 25, 50]}
+          sx={{ border: 0 }}
+        />
       </div>
     </div>
   );

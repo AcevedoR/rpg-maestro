@@ -5,8 +5,8 @@ type DiscordInviteProps = {
 };
 
 const DiscordInviteLink: React.FC<DiscordInviteProps> = ({
-                                                       buttonText = 'Join our Discord',
-                                                     }) => {
+                                                     buttonText = 'Join our Discord',
+                                                   }) => {
   return (
     <div style={{ textAlign: 'center', margin: '1em 0' }}>
       <a

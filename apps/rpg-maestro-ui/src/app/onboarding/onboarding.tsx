@@ -27,7 +27,7 @@ export function Onboarding() {
         gap: '1rem',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
         <h1 style={{ margin: 0 }}>Welcome to RPG-MAESTRO!</h1>
         <h4>A web app to broadcast music to your players during your TTRPG sessions</h4>
       </div>

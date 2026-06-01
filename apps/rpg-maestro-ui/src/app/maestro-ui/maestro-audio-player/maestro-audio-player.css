@@ -17,28 +17,28 @@
     text-align: center;
     padding: 0.5rem;
 }
-.maestro-audio-player .rhap_stacked{
+
+.maestro-audio-player .rhap_stacked {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     width: 100%;
 }
+
 .maestro-audio-player .rhap_progress-section {
     min-width: 250px;
     width: 90%;
 }
+
 .maestro-audio-player .rhap_header {
     margin: 1rem;
     padding: 0;
 }
-.maestro-audio-player .rhap_header h3{
-    margin:0;
-    padding: 0;
-}
 
-.maestro-audio-player .rhap_additional-controls {
-    display: none;
+.maestro-audio-player .rhap_header h3 {
+    margin: 0;
+    padding: 0;
 }
 
 .maestro-audio-player .rhap_controls-section {
@@ -51,39 +51,4 @@
 
 .maestro-audio-player .rhap_main-controls {
     gap: 1rem;
-}
-
-.maestro-audio-player .rhap_volume-controls {
-    flex: none;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    transition: background-color 0.3s ease;
-}
-
-.maestro-audio-player .rhap_volume-controls:hover {
-}
-
-.maestro-audio-player .rhap_volume-container {
-    flex: none;
-    min-width: 100px;
-    width: 10vw;
-}
-
-.maestro-audio-player .rhap_progress-filled {
-    background: var(--gold-color);
-    border-radius: 4px;
-}
-
-.maestro-audio-player .rhap_time {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.maestro-audio-player .rhap_button-clear {
-    color: var(--text-primary);
-    transition: color 0.3s ease;
-}
-
-.maestro-audio-player .rhap_button-clear:hover {
-    color: var(--gold-color);
 }

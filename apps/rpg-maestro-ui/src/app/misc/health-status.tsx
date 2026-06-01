@@ -44,9 +44,9 @@ export function HealthStatus() {
         gap: '1rem',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
         <h1 style={{ margin: 0 }}>RPG Maestro health status!</h1>
-        <DiscordInviteLink/>
+        <DiscordInviteLink />
       </div>
       {health ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

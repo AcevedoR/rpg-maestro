@@ -1,8 +1,0 @@
-/*TODO remove this leaking css*/
-.MuiAutocomplete-root {
-
-}
-
-.MuiOutlinedInput-notchedOutline {
-    border-color: var(--gold-color);
-}
