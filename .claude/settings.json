@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const {execSync}=require('child_process'),patterns=[/apps\\/rpg-maestro\\/src\\/app\\/.*\\.module\\.ts$/,/apps\\/rpg-maestro\\/src\\/app-bootstrap\\.ts$/,/apps\\/rpg-maestro\\/src\\/app\\/.*\\.controller\\.ts$/,/apps\\/rpg-maestro-ui\\/src\\/app\\/app\\.tsx$/,/libs\\/(rpg-maestro|audio-file-uploader)-api-contract\\/src\\/lib\\//,/apps\\/rpg-maestro\\/src\\/infrastructure\\/database\\.module\\.ts$/,/apps\\/.*\\/project\\.json$/];try{const f=execSync('git diff --name-only HEAD 2>/dev/null||true',{cwd:process.cwd()}).toString().trim().split('\\n').filter(Boolean),hit=f.filter(x=>patterns.some(p=>p.test(x)));if(hit.length)console.log('\\n[doc-hook] Architecture-affecting files changed:\\n  '+hit.join('\\n  ')+'\\nConsider updating docs/architecture.md or docs/dev-guide.md if the module structure, API surface, routes, or DB layer changed.')}catch(e){}\""
+          }
+        ]
+      }
+    ]
+  }
+}
