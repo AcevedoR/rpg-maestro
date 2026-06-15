@@ -68,23 +68,20 @@ test('the Players UI displays the track name when the Maestro sets a current tra
 });
 
 test('the Players UI shows a Discord help link in error toasts when the API fails', async ({ page }) => {
-  await test.step('intercept session API to return 500', async () => {
+  await test.step('force the session API to fail before the page loads', async () => {
     await page.route('**/sessions/**', (route) => route.fulfill({ status: 500, body: '{}' }));
   });
 
-  await test.step('navigate to player page with a fake session', async () => {
+  await test.step('navigate to player page with a throwaway session id', async () => {
     await page.goto('/fake-session-for-error-toast-test');
   });
 
-  await test.step('error toast appears with Discord link', async () => {
-    const discordLink = page.locator('.Toastify__toast--error a[href="https://discord.gg/e4cvXZc3bZ"]');
-    await expect(discordLink).toBeVisible({ timeout: 5000 });
-    await expect(discordLink).toContainText('Get help in our discord');
-  });
-
-  await test.step('Discord icon SVG is present in the link', async () => {
-    const icon = page.locator('.Toastify__toast--error a svg');
-    await expect(icon).toBeVisible();
+  await test.step('an error toast surfaces a Discord help link pointing to the invite', async () => {
+    const discordLink = page.getByRole('alert').getByRole('link', { name: /get help in our discord/i });
+    await expect(discordLink).toBeVisible();
+    await expect(discordLink).toHaveAttribute('href', 'https://discord.gg/e4cvXZc3bZ');
+    // the icon is decorative (no accessible name), so scope a structural query to the link
+    await expect(discordLink.locator('svg')).toBeVisible();
   });
 });
 

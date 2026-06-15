@@ -99,3 +99,15 @@ Nx module boundary enforcement is active — do not import across boundaries wit
 - **Imports:** External → workspace libs (path aliases) → relative
 - **NestJS:** DI via constructor + `@Inject`; decorators from `@nestjs/common` + `@nestjs/swagger`
 - **React:** styled-components + MUI themes; Auth0 bootstrapping in `app.tsx` — avoid touching unless required
+
+## E2E test conventions (Playwright)
+
+Tests live in `apps/rpg-maestro-ui-e2e/src`. Write reliable, flake-free tests:
+
+- **User-facing locators first:** Prefer `getByRole`/`getByText`/`getByLabel` over CSS selectors. Avoid third-party library internals (e.g. `.Toastify__toast--error`) — toasts expose `role="alert"`, so `page.getByRole('alert')` is stable across library upgrades. Use a scoped structural locator (`.locator('svg')`) only for decorative elements with no accessible name.
+- **Web-first assertions only:** Always `await expect(locator).toBeVisible()` / `.toHaveText()` / `.toHaveAttribute()`. These auto-retry until the global `expect` timeout. Never read state synchronously (`page.$`, `.textContent()` then compare) — that's a race.
+- **No magic waits:** No `page.waitForTimeout(...)` and no `waitForLoadState('networkidle')`. Rely on auto-waiting assertions to converge instead.
+- **No per-assertion timeouts:** Don't sprinkle `{ timeout: 5000 }`. The global timeout is set in `playwright.config.ts` (`expect.timeout`) — override only with a documented reason.
+- **Assert values explicitly:** Put the expected value in the assertion (`toHaveAttribute('href', '...')`), not inside the locator. Failures then report expected-vs-actual instead of a generic "element not found".
+- **Isolate each test:** Use a throwaway/generated session id and page-scoped `page.route(...)` mocks so tests never share mutable state. Set up `page.route` before `page.goto` so the first request is already intercepted. Mock failures with `route.fulfill({ status: 500, ... })` rather than trying to break the real backend.
+- **Structure with `test.step`:** Group actions into named steps for readable traces and failure reports.
