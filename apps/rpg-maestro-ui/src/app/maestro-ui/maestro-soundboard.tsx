@@ -65,7 +65,13 @@ function MaestroSoundboardComponent() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const target = e.target as HTMLElement;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target.isContentEditable ||
+        target.closest('[role="dialog"]') !== null
+      ) return;
       if (e.code === 'Space') {
         e.preventDefault();
         maestroAudioPlayerChildRef.current?.togglePlayPause();

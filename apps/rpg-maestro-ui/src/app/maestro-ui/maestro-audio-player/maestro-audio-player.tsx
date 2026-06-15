@@ -139,14 +139,13 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
     return () => clearInterval(id);
   }, [periodicallySyncCurrentTrack, sessionId, currentTrack]);
 
-  const togglePlayPause = async (): Promise<void> => {
-    if (!currentTrack) return;
-    await changePlayingStatus(currentTrack.isPaused);
-  };
   useImperativeHandle(ref, () => ({
     dispatchTrackWasManuallyChanged,
-    togglePlayPause,
-    currentTrack: currentTrack,
+    togglePlayPause: async () => {
+      if (!currentTrack) return;
+      await changePlayingStatus(currentTrack.isPaused);
+    },
+    currentTrack,
   }));
 
   const changePlayingStatus = async (playing: boolean): Promise<void> => {
