@@ -67,6 +67,27 @@ test('the Players UI displays the track name when the Maestro sets a current tra
   });
 });
 
+test('the Players UI shows a Discord help link in error toasts when the API fails', async ({ page }) => {
+  await test.step('intercept session API to return 500', async () => {
+    await page.route('**/sessions/**', (route) => route.fulfill({ status: 500, body: '{}' }));
+  });
+
+  await test.step('navigate to player page with a fake session', async () => {
+    await page.goto('/fake-session-for-error-toast-test');
+  });
+
+  await test.step('error toast appears with Discord link', async () => {
+    const discordLink = page.locator('.Toastify__toast--error a[href="https://discord.gg/e4cvXZc3bZ"]');
+    await expect(discordLink).toBeVisible({ timeout: 5000 });
+    await expect(discordLink).toContainText('Get help in our discord');
+  });
+
+  await test.step('Discord icon SVG is present in the link', async () => {
+    const icon = page.locator('.Toastify__toast--error a svg');
+    await expect(icon).toBeVisible();
+  });
+});
+
 test('the Players UI updates the displayed track name when the Maestro changes the track', async ({ page }) => {
   let user: UserWithGeneratedSession;
   let firstTrackName: string;
