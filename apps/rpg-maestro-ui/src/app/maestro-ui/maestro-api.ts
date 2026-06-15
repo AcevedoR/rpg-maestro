@@ -56,6 +56,19 @@ export const getAllTrackCollections = async (): Promise<TrackCollection[]> => {
   }
 };
 
+export const getTrackCollection = async (id: string): Promise<TrackCollection | null> => {
+  try {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/track-collections/${id}`, {
+      credentials: 'include',
+    });
+    return response as TrackCollection;
+  } catch (error) {
+    // authenticatedFetch already surfaces the HTTP error to the user; the edit page renders a not-found/error state.
+    console.error(error);
+    return null;
+  }
+};
+
 export const createTrackCollection = async (creation: TrackCollectionCreation): Promise<TrackCollection> => {
   try {
     const response = await authenticatedFetch(`${rpgMaestroApiUrl}/track-collections`, {

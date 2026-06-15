@@ -17,6 +17,12 @@ export const Default: Story = {
   args: {
     isLoading: false,
     errorMessage: null,
+    onManage: (collectionId: string) => {
+      console.info('Manage collection', collectionId);
+    },
+    onCreateNew: () => {
+      console.info('Create new collection');
+    },
     trackCollections: [
       {
         id: 'collection-1',

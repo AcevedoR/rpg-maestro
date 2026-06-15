@@ -89,7 +89,7 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
         <h1 style={{ margin: 0, display: 'inline-block' }}>Admin board</h1>
         <TextLinkWithIconWrapper
-          link="/maestro/track-collections/manage"
+          link="/maestro/track-collections"
           text="Manage track collections"
           materialUiIcon={CollectionsBookmarkTwoTone}
         />
