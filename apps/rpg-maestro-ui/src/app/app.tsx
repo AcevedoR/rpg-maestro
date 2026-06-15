@@ -17,6 +17,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { AdminBoard } from './admin-ui/admin-board';
 import { LoginPage } from './auth/LoginPage';
 import { TrackCollections } from './maestro-ui/track-collections/track-collections';
+import { TrackCollectionsManagement } from './maestro-ui/track-collections/track-collections-management';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { initAuthRequirements } from './utils/authenticated-fetch';
@@ -57,6 +58,7 @@ export function App() {
             <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
             <Route path="/maestro/manage/:sessionId" element={<TracksManagement />} />
             <Route path="/maestro/track-collections" element={<TrackCollections />} />
+            <Route path="/maestro/track-collections/manage" element={<TrackCollectionsManagement />} />
             <Route path="/maestro/admin" element={<AdminBoard />} />
             <Route path="/admin" element={<Navigate to="/maestro" replace />} />
           </Routes>

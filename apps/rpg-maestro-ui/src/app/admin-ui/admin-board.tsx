@@ -18,6 +18,8 @@ import { formatTodayDate } from '../utils/time';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../auth/Loading';
 import { isDevModeEnabled } from '../../FeaturesConfiguration';
+import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
+import CollectionsBookmarkTwoTone from '@mui/icons-material/CollectionsBookmarkTwoTone';
 
 export const usersGridColumns: GridColDef[] = [
   { field: 'id', width: 450 },
@@ -86,6 +88,11 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
     >
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
         <h1 style={{ margin: 0, display: 'inline-block' }}>Admin board</h1>
+        <TextLinkWithIconWrapper
+          link="/maestro/track-collections/manage"
+          text="Manage track collections"
+          materialUiIcon={CollectionsBookmarkTwoTone}
+        />
         <h4>connected as: {user?.id}</h4>
       </div>
       <hr style={{ width: '100%', borderColor: 'var(--gold-color)' }} />
