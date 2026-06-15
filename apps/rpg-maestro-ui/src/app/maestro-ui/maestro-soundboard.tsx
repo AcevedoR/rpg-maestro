@@ -24,12 +24,14 @@ import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../auth/Loading';
 import { isDevModeEnabled } from '../../FeaturesConfiguration';
 import { Soundboard } from './soundboard/soundboard';
+import HelpModal from '../ui-components/help-modal';
 
 function MaestroSoundboardComponent() {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [allTracks, setAllTracks] = useState<Track[] | undefined>(undefined);
   const [soundboardTracks, setSoundboardTracks] = useState<Track[] | undefined>(undefined);
   const [trackFilters, setTrackFilters] = useState<TrackFilters>({ excludeTags: ['soundboard'] });
+  const [helpOpen, setHelpOpen] = useState(false);
   const sessionId = useParams().sessionId ?? '';
   if (sessionId === '') {
     displayError('no session found in URL (it should be https://{URL}/maestro/{sessionId})');
@@ -60,6 +62,18 @@ function MaestroSoundboardComponent() {
       });
     }
   });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        maestroAudioPlayerChildRef.current?.togglePlayPause();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const refreshTracks = () => {
     getAllTracks(sessionId).then((x) => setAllTracks(x));
@@ -154,7 +168,7 @@ function MaestroSoundboardComponent() {
         <div>
           <div style={{ display: 'flex', gap: '2rem' }}>
             <h1 style={{ marginTop: 0 }}>Maestro UI</h1>
-            <BasicMenu />
+            <BasicMenu onHelpClick={() => setHelpOpen(true)} />
           </div>
           <p>As the Maestro, control what current track is playing for the session: {sessionId}</p>
           <p>
@@ -270,6 +284,7 @@ function MaestroSoundboardComponent() {
       </div>
       <audio ref={effectAudioRef} style={{ display: 'none' }} />
       <ToastContainer limit={5} />
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 }

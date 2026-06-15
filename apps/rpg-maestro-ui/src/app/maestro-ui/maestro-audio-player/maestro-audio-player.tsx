@@ -9,6 +9,7 @@ import { AbortedRequestError } from '../maestro-api';
 
 export interface MaestroAudioPlayerRef {
   dispatchTrackWasManuallyChanged: (newTracks: SessionPlayingTracks) => void;
+  togglePlayPause: () => Promise<void>;
   currentTrack: PlayingTrack | null;
 }
 
@@ -28,10 +29,6 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
   const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks) => {
     resyncCurrentTrackOnUi(newTracks.currentTrack);
   };
-  useImperativeHandle(ref, () => ({
-    dispatchTrackWasManuallyChanged,
-    currentTrack: currentTrack
-  }));
 
   if (audioPlayer.current?.progressBar.current) {
     audioPlayer.current.progressBar.current.onclick = (e) => {
@@ -141,6 +138,16 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
     }, SYNC_TRACK_INTERVAL_MS);
     return () => clearInterval(id);
   }, [periodicallySyncCurrentTrack, sessionId, currentTrack]);
+
+  const togglePlayPause = async (): Promise<void> => {
+    if (!currentTrack) return;
+    await changePlayingStatus(currentTrack.isPaused);
+  };
+  useImperativeHandle(ref, () => ({
+    dispatchTrackWasManuallyChanged,
+    togglePlayPause,
+    currentTrack: currentTrack,
+  }));
 
   const changePlayingStatus = async (playing: boolean): Promise<void> => {
       if (!currentTrack) {
