@@ -7,6 +7,9 @@ import {
   TrackCreation,
   TrackCreationFromYoutubeDto,
   TrackCollection,
+  TrackCollectionCreation,
+  TrackCollectionImportFromSession,
+  TrackCollectionUpdate,
   TrackUpdate,
   UploadAndCreateTracksFromYoutubeRequest,
   User,
@@ -50,6 +53,75 @@ export const getAllTrackCollections = async (): Promise<TrackCollection[]> => {
     console.error(error);
     displayError(`Fetch /track-collections error: ${error}`);
     return [];
+  }
+};
+
+export const createTrackCollection = async (creation: TrackCollectionCreation): Promise<TrackCollection> => {
+  try {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/track-collections`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(creation),
+      credentials: 'include',
+    });
+    return response as TrackCollection;
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const importTrackCollectionFromSession = async (
+  importFromSession: TrackCollectionImportFromSession
+): Promise<TrackCollection> => {
+  try {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/track-collections/import-from/session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(importFromSession),
+      credentials: 'include',
+    });
+    return response as TrackCollection;
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const updateTrackCollection = async (id: string, update: TrackCollectionUpdate): Promise<TrackCollection> => {
+  try {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/track-collections/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(update),
+      credentials: 'include',
+    });
+    return response as TrackCollection;
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const deleteTrackCollection = async (id: string): Promise<void> => {
+  try {
+    await authenticatedFetch(`${rpgMaestroApiUrl}/track-collections/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    return;
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
   }
 };
 

@@ -5,6 +5,7 @@ import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import CollectionsBookmarkTwoTone from '@mui/icons-material/CollectionsBookmarkTwoTone';
 
 import { getAllTrackCollections, importCollectionToSession } from '../maestro-api';
 import { Loading } from '../../auth/Loading';
@@ -36,9 +37,7 @@ function TrackPreviewList({ tracks }: { tracks: CollectionTrack[] }) {
         >
           <MusicNoteIcon sx={{ fontSize: '1rem', opacity: 0.5 }} />
           <span style={{ flex: 1, fontSize: '0.9rem' }}>{track.name}</span>
-          {track.tags.length > 0 && (
-            <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>{track.tags.join(', ')}</span>
-          )}
+          {track.tags.length > 0 && <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>{track.tags.join(', ')}</span>}
           <span style={{ fontSize: '0.8rem', opacity: 0.6, whiteSpace: 'nowrap' }}>
             {formatDuration(track.duration)}
           </span>
@@ -112,6 +111,13 @@ export function TrackCollectionsContent({
       <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <TextLinkWithIconWrapper link={backLink} text={backText} materialUiIcon={KeyboardReturnIcon} />
         <h1 style={{ margin: 0 }}>Track collections</h1>
+        {!sessionId && (
+          <TextLinkWithIconWrapper
+            link="/maestro/track-collections/manage"
+            text="Manage collections"
+            materialUiIcon={CollectionsBookmarkTwoTone}
+          />
+        )}
       </div>
       <hr style={{ width: '100vw', borderColor: 'var(--gold-color)' }} />
       {isLoading && <p>Loading track collections...</p>}
@@ -161,7 +167,13 @@ export function TrackCollectionsContent({
                     {trackCount > 0 && (
                       <button
                         onClick={() => toggleExpanded(collection.id)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: 'inherit' }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.25rem',
+                          color: 'inherit',
+                        }}
                         aria-label={isExpanded ? 'Collapse tracks' : 'Expand tracks'}
                       >
                         {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
