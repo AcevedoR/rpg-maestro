@@ -16,6 +16,13 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 
 import {
   createTrackCollection,
@@ -124,6 +131,7 @@ export function EditableCollectionCard({ collection, onSave, onDelete }: Editabl
   const [tracks, setTracks] = useState<CollectionTrackCreation[]>(collection.tracks.map(toCollectionTrackCreation));
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const removeTrack = (index: number) => {
     setTracks((prev) => prev.filter((_, i) => i !== index));
@@ -144,6 +152,7 @@ export function EditableCollectionCard({ collection, onSave, onDelete }: Editabl
   };
 
   const handleDelete = async () => {
+    setConfirmDeleteOpen(false);
     setIsDeleting(true);
     try {
       await onDelete(collection.id);
@@ -207,7 +216,7 @@ export function EditableCollectionCard({ collection, onSave, onDelete }: Editabl
           variant="outlined"
           color="error"
           startIcon={<DeleteOutlineIcon />}
-          onClick={handleDelete}
+          onClick={() => setConfirmDeleteOpen(true)}
           disabled={isDeleting || isSaving}
         >
           {isDeleting ? 'Deleting...' : 'Delete collection'}
@@ -216,6 +225,21 @@ export function EditableCollectionCard({ collection, onSave, onDelete }: Editabl
           {isSaving ? 'Saving...' : 'Save changes'}
         </Button>
       </div>
+      <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
+        <DialogTitle>Delete collection?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This permanently deletes "{collection.name}" and its {tracks.length}{' '}
+            {tracks.length === 1 ? 'track' : 'tracks'}. This cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>
+          <Button color="error" onClick={handleDelete}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
@@ -295,6 +319,7 @@ export function ImportFromSessionForm({ sessionIds, onImport }: ImportFromSessio
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [override, setOverride] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
   const canImport = sessionId.trim().length > 0 && id.trim().length > 0 && name.trim().length > 0;
@@ -308,11 +333,13 @@ export function ImportFromSessionForm({ sessionIds, onImport }: ImportFromSessio
         id: id.trim(),
         name: name.trim(),
         description: description.trim() === '' ? undefined : description.trim(),
+        override: override ? true : undefined,
       });
       setSessionId('');
       setId('');
       setName('');
       setDescription('');
+      setOverride(false);
     } finally {
       setIsImporting(false);
     }
@@ -354,7 +381,11 @@ export function ImportFromSessionForm({ sessionIds, onImport }: ImportFromSessio
           sx={{ flex: 2, minWidth: '220px' }}
         />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+        <FormControlLabel
+          control={<Checkbox checked={override} onChange={(e) => setOverride(e.target.checked)} />}
+          label="Overwrite if a collection with this id already exists"
+        />
         <Button variant="contained" onClick={handleImport} disabled={!canImport || isImporting}>
           {isImporting ? 'Importing...' : 'Import from session'}
         </Button>
@@ -412,7 +443,7 @@ export function TrackCollectionsManagementContent({
             .sort((a, b) => b.updated_at - a.updated_at)
             .map((collection) => (
               <EditableCollectionCard
-                key={collection.id}
+                key={`${collection.id}-${collection.updated_at}`}
                 collection={collection}
                 onSave={onUpdate}
                 onDelete={onDelete}
