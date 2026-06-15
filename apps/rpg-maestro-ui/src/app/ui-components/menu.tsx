@@ -5,7 +5,11 @@ import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 
-export default function BasicMenu() {
+interface BasicMenuProps {
+  onHelpClick?: () => void;
+}
+
+export default function BasicMenu({ onHelpClick }: BasicMenuProps) {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -40,6 +44,16 @@ export default function BasicMenu() {
           },
         }}
       >
+        {onHelpClick && (
+          <MenuItem
+            onClick={() => {
+              handleClose();
+              onHelpClick();
+            }}
+          >
+            Help / Keyboard shortcuts
+          </MenuItem>
+        )}
         <MenuItem onClick={() => navigate('/maestro/infos')}>My account</MenuItem>
         <MenuItem
           onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
