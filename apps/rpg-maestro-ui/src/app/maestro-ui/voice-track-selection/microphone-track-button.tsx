@@ -4,7 +4,6 @@ import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import MicIcon from '@mui/icons-material/Mic';
 import { Tag } from '@rpg-maestro/rpg-maestro-api-contract';
-import { isDevModeEnabled } from '../../../FeaturesConfiguration';
 import { useVoiceTrackSelection, VoiceSelectionResult } from './use-voice-track-selection';
 
 export interface MicrophoneTrackButtonProps {
@@ -12,6 +11,8 @@ export interface MicrophoneTrackButtonProps {
   availableTags: Tag[];
   /** Called with the tags (and transcript) derived from the spoken audio. */
   onResult: (result: VoiceSelectionResult) => void;
+  /** The feature is admin-only; the button renders nothing unless this is true. */
+  isAdmin: boolean;
   /** Overrides how long the microphone listens. */
   listeningDurationMs?: number;
 }
@@ -24,25 +25,32 @@ const BUTTON_LABEL: Record<'idle' | 'listening' | 'interpreting', string> = {
 
 /**
  * Microphone button that listens to the maestro, transcribes what is said, and asks
- * the interpretation layer which tags to play. The feature is experimental, so the
- * button is only enabled in the dev environment (and only when a transcription
- * provider is available); elsewhere it is rendered disabled with an explanatory tooltip.
+ * the interpretation layer which tags to play. The feature is admin-only: for non-admin
+ * users the button is not rendered at all. When visible it is enabled as long as a
+ * transcription provider is available; otherwise it is disabled with an explanatory tooltip.
  */
-export function MicrophoneTrackButton({ availableTags, onResult, listeningDurationMs }: MicrophoneTrackButtonProps) {
+export function MicrophoneTrackButton({
+  availableTags,
+  onResult,
+  isAdmin,
+  listeningDurationMs,
+}: MicrophoneTrackButtonProps) {
   const { status, partialTranscript, isSupported, start } = useVoiceTrackSelection({
     availableTags,
     onResult,
     listeningDurationMs,
   });
 
-  const isBusy = status !== 'idle';
-  const enabled = isDevModeEnabled && isSupported && !isBusy;
+  if (!isAdmin) {
+    return null;
+  }
 
-  const disabledReason = !isDevModeEnabled
-    ? 'Voice track selection is only available in the development environment'
-    : !isSupported
-      ? 'Your browser does not support speech recognition (try Chrome or Edge)'
-      : '';
+  const isBusy = status !== 'idle';
+  const enabled = isSupported && !isBusy;
+
+  const disabledReason = !isSupported
+    ? 'Your browser does not support speech recognition (try Chrome or Edge)'
+    : '';
 
   const tooltipTitle =
     status === 'listening' && partialTranscript !== ''

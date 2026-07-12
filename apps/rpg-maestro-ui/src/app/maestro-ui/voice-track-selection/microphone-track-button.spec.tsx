@@ -9,8 +9,6 @@ vi.mock('./use-voice-track-selection', () => ({
   useVoiceTrackSelection: hookMock.useVoiceTrackSelection,
 }));
 
-// NODE_ENV is 'test' during vitest runs, so isDevModeEnabled is true here — the button
-// is gated only by provider support, which is what these tests exercise.
 function mockHook(overrides: Partial<UseVoiceTrackSelection>): void {
   hookMock.useVoiceTrackSelection.mockReturnValue({
     status: 'idle',
@@ -22,10 +20,19 @@ function mockHook(overrides: Partial<UseVoiceTrackSelection>): void {
 }
 
 describe('MicrophoneTrackButton', () => {
-  it('is enabled and calls start when clicked in a supported environment', () => {
+  it('renders nothing for non-admin users', () => {
+    mockHook({ isSupported: true });
+    const { container } = render(
+      <MicrophoneTrackButton availableTags={['combat']} onResult={vi.fn()} isAdmin={false} />
+    );
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('is enabled for an admin and calls start when clicked in a supported environment', () => {
     const start = vi.fn();
     mockHook({ isSupported: true, start });
-    render(<MicrophoneTrackButton availableTags={['combat']} onResult={vi.fn()} />);
+    render(<MicrophoneTrackButton availableTags={['combat']} onResult={vi.fn()} isAdmin={true} />);
 
     const button = screen.getByRole('button', { name: /listen and pick a matching track/i });
     expect((button as HTMLButtonElement).disabled).toBe(false);
@@ -33,9 +40,9 @@ describe('MicrophoneTrackButton', () => {
     expect(start).toHaveBeenCalledTimes(1);
   });
 
-  it('is disabled when no transcription provider is supported', () => {
+  it('is disabled for an admin when no transcription provider is supported', () => {
     mockHook({ isSupported: false });
-    render(<MicrophoneTrackButton availableTags={['combat']} onResult={vi.fn()} />);
+    render(<MicrophoneTrackButton availableTags={['combat']} onResult={vi.fn()} isAdmin={true} />);
 
     const button = screen.getByRole('button', { name: /listen and pick a matching track/i });
     expect((button as HTMLButtonElement).disabled).toBe(true);
@@ -44,7 +51,7 @@ describe('MicrophoneTrackButton', () => {
   it('is disabled while a selection is in progress', () => {
     const start = vi.fn();
     mockHook({ status: 'listening', start });
-    render(<MicrophoneTrackButton availableTags={['combat']} onResult={vi.fn()} />);
+    render(<MicrophoneTrackButton availableTags={['combat']} onResult={vi.fn()} isAdmin={true} />);
 
     const button = screen.getByRole('button', { name: /listen and pick a matching track/i });
     expect((button as HTMLButtonElement).disabled).toBe(true);
