@@ -236,7 +236,11 @@ function MaestroSoundboardComponent() {
           <div
             style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', margin: '0' }}
           >
-            <MicrophoneTrackButton availableTags={availableTags} onResult={onVoiceTrackSelection} />
+            <MicrophoneTrackButton
+              availableTags={availableTags}
+              onResult={onVoiceTrackSelection}
+              isAdmin={user?.role === 'ADMIN'}
+            />
             <QuickTagSelection
               text={'combat'}
               icon={ShieldIcon}
