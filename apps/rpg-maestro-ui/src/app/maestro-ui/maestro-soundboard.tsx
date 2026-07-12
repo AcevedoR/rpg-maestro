@@ -1,5 +1,5 @@
 import { filter, TrackFilters, TracksTable } from './tracks-table/tracks-table';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { SessionPlayingTracks, Tag, Track, TrackToPlay, User } from '@rpg-maestro/rpg-maestro-api-contract';
 import { AbortedRequestError, getAllTracks, getSoundboardTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
@@ -18,13 +18,16 @@ import { useParams } from 'react-router';
 import { ContentToCopy } from '../ui-components/content-to-copy/content-to-copy';
 import { MaestroAudioPlayer, MaestroAudioPlayerRef } from './maestro-audio-player/maestro-audio-player';
 import { getUser } from '../cache/user.cache';
-import { toastError } from '../ui-components/toast-popup';
+import { toastError, toastInfo } from '../ui-components/toast-popup';
 import BasicMenu from '../ui-components/menu';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../auth/Loading';
 import { isDevModeEnabled } from '../../FeaturesConfiguration';
 import { Soundboard } from './soundboard/soundboard';
 import HelpModal from '../ui-components/help-modal';
+import { MicrophoneTrackButton } from './voice-track-selection/microphone-track-button';
+import { VoiceSelectionResult } from './voice-track-selection/use-voice-track-selection';
+import { collectAvailableTags, pickBestMatchingTrack } from './voice-track-selection/track-matching';
 
 function MaestroSoundboardComponent() {
   const [user, setUser] = useState<User | undefined>(undefined);
@@ -142,6 +145,20 @@ function MaestroSoundboardComponent() {
     });
     await requestRandomTrackToPlay(tags);
   };
+  const availableTags = useMemo(() => collectAvailableTags(allTracks ?? []), [allTracks]);
+  const onVoiceTrackSelection = async ({ tags, transcript }: VoiceSelectionResult) => {
+    if (tags.length === 0) {
+      toastInfo(`Heard "${transcript}" but found no matching tags.`, 4000);
+      return;
+    }
+    setTrackFilters({ ...trackFilters, tagsToFilterOn: tags });
+    const bestMatch = pickBestMatchingTrack(allTracks ?? [], tags, { excludeTrackId: currentPlayingTrack?.id });
+    if (!bestMatch) {
+      toastInfo(`No track matches: ${tags.join(', ')}.`, 4000);
+      return;
+    }
+    await requestSetTrackToPlay(bestMatch.id);
+  };
   const requestRandomTrackToPlay = async (tags: Tag[]) => {
     if (allTracks) {
       const filtered = filter(
@@ -219,6 +236,7 @@ function MaestroSoundboardComponent() {
           <div
             style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', margin: '0' }}
           >
+            <MicrophoneTrackButton availableTags={availableTags} onResult={onVoiceTrackSelection} />
             <QuickTagSelection
               text={'combat'}
               icon={ShieldIcon}
