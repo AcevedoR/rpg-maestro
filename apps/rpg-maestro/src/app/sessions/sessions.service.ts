@@ -21,13 +21,20 @@ export class SessionsService {
     // TODO fix this hack forbidding having more than one instance
     // this was done to avoid reaching Firestore quotas
     const cachedSession = await this.cache.get(sessionId);
-    if (cachedSession) {
+    if (cachedSession === null) {
+      // negative entry: the database already told us this session does not exist, don't ask again
+      return null;
+    }
+    if (cachedSession !== undefined) {
       return cachedSession;
     }
     const sessionFromDB = await this.tracksDatabase.getSession(sessionId);
-    if (sessionFromDB != null) {
-      await this.cache.set(sessionFromDB);
+    if (sessionFromDB == null) {
+      // players poll every second, so an unknown sessionId would otherwise cost one DB read per second
+      await this.cache.setAbsent(sessionId);
+      return null;
     }
+    await this.cache.set(sessionFromDB);
     return sessionFromDB;
   }
 
