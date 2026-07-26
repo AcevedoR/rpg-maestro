@@ -1,0 +1,175 @@
+.landing {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+  color: var(--text-primary);
+  line-height: 1.55;
+}
+
+.landing section {
+  margin-top: 2.75rem;
+}
+
+.landing h2 {
+  font-size: 1.4rem;
+  margin: 0 0 0.75rem;
+}
+
+.landing-hero {
+  text-align: center;
+  padding-top: 1.5rem;
+}
+
+.landing-hero h1 {
+  font-size: 1.9rem;
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+
+.landing-tagline {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin: 0 auto;
+  max-width: 38rem;
+}
+
+.landing-price-line {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+.landing-email-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 26rem;
+  margin: 1.5rem auto 0;
+}
+
+.landing-email-input {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: rgba(26, 11, 46, 0.5);
+  border: 1px solid rgba(218, 165, 32, 0.4);
+  border-radius: 8px;
+}
+
+.landing-email-input:focus {
+  outline: 2px solid var(--gold-color);
+}
+
+.landing-cta-button {
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--gold-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: filter 0.2s ease-in-out;
+}
+
+.landing-cta-button:hover {
+  filter: brightness(1.2);
+}
+
+.landing-cta-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.landing-signup-success {
+  max-width: 26rem;
+  margin: 1.5rem auto 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(218, 165, 32, 0.5);
+  border-radius: 8px;
+  background: rgba(26, 11, 46, 0.5);
+}
+
+/* honeypot: kept out of sight and out of the tab order, bots still fill it */
+.landing-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.landing-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.landing-problem-list li,
+.landing-how-it-works li,
+.landing-early-access-list li {
+  margin-bottom: 0.6rem;
+}
+
+.landing-panel {
+  padding: 1.5rem;
+  background: rgba(26, 11, 46, 0.35);
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  border-radius: 24px;
+  text-align: center;
+}
+
+.landing-panel ul {
+  display: inline-block;
+  text-align: left;
+}
+
+.landing-discord-alternative {
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+.landing-panel > div {
+  display: flex;
+  justify-content: center;
+}
+
+.landing-faq h3 {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.25rem;
+}
+
+.landing-faq p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.landing-footer {
+  margin-top: 3rem;
+}
+
+/* the shared GitHub link component is styled for light backgrounds */
+.landing-footer .github-link {
+  color: var(--text-secondary);
+}
+
+.landing-footer .github-link:hover {
+  color: var(--gold-color);
+}
+
+@media (min-width: 600px) {
+  .landing-hero h1 {
+    font-size: 2.6rem;
+  }
+
+  .landing-email-form {
+    flex-direction: row;
+  }
+}
