@@ -13,6 +13,7 @@ import { TrackCollectionModule } from './track-collection/track-collection.modul
 import { AuthGuardsModule } from './auth/auth-guards.module';
 import { SessionModule } from './sessions/sessions.module';
 import { AdminModule } from './admin/admin.module';
+import { LandingModule } from './landing/landing.module';
 import { TestsUtilsModule } from './test-utils/tests-utils.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { TestsUtilsModule } from './test-utils/tests-utils.module';
     TrackCollectionModule,
     SessionModule,
     AdminModule,
+    LandingModule,
     HealthModule,
     AuthGuardsModule,
     ...(isDevOrTestEnv() ? [TestsUtilsModule] : []),

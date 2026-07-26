@@ -14,6 +14,7 @@ export * from './lib/maestro-api/TrackCreationFromYoutubeDto';
 export * from './lib/User';
 export * from './lib/TrackCollection';
 export * from './lib/admin-api/admin-api-dtos';
+export * from './lib/landing-api/landing-api-dtos';
 
 export * from './lib/type-utils';
 export * from './lib/AppVersion';
