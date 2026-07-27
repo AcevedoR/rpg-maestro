@@ -31,12 +31,14 @@ export function PlayersUi() {
   const audioPlayer = useRef<H5AudioPlayer>();
   const effectAudioRef = useRef<HTMLAudioElement>(null);
   const sessionId = useParams().sessionId ?? '';
+  const latestSessionId = useRef(sessionId);
   if (sessionId === '') {
     displayError('no session found in URL (it should be https://{URL}/session/{sessionId})');
   }
 
   // A new session id deserves a fresh attempt, even if the previous one did not exist.
   useEffect(() => {
+    latestSessionId.current = sessionId;
     setSessionNotFound(false);
     consecutiveNotFound.current = 0;
   }, [sessionId]);
@@ -47,18 +49,18 @@ export function PlayersUi() {
       return;
     }
 
-    // A request already in flight when this effect is torn down resolves against a stale sessionId.
-    // Without this guard, a 404 for the previous session could mark the new one as not found.
-    let outdated = false;
-
     async function resyncOnUi() {
+      // Keyed on the session the request was issued for, not on effect teardown: this effect re-runs
+      // whenever the playing track changes, and dropping a response on every re-run could starve
+      // the consecutive-404 counter below and leave a missing session undetected forever.
+      const requestedFor = sessionId;
       const syncResult = await resyncIfNeeded(
         sessionId,
         audioPlayer.current?.audio?.current?.currentTime ?? null,
         currentTrack,
         shortEffectTrack,
       );
-      if (outdated) {
+      if (requestedFor !== latestSessionId.current) {
         return;
       }
       if (syncResult === 'AbortedRequestError') {
@@ -126,10 +128,7 @@ export function PlayersUi() {
     const id = setInterval(() => {
       resyncOnUi();
     }, SYNC_TRACK_INTERVAL_MS);
-    return () => {
-      outdated = true;
-      clearInterval(id);
-    };
+    return () => clearInterval(id);
   }, [currentTrack, shortEffectTrack, sessionId, sessionNotFound]);
 
   return (

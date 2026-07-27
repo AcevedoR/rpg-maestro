@@ -115,19 +115,24 @@ test('the Players UI stops polling and explains itself when the session does not
     await expect(page.getByRole('alert')).toHaveCount(0);
   });
 
-  await test.step('the sync loop is stopped, so no further request is made', async () => {
+  await test.step('the sync loop is stopped, so it settles and then goes quiet', async () => {
+    // One tick can already be scheduled when the loop decides to stop, so drain that straggler
+    // rather than asserting an exact request count, which would be timing-dependent.
+    await page.waitForRequest(playingTracksUrl, { timeout: 1500 }).catch(() => undefined);
+
     // Asserting the *absence* of a request needs a bounded wait: waitForRequest rejects on timeout,
     // which is the assertion. 3s spans three would-be sync ticks (SYNC_TRACK_INTERVAL_MS = 1000).
-    const countWhenGivingUp = requestCount;
+    const countOnceSettled = requestCount;
     const polledAgain = await page
       .waitForRequest(playingTracksUrl, { timeout: 3000 })
       .then(() => true)
       .catch(() => false);
 
     expect(polledAgain).toBe(false);
-    // it takes CONSECUTIVE_NOT_FOUND_BEFORE_GIVING_UP strikes to give up, and not one more after
-    expect(requestCount).toBe(countWhenGivingUp);
-    expect(countWhenGivingUp).toBe(3);
+    expect(requestCount).toBe(countOnceSettled);
+    // gives up promptly: the threshold of strikes, plus at most one already-scheduled straggler
+    expect(countOnceSettled).toBeLessThanOrEqual(4);
+    expect(countOnceSettled).toBeGreaterThanOrEqual(3);
   });
 });
 
