@@ -102,26 +102,69 @@ test('the Players UI stops polling and explains itself when the session does not
   });
 
   await test.step('the page explains that the session does not exist', async () => {
-    await expect(page.getByRole('alert')).toContainText(
-      "Session 'session-that-does-not-exist' does not exist. Double-check the link your Maestro shared with you."
-    );
+    await expect(
+      page.getByText(
+        "Session 'session-that-does-not-exist' does not exist. Double-check the link your Maestro shared with you."
+      )
+    ).toBeVisible();
   });
 
   await test.step('a missing session is not reported as a fetch failure', async () => {
-    await expect(page.getByRole('alert')).not.toContainText(/fetch current\/tracks error/i);
+    // role="alert" is react-toastify's; the panel above deliberately uses role="status" so that this
+    // asserts no toast fired at all, rather than trivially matching the panel's own text.
+    await expect(page.getByRole('alert')).toHaveCount(0);
   });
 
-  await test.step('the 1s sync loop is stopped, so no further request is made', async () => {
+  await test.step('the sync loop is stopped, so it settles and then goes quiet', async () => {
+    // One tick can already be scheduled when the loop decides to stop, so drain that straggler
+    // rather than asserting an exact request count, which would be timing-dependent.
+    await page.waitForRequest(playingTracksUrl, { timeout: 1500 }).catch(() => undefined);
+
     // Asserting the *absence* of a request needs a bounded wait: waitForRequest rejects on timeout,
     // which is the assertion. 3s spans three would-be sync ticks (SYNC_TRACK_INTERVAL_MS = 1000).
-    const countAfterFirstFailure = requestCount;
+    const countOnceSettled = requestCount;
     const polledAgain = await page
       .waitForRequest(playingTracksUrl, { timeout: 3000 })
       .then(() => true)
       .catch(() => false);
 
     expect(polledAgain).toBe(false);
-    expect(requestCount).toBe(countAfterFirstFailure);
+    expect(requestCount).toBe(countOnceSettled);
+    // gives up promptly: the threshold of strikes, plus at most one already-scheduled straggler
+    expect(countOnceSettled).toBeLessThanOrEqual(4);
+    expect(countOnceSettled).toBeGreaterThanOrEqual(3);
+  });
+});
+
+test('the Players UI recovers from a transient 404 instead of declaring the session gone', async ({ page }) => {
+  let user: UserWithGeneratedSession;
+  let trackName: string;
+
+  await test.step('prepare data: a real session with a track playing', async () => {
+    user = await generateNewSession(userFixture.a_maestro_B_user);
+    const track = await createTrackViaApi(user, user.sessionId, {
+      url: `${RPG_MAESTRO_URL}/public/race1.ogg`,
+      name: 'transient-404-recovery-test',
+    });
+    trackName = track.name;
+    await setTrackToPlayViaApi(user, user.sessionId, track.id);
+  });
+
+  await test.step('serve a single 404 — as an ingress would mid-deploy — then let requests through', async () => {
+    let served404 = false;
+    await page.route('**/sessions/*/playing-tracks', async (route) => {
+      if (!served404) {
+        served404 = true;
+        return route.fulfill({ status: 404, body: JSON.stringify({ message: 'Session not found' }) });
+      }
+      return route.fallback();
+    });
+  });
+
+  await test.step('one 404 is below the give-up threshold, so the player still syncs', async () => {
+    await page.goto(`/${user.sessionId}`);
+    await expect(page.getByText(trackName)).toBeVisible();
+    await expect(page.getByText(/does not exist/)).toHaveCount(0);
   });
 });
 
