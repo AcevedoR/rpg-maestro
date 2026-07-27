@@ -149,7 +149,9 @@ export function LandingPage() {
                 <tr>
                   <th></th>
                   <th>Free</th>
-                  <th>Maestro — $4/month</th>
+                  <th>
+                    Maestro — $4/month <span className="landing-coming-soon-badge">coming soon</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -192,7 +194,8 @@ export function LandingPage() {
             <button className="landing-cta-button" onClick={onStartFree}>
               Start free →
             </button>
-            <button className="landing-secondary-button" onClick={() => setUpgradeModalOpen(true)}>
+            {/* upgrade capture is not open yet: re-enable this button to plug the modal back in */}
+            <button className="landing-secondary-button" disabled title="Coming soon">
               Maestro $4/mo
             </button>
           </div>

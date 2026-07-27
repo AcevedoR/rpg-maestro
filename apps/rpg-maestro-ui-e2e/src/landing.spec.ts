@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { LandingEventsDailyCount, UpgradeInterest } from '@rpg-maestro/rpg-maestro-api-contract';
+import { LandingEventsDailyCount } from '@rpg-maestro/rpg-maestro-api-contract';
 import { initUsersFixtureSpec, RPG_MAESTRO_URL } from './fixtures';
 
 test.use({
@@ -55,48 +55,14 @@ test('a visitor can start free from the landing page and reach a working session
   });
 });
 
-test('a visitor can reserve the founding price from the upgrade modal', async ({ page }) => {
-  const email = `landing-e2e-${Date.now()}@example.com`;
-
-  await test.step('visit the landing page and open the upgrade modal from the Pricing tab', async () => {
-    await page.goto('/?src=e2e-upgrade');
-    await page.getByRole('tab', { name: 'Pricing' }).click();
-    await page.getByRole('button', { name: 'Maestro $4/mo' }).click();
-    await expect(page.getByRole('heading', { name: 'Maestro opens soon' })).toBeVisible();
-  });
-
-  await test.step('submit an email', async () => {
-    await page.getByLabel('Email').fill(email);
-    await page.getByRole('button', { name: 'Reserve founding price' }).click();
-    await expect(page.getByRole('status')).toHaveText("Founding price reserved — we'll email you when Maestro opens.");
-  });
-
-  await test.step('the upgrade interest is persisted with its source and had_session marker', async () => {
-    const users = await initUsersFixtureSpec();
-    const response = await fetch(`${RPG_MAESTRO_URL}/upgrade-interest`, {
-      headers: { Authorization: `Bearer ${users.an_admin_user.token}` },
-    });
-    expect(response.ok).toBe(true);
-    const upgradeInterests = (await response.json()) as UpgradeInterest[];
-    const row = upgradeInterests.find((u) => u.email === email);
-    expect(row).toBeDefined();
-    expect(row?.source).toBe('e2e-upgrade');
-    expect(row?.had_session).toBe(false);
-  });
-});
-
-test('a visitor sees an error and can retry when the upgrade-interest submission fails', async ({ page }) => {
-  await test.step('visit the landing page with a failing upgrade-interest backend', async () => {
-    await page.route('**/upgrade-interest', (route) => route.fulfill({ status: 500, body: '{}' }));
+test('the Maestro paid tier is greyed out and marked as coming soon', async ({ page }) => {
+  await test.step('open the Pricing tab', async () => {
     await page.goto('/');
+    await page.getByRole('tab', { name: 'Pricing' }).click();
   });
 
-  await test.step('submitting an email shows an error message and keeps the form', async () => {
-    await page.getByRole('tab', { name: 'Pricing' }).click();
-    await page.getByRole('button', { name: 'Maestro $4/mo' }).click();
-    await page.getByLabel('Email').fill('gm@example.com');
-    await page.getByRole('button', { name: 'Reserve founding price' }).click();
-    await expect(page.getByRole('alert')).toBeVisible();
-    await expect(page.getByLabel('Email')).toBeVisible();
+  await test.step('the upgrade button is disabled and the paid column is marked coming soon', async () => {
+    await expect(page.getByRole('button', { name: 'Maestro $4/mo' })).toBeDisabled();
+    await expect(page.getByRole('columnheader', { name: 'Maestro — $4/month coming soon' })).toBeVisible();
   });
 });

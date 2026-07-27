@@ -122,6 +122,32 @@
   background: rgba(218, 165, 32, 0.15);
 }
 
+.landing-secondary-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  color: var(--text-secondary);
+  border-color: rgba(218, 165, 32, 0.3);
+}
+
+.landing-secondary-button:disabled:hover {
+  background: transparent;
+}
+
+.landing-coming-soon-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  border: 1px solid rgba(218, 165, 32, 0.4);
+  border-radius: 999px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .landing-table-scroll {
   overflow-x: auto;
 }
