@@ -16,13 +16,14 @@ test('a visitor can start free from the landing page and reach a working session
     await expect(
       page.getByRole('heading', { name: 'Your players hear your music too. One link, no setup.' })
     ).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Maestro — $4/month' })).toBeVisible();
     await expect(page.getByText('founding members keep $3/month forever')).toBeVisible();
+    await page.getByRole('tab', { name: 'Pricing' }).click();
+    await expect(page.getByRole('columnheader', { name: 'Maestro — $4/month' })).toBeVisible();
   });
 
   await test.step('click Start free and go through onboarding', async () => {
     await page.getByRole('button', { name: 'Start free →' }).first().click();
-    await expect(page.getByRole('heading', { name: 'Welcome to RPG-MAESTRO!' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your soundboard is one sign-in away' })).toBeVisible();
     await page.getByRole('button').click();
     await expect(page.getByRole('heading', { name: 'This is a fake IDP login page' })).toBeVisible();
     await page.getByRole('button', { name: 'Log as a new user' }).click();
@@ -57,8 +58,9 @@ test('a visitor can start free from the landing page and reach a working session
 test('a visitor can reserve the founding price from the upgrade modal', async ({ page }) => {
   const email = `landing-e2e-${Date.now()}@example.com`;
 
-  await test.step('visit the landing page and open the upgrade modal', async () => {
+  await test.step('visit the landing page and open the upgrade modal from the Pricing tab', async () => {
     await page.goto('/?src=e2e-upgrade');
+    await page.getByRole('tab', { name: 'Pricing' }).click();
     await page.getByRole('button', { name: 'Maestro $4/mo' }).click();
     await expect(page.getByRole('heading', { name: 'Maestro opens soon' })).toBeVisible();
   });
@@ -89,7 +91,8 @@ test('a visitor sees an error and can retry when the upgrade-interest submission
     await page.goto('/');
   });
 
-  await test.step('submitting an email shows an error toast and keeps the form', async () => {
+  await test.step('submitting an email shows an error message and keeps the form', async () => {
+    await page.getByRole('tab', { name: 'Pricing' }).click();
     await page.getByRole('button', { name: 'Maestro $4/mo' }).click();
     await page.getByLabel('Email').fill('gm@example.com');
     await page.getByRole('button', { name: 'Reserve founding price' }).click();

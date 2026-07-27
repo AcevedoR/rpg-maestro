@@ -13,7 +13,7 @@ test('a new User can become a Maestro and have his own session', async ({ page }
   await test.step('go to onboarding page, and read onboarding instructions', async () => {
 
     await page.goto(`/onboarding`);
-    await expect(page.getByRole('heading', { name: 'Welcome to RPG-MAESTRO!' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your soundboard is one sign-in away' })).toBeVisible();
   });
 
   await test.step('create an account', async () => {

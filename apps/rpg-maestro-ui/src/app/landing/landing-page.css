@@ -7,7 +7,12 @@
 }
 
 .landing section {
-  margin-top: 2.75rem;
+  margin-top: 2rem;
+}
+
+.landing-tabs {
+  margin-top: 2.5rem;
+  border-bottom: 1px solid rgba(218, 165, 32, 0.3);
 }
 
 .landing h2 {
