@@ -242,6 +242,43 @@ DatabaseModule
 
 ---
 
+## Caching Layer
+
+Read-through caches sit in front of Firestore to stay under its quotas, since audience pages poll
+continuously. `SessionsCache` (`rpg_maestro_sessions`) and `UsersCache` (`rpg_maestro_users`) both
+have a 1 day TTL and wrap `ResilientCache`
+(`infrastructure/cache/resilient-cache.ts`).
+
+**One active tier at a time.** Backends are declared in priority order and the first healthy one
+serves everything. There is no cascade between them: a miss on the active tier is a miss, and the
+caller goes to the database.
+
+```
+CACHE_REDIS_URL           → 'redis'           self-hosted, primary
+CACHE_FALLBACK_REDIS_URL  → 'redis-fallback'  managed service, used while the primary is down
+neither set               → 'in-memory'       in-process Keyv (local dev, e2e tests)
+
+get(key):  active tier ? (hit → return | miss → caller hits DB, then set) : caller hits DB
+```
+
+When every configured tier is down the cache degrades to **no cache at all**, not to a slower one —
+the database absorbs the traffic until a tier comes back.
+
+**Health switching.** `FAILURE_THRESHOLD` consecutive failures take a tier out of rotation for
+`PROBE_INTERVAL_MS`; after that the next operation probes it. Without this, an outage that lasts
+hours would cost a connection timeout on every single request.
+
+**Two rules keep a dormant tier from waking up with stale data**, given that writes only ever reach
+the active tier:
+
+1. *Write to one, delete from all* — a `set` also invalidates the key on every other healthy tier.
+   Tiers in cooldown are skipped on purpose; rule 2 covers them.
+2. *Clear on recovery* — a tier that failed and later comes back missed every invalidation during
+   the outage, so its namespace is cleared before it serves anything. The clear doubles as the
+   connectivity probe. A tier that was never unhealthy is not cleared, so deploys keep a warm cache.
+
+---
+
 ## Authentication Flow
 
 ### Production (Auth0)
@@ -332,3 +369,4 @@ Client reconstructs current position as `(Date.now() - playTimestamp) / 1000 + t
 | Fake IDP for dev | No Auth0 tenant required for local dev |
 | MUI dark theme | Fits the RPG atmosphere; consistent component library |
 | Role enum (MAESTRO/MINSTREL/ADMIN) | Granular access control without OAuth scopes |
+| One active cache tier, no cascade | A Redis outage lasts hours here; dual-writing every tier costs latency on every request to guard against a rare event. Health switching + clear-on-recovery gets the same safety |

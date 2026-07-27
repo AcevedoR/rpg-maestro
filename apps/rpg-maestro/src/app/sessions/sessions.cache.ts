@@ -1,15 +1,13 @@
-import Keyv from 'keyv';
 import ms from 'ms';
 import { SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
+import { ResilientCache } from '../infrastructure/cache/resilient-cache';
+import { createCacheTiers } from '../infrastructure/cache/cache-tiers.factory';
 
 export class SessionsCache {
-  private cache: Keyv<SessionPlayingTracks>;
+  private cache: ResilientCache<SessionPlayingTracks>;
 
   constructor() {
-    this.cache = new Keyv<SessionPlayingTracks>({
-      namespace: 'rpg_maestro_sessions',
-      ttl: ms('1 day'),
-    });
+    this.cache = new ResilientCache(createCacheTiers<SessionPlayingTracks>('rpg_maestro_sessions', ms('1 day')));
   }
 
   async get(sessionId: string): Promise<SessionPlayingTracks | undefined> {
