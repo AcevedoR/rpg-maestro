@@ -23,6 +23,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
   const { sessionId, onCurrentTrackEdit } = props;
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [currentTrackEditRequested, setCurrentTrackEditRequested] = useState<Promise<void> | null>(null);
+  const [sessionNotFound, setSessionNotFound] = useState(false);
   const isInUIResync = useRef(false);
   const audioPlayer = useRef<H5AudioPlayer>();
 
@@ -111,6 +112,9 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
   };
 
   const periodicallySyncCurrentTrack = useCallback(async () => {
+    if (sessionNotFound) {
+      return Promise.resolve();
+    }
     if (currentTrackEditRequested !== null) {
       // prevent periodical sync when user has made actions
       return Promise.resolve();
@@ -122,6 +126,12 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
         currentTrack,
         null,
       ).then((syncResult) => {
+        if (syncResult === 'SessionNotFoundError') {
+          // Terminal: retrying cannot help, so stop the sync loop instead of polling forever.
+          setSessionNotFound(true);
+          displayError(`Session '${sessionId}' does not exist.`);
+          return Promise.resolve();
+        }
         if (syncResult !== 'AbortedRequestError') {
           return resyncCurrentTrackOnUi(syncResult.currentTrack);
         }
@@ -129,15 +139,23 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
       });
     const request = requestFunc();
     await request;
-  }, [currentTrackEditRequested, sessionId, currentTrack, resyncCurrentTrackOnUi]);
+  }, [currentTrackEditRequested, sessionId, currentTrack, resyncCurrentTrackOnUi, sessionNotFound]);
+
+  // A new session id deserves a fresh attempt, even if the previous one did not exist.
+  useEffect(() => {
+    setSessionNotFound(false);
+  }, [sessionId]);
 
   useEffect(() => {
+    if (sessionNotFound) {
+      return;
+    }
     periodicallySyncCurrentTrack();
     const id = setInterval(() => {
       periodicallySyncCurrentTrack();
     }, SYNC_TRACK_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [periodicallySyncCurrentTrack, sessionId, currentTrack]);
+  }, [periodicallySyncCurrentTrack, sessionId, currentTrack, sessionNotFound]);
 
   useImperativeHandle(ref, () => ({
     dispatchTrackWasManuallyChanged,

@@ -18,6 +18,7 @@ export const SYNC_TRACK_INTERVAL_MS = 1000;
 export function PlayersUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [shortEffectTrack, setShortEffectTrack] = useState<PlayingTrack | null>(null);
+  const [sessionNotFound, setSessionNotFound] = useState(false);
   const audioPlayer = useRef<H5AudioPlayer>();
   const effectAudioRef = useRef<HTMLAudioElement>(null);
   const sessionId = useParams().sessionId ?? '';
@@ -25,7 +26,17 @@ export function PlayersUi() {
     displayError('no session found in URL (it should be https://{URL}/session/{sessionId})');
   }
 
+  // A new session id deserves a fresh attempt, even if the previous one did not exist.
   useEffect(() => {
+    setSessionNotFound(false);
+  }, [sessionId]);
+
+  useEffect(() => {
+    // Polling a session that does not exist can never succeed, so no interval is set up at all.
+    if (sessionNotFound) {
+      return;
+    }
+
     async function resyncOnUi() {
       const syncResult = await resyncIfNeeded(
         sessionId,
@@ -34,6 +45,11 @@ export function PlayersUi() {
         shortEffectTrack,
       );
       if (syncResult === 'AbortedRequestError') {
+        return;
+      }
+      if (syncResult === 'SessionNotFoundError') {
+        // Flipping this re-runs the effect, whose cleanup clears the interval below.
+        setSessionNotFound(true);
         return;
       }
 
@@ -90,7 +106,7 @@ export function PlayersUi() {
       resyncOnUi();
     }, SYNC_TRACK_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [currentTrack, shortEffectTrack, sessionId]);
+  }, [currentTrack, shortEffectTrack, sessionId, sessionNotFound]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>
@@ -120,13 +136,24 @@ export function PlayersUi() {
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', maxWidth: 800, margin: '2rem auto', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-        <p style={{ margin: '1rem 0', fontSize: '1.1rem' }}>
-          Welcome! This app is primarily meant for TTRPG games: a Maestro manages the current track being played, the
-          track is synced between all Players on this page.
-        </p>
-        <p style={{ margin: '1rem 0', fontSize: '1.1rem' }}>To avoid sync issues, Players can only change their volume.</p>
-      </div>
+      {sessionNotFound ? (
+        <div
+          role="alert"
+          style={{ textAlign: 'center', maxWidth: 800, margin: '2rem auto', color: 'var(--text-secondary)', lineHeight: 1.6 }}
+        >
+          <p style={{ margin: '1rem 0', fontSize: '1.1rem' }}>
+            Session &apos;{sessionId}&apos; does not exist. Double-check the link your Maestro shared with you.
+          </p>
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', maxWidth: 800, margin: '2rem auto', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          <p style={{ margin: '1rem 0', fontSize: '1.1rem' }}>
+            Welcome! This app is primarily meant for TTRPG games: a Maestro manages the current track being played, the
+            track is synced between all Players on this page.
+          </p>
+          <p style={{ margin: '1rem 0', fontSize: '1.1rem' }}>To avoid sync issues, Players can only change their volume.</p>
+        </div>
+      )}
 
       <AudioPlayer
         ref={audioPlayer as LegacyRef<H5AudioPlayer>}
