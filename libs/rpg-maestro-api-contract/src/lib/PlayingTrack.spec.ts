@@ -19,7 +19,9 @@ describe("PlayingTrack getCurrentPlayTime()", () => {
     );
     expect(pausedTrack.getCurrentPlayTime()).toBe(10563);
   });
-  it("should raise error when the track is set to play in the future", () => {
+  // Used to throw. A caller whose clock trails the writer's hits this on every single tick, and the throw
+  // took down their whole sync loop rather than just this reading, so it now clamps to "not started yet".
+  it("should clamp to the track start time when the track is set to play in the future", () => {
     const playingTrack = new PlayingTrack(
       "id1",
       "name1",
@@ -27,9 +29,18 @@ describe("PlayingTrack getCurrentPlayTime()", () => {
       120000,
       false,
       Number.MAX_VALUE,
-      0
+      7000
     );
-    expect(() => playingTrack.getCurrentPlayTime()).toThrow('this.playTimestamp in the future are not handled');
+    expect(playingTrack.getCurrentPlayTime()).toBe(7000);
+  });
+  it("should resolve against the clock it is given rather than the local one", () => {
+    const trackStartedAt = 1730000000000;
+    const playingTrack = new PlayingTrack("id1", "name1", "url", 120000, false, trackStartedAt, 0);
+
+    // A browser 40s behind the server would compute 40s less than the server does. Passing the server's
+    // clock explicitly is what keeps every listener on the same playhead.
+    expect(playingTrack.getCurrentPlayTime(trackStartedAt + 15000)).toBe(15000);
+    expect(playingTrack.getCurrentPlayTime(trackStartedAt - 40000)).toBe(0);
   });
   it("should return the current time the track is playing when it was started from 0", () => {
     const playTimestamp15sAgo = NOW.getTime() - 15000;

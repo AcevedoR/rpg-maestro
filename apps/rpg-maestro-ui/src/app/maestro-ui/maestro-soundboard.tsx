@@ -1,6 +1,6 @@
 import { filter, TrackFilters, TracksTable } from './tracks-table/tracks-table';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { SessionPlayingTracks, Tag, Track, TrackToPlay, User } from '@rpg-maestro/rpg-maestro-api-contract';
+import { SessionPlayingTracksResponse, Tag, Track, TrackToPlay, User } from '@rpg-maestro/rpg-maestro-api-contract';
 import { AbortedRequestError, getAllTracks, getSoundboardTracks, setTrackToPlay } from './maestro-api';
 import { ToastContainer } from 'react-toastify';
 import SearchSpecificTrack from './tracks-table/SearchSpecificTrack';
@@ -43,7 +43,7 @@ function MaestroSoundboardComponent() {
   }
   const maestroAudioPlayerChildRef = useRef<MaestroAudioPlayerRef>(null);
   const effectAudioRef = useRef<HTMLAudioElement>(null);
-  const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks): void => {
+  const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracksResponse): void => {
     maestroAudioPlayerChildRef?.current?.dispatchTrackWasManuallyChanged(newTracks);
   };
   const currentPlayingTrack = maestroAudioPlayerChildRef?.current?.currentTrack ?? null;
@@ -119,7 +119,7 @@ function MaestroSoundboardComponent() {
   };
   const requestEditTrackToPlay = async (
     trackToPlay: TrackToPlay
-  ): Promise<SessionPlayingTracks | AbortedRequestError> => {
+  ): Promise<SessionPlayingTracksResponse | AbortedRequestError> => {
     return await setTrackToPlay(sessionId, { currentTrack: trackToPlay });
   };
 

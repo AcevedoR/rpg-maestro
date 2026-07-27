@@ -1,8 +1,8 @@
 import { displayError } from '../error-utils';
 import {
   ChangeSessionPlayingTracksRequest,
-  PlayingTrack,
   SessionPlayingTracks,
+  SessionPlayingTracksResponse,
   Track,
   TrackCreation,
   TrackCreationFromYoutubeDto,
@@ -16,6 +16,7 @@ import {
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { authenticatedFetch } from '../utils/authenticated-fetch';
 import { rpgMaestroApiUrl } from '../utils/api-config';
+import { deserializePlayingTrack } from '../tracks-api';
 
 export const getAllTracks = async (sessionId: string): Promise<Track[]> => {
   try {
@@ -153,7 +154,7 @@ let ongoingSetTrackToPlayRequest: OngoingSetTrackToPlayRequest | null = null;
 export const setTrackToPlay = async (
   sessionId: string,
   changeSessionPlayingTracksRequest: ChangeSessionPlayingTracksRequest
-): Promise<SessionPlayingTracks | AbortedRequestError> => {
+): Promise<SessionPlayingTracksResponse | AbortedRequestError> => {
   // Abort previous request if any
   if (ongoingSetTrackToPlayRequest) {
     ongoingSetTrackToPlayRequest.abortController.abort();
@@ -172,33 +173,17 @@ export const setTrackToPlay = async (
       credentials: 'include',
       signal: ongoingSetTrackToPlayRequest.abortController.signal,
     });
-    const rawSerialized = response as SessionPlayingTracks;
+    const rawSerialized = response as SessionPlayingTracksResponse;
     ongoingSetTrackToPlayRequest = null;
 
     return {
       sessionId: rawSerialized.sessionId,
-      currentTrack: !rawSerialized.currentTrack
-        ? null
-        : new PlayingTrack(
-            rawSerialized.currentTrack.id,
-            rawSerialized.currentTrack.name,
-            rawSerialized.currentTrack.url,
-            rawSerialized.currentTrack.duration,
-            rawSerialized.currentTrack.isPaused,
-            rawSerialized.currentTrack.playTimestamp,
-            rawSerialized.currentTrack.trackStartTime
-          ),
+      currentTrack: !rawSerialized.currentTrack ? null : deserializePlayingTrack(rawSerialized.currentTrack),
       shortEffectTrack: !rawSerialized.shortEffectTrack
         ? null
-        : new PlayingTrack(
-            rawSerialized.shortEffectTrack.id,
-            rawSerialized.shortEffectTrack.name,
-            rawSerialized.shortEffectTrack.url,
-            rawSerialized.shortEffectTrack.duration,
-            rawSerialized.shortEffectTrack.isPaused,
-            rawSerialized.shortEffectTrack.playTimestamp,
-            rawSerialized.shortEffectTrack.trackStartTime
-          ),
+        : deserializePlayingTrack(rawSerialized.shortEffectTrack),
+      revision: rawSerialized.revision ?? 0,
+      currentPlayTimeMs: rawSerialized.currentPlayTimeMs ?? null,
     };
   } catch (error) {
     if ((error as DOMException).name === 'AbortError') {

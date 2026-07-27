@@ -1,5 +1,5 @@
 import { displayError } from './error-utils';
-import { PlayingTrack, SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
+import { rehydratePlayingTrack, SessionPlayingTracksResponse } from '@rpg-maestro/rpg-maestro-api-contract';
 import { AbortedRequestError, SessionNotFoundError } from './maestro-ui/maestro-api';
 
 const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
@@ -10,23 +10,13 @@ interface OngoingRequest {
   startTimeMs: number;
 }
 
-function deserializePlayingTrack(track: PlayingTrack): PlayingTrack {
-  return new PlayingTrack(
-    track.id,
-    track.name,
-    track.url,
-    track.duration,
-    track.isPaused,
-    track.playTimestamp,
-    track.trackStartTime
-  );
-}
+export const deserializePlayingTrack = rehydratePlayingTrack;
 
 let ongoingRequest: OngoingRequest | null = null;
 export const getSessionPlayingTracks = async (
   sessionId: string,
   options?: { manuallyRequested?: boolean }
-): Promise<SessionPlayingTracks | AbortedRequestError | SessionNotFoundError> => {
+): Promise<SessionPlayingTracksResponse | AbortedRequestError | SessionNotFoundError> => {
   // Abort previous request if any
   if (ongoingRequest) {
     if (options?.manuallyRequested) {
@@ -47,12 +37,14 @@ export const getSessionPlayingTracks = async (
       signal: ongoingRequest.abortController.signal,
     });
     if (response.ok) {
-      const res = (await response.json()) as SessionPlayingTracks;
+      const res = (await response.json()) as SessionPlayingTracksResponse;
       ongoingRequest = null;
       return {
         sessionId: res.sessionId,
         currentTrack: res.currentTrack ? deserializePlayingTrack(res.currentTrack) : null,
         shortEffectTrack: res.shortEffectTrack ? deserializePlayingTrack(res.shortEffectTrack) : null,
+        revision: res.revision ?? 0,
+        currentPlayTimeMs: res.currentPlayTimeMs ?? null,
       };
     } else if (response.status === 404) {
       // Expected outcome for a mistyped or stale session link, not a transport failure: report it as
@@ -72,6 +64,6 @@ export const getSessionPlayingTracks = async (
     }
     console.error(error);
     displayError(`Fetch current/tracks error: ${error}`);
-    return { sessionId, currentTrack: null, shortEffectTrack: null };
+    return { sessionId, currentTrack: null, shortEffectTrack: null, revision: 0, currentPlayTimeMs: null };
   }
 };

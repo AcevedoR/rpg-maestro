@@ -20,7 +20,8 @@ import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayi
 import {
   ChangeSessionPlayingTracksRequest,
   CreateSession,
-  SessionPlayingTracks,
+  SessionPlayingTracksResponse,
+  toSessionPlayingTracksResponse,
   Track,
   TrackCreation,
   TrackCreationFromYoutubeDto,
@@ -153,9 +154,13 @@ export class AuthenticatedMaestroController {
     @Request() req: { user: AuthenticatedUser },
     @Param('sessionId') sessionId: string,
     @Body() changeSessionPlayingTracks: ChangeSessionPlayingTracksRequest
-  ): Promise<SessionPlayingTracks> {
+  ): Promise<SessionPlayingTracksResponse> {
     await this.checkAccessOnSession(req.user, sessionId);
-    return await this.manageCurrentlyPlayingTracks.changeSessionPlayingTracks(sessionId, changeSessionPlayingTracks);
+    // The maestro UI seeks straight to the playhead in this response, so it has to be resolved here too,
+    // not just on the players' GET.
+    return toSessionPlayingTracksResponse(
+      await this.manageCurrentlyPlayingTracks.changeSessionPlayingTracks(sessionId, changeSessionPlayingTracks)
+    );
   }
 
   @Post('/maestro/sessions/:sessionId/tracks/from-collection/:collectionId')
@@ -175,13 +180,13 @@ export class AuthenticatedMaestroController {
   async createNewSession(
     @Request() req: { user: AuthenticatedUser },
     @Body() createSession: CreateSession
-  ): Promise<SessionPlayingTracks> {
-    return await this.onboardingService.createSession(createSession, req.user.id);
+  ): Promise<SessionPlayingTracksResponse> {
+    return toSessionPlayingTracksResponse(await this.onboardingService.createSession(createSession, req.user.id));
   }
 
   @Post('/maestro/onboard')
-  async createSession(@Request() req: { user: AuthenticatedUser }): Promise<SessionPlayingTracks> {
-    return await this.onboardingService.createNewUserWithSession(req.user.id);
+  async createSession(@Request() req: { user: AuthenticatedUser }): Promise<SessionPlayingTracksResponse> {
+    return toSessionPlayingTracksResponse(await this.onboardingService.createNewUserWithSession(req.user.id));
   }
 
   async checkAccessOnSession(reqUser: AuthenticatedUser, sessionId: string) {

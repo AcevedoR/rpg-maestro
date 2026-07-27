@@ -1,4 +1,4 @@
-import { PlayingTrack, SessionPlayingTracks, TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
+import { PlayingTrack, SessionPlayingTracksResponse, TrackToPlay } from '@rpg-maestro/rpg-maestro-api-contract';
 import AudioPlayer from 'react-h5-audio-player';
 import H5AudioPlayer from 'react-h5-audio-player';
 import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -8,14 +8,14 @@ import './maestro-audio-player.css';
 import { AbortedRequestError } from '../maestro-api';
 
 export interface MaestroAudioPlayerRef {
-  dispatchTrackWasManuallyChanged: (newTracks: SessionPlayingTracks) => void;
+  dispatchTrackWasManuallyChanged: (newTracks: SessionPlayingTracksResponse) => void;
   togglePlayPause: () => Promise<void>;
   currentTrack: PlayingTrack | null;
 }
 
 export interface MaestroAudioPlayerProps {
   sessionId: string;
-  onCurrentTrackEdit: (editedCurrentTrack: TrackToPlay) => Promise<SessionPlayingTracks | AbortedRequestError>;
+  onCurrentTrackEdit: (editedCurrentTrack: TrackToPlay) => Promise<SessionPlayingTracksResponse | AbortedRequestError>;
 }
 
 const SYNC_TRACK_INTERVAL_MS = 5000;
@@ -27,8 +27,8 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
   const isInUIResync = useRef(false);
   const audioPlayer = useRef<H5AudioPlayer>();
 
-  const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracks) => {
-    resyncCurrentTrackOnUi(newTracks.currentTrack);
+  const dispatchTrackWasManuallyChanged = (newTracks: SessionPlayingTracksResponse) => {
+    resyncCurrentTrackOnUi(newTracks.currentTrack, newTracks.currentPlayTimeMs);
   };
 
   if (audioPlayer.current?.progressBar.current) {
@@ -41,7 +41,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
   }
 
   const resyncCurrentTrackOnUi = useCallback(
-    async (trackFromServer: PlayingTrack | null) => {
+    async (trackFromServer: PlayingTrack | null, playTimeMsFromServer: number | null) => {
       if (currentTrackEditRequested === null && !isInUIResync.current) {
         try {
           isInUIResync.current = true;
@@ -57,7 +57,8 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
                 audioPlayer.current.audio.current.src = trackFromServer.url;
               }
               audioPlayer.current.audio.current.title = trackFromServer.name;
-              const currentPlayTime = trackFromServer.getCurrentPlayTime();
+              // Server-resolved: see the note on SyncResult.currentPlayTimeMs. Never recompute it here.
+              const currentPlayTime = playTimeMsFromServer;
               if (currentPlayTime) {
                 audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
               }
@@ -99,7 +100,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
     const requestFunc = () =>
       onCurrentTrackEdit(editedCurrentTrack).then((newTrack) => {
         if (newTrack !== 'AbortedRequestError') {
-          return resyncCurrentTrackOnUi(newTrack.currentTrack);
+          return resyncCurrentTrackOnUi(newTrack.currentTrack, newTrack.currentPlayTimeMs);
         }
       });
     try {
@@ -134,7 +135,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
         }
         missingSessionAlreadyReported.current = false;
         if (syncResult !== 'AbortedRequestError') {
-          return resyncCurrentTrackOnUi(syncResult.currentTrack);
+          return resyncCurrentTrackOnUi(syncResult.currentTrack, syncResult.currentPlayTimeMs);
         }
         return Promise.resolve();
       });
@@ -167,7 +168,12 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
       if (currentTrack.isPaused !== newPausedStatus) {
         // trying to handle load edge cases
         console.info(`changePlayingStatus newPausedStatus: ${newPausedStatus}`);
-        const stoppedTime = currentTrack.getCurrentPlayTime();
+        // The maestro's own audio element is the truth for where playback actually is — both when pausing
+        // (live position) and when resuming (where it was left). Deriving it from playTimestamp instead
+        // would drag this browser's clock offset into the startTime we then send to the server.
+        const stoppedTime = audioPlayer.current?.audio?.current
+          ? audioPlayer.current.audio.current.currentTime * 1000
+          : currentTrack.trackStartTime;
         currentTrack.trackStartTime = stoppedTime;
         currentTrack.isPaused = newPausedStatus;
         await requestCurrentTrackEdit({

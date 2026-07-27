@@ -86,7 +86,10 @@ export function PlayersUi() {
             audioPlayer.current.audio.current.src = newerServerTrack.url;
           }
           audioPlayer.current.audio.current.title = newerServerTrack.name;
-          const currentPlayTime = newerServerTrack.getCurrentPlayTime();
+          // The server resolved this against its own clock. Computing it here from the browser's
+          // Date.now() would be off by this listener's clock offset, and a listener more than
+          // MAX_ACCEPTABLE_DESYNC_MS out would then reseek on every tick, forever.
+          const currentPlayTime = syncResult.currentPlayTimeMs ?? 0;
           audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
           if (newerServerTrack.isPaused) {
             audioPlayer.current.audio.current.pause();

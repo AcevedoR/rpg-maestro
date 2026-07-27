@@ -21,6 +21,7 @@ export class FirestoreTracksDatabase implements TracksDatabase {
       id: sessionId,
       currentTrack: null,
       shortEffectTrack: null,
+      revision: 0,
     };
     await this.db.collection(RPG_MAESTRO_SESSIONS_DB).doc(sessionId).set(newSession);
     return await Promise.resolve();
@@ -52,10 +53,13 @@ export class FirestoreTracksDatabase implements TracksDatabase {
 
   async upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
     const existing = await this.getSession(sessionId);
+    const revision = (existing?.revision ?? 0) + 1;
     const sessionEntity: SessionPlayingTrackEntity = {
       id: sessionId,
-      currentTrack: playingTrackToEntity(playingTrack),
+      currentTrack: playingTrackToEntity(playingTrack, revision),
+      // Untouched slot keeps its own revision, so a music change does not make a live effect look new.
       shortEffectTrack: existing?.shortEffectTrack ? playingTrackToEntity(existing.shortEffectTrack) : null,
+      revision,
     };
     await this.db
       .collection(RPG_MAESTRO_SESSIONS_DB)
@@ -66,10 +70,12 @@ export class FirestoreTracksDatabase implements TracksDatabase {
 
   async upsertShortEffectTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
     const existing = await this.getSession(sessionId);
+    const revision = (existing?.revision ?? 0) + 1;
     const sessionEntity: SessionPlayingTrackEntity = {
       id: sessionId,
       currentTrack: existing?.currentTrack ? playingTrackToEntity(existing.currentTrack) : null,
-      shortEffectTrack: playingTrackToEntity(playingTrack),
+      shortEffectTrack: playingTrackToEntity(playingTrack, revision),
+      revision,
     };
     await this.db
       .collection(RPG_MAESTRO_SESSIONS_DB)
@@ -98,6 +104,8 @@ interface SessionPlayingTrackEntity {
   id: string;
   currentTrack: PlayingTrackEntity | null;
   shortEffectTrack: PlayingTrackEntity | null;
+  /** Optional on read only: documents written before revisions existed do not carry it. */
+  revision?: number;
 }
 
 interface PlayingTrackEntity {
@@ -109,9 +117,15 @@ interface PlayingTrackEntity {
   isPaused: boolean;
   playTimestamp: number;
   trackStartTime: number;
+  revision?: number;
 }
 
-function playingTrackToEntity(track: PlayingTrack): PlayingTrackEntity {
+/**
+ * `revision` is passed in rather than read off the track, because the caller builds the PlayingTrack before
+ * the store has decided which revision the write gets. Omit it to carry over whatever the track already had
+ * (used when rewriting the slot this write did not touch).
+ */
+function playingTrackToEntity(track: PlayingTrack, revision?: number): PlayingTrackEntity {
   return {
     id: track.id,
     name: track.name,
@@ -120,6 +134,7 @@ function playingTrackToEntity(track: PlayingTrack): PlayingTrackEntity {
     isPaused: track.isPaused,
     playTimestamp: track.playTimestamp,
     trackStartTime: track.trackStartTime,
+    revision: revision ?? track.revision ?? 0,
   };
 }
 
@@ -131,7 +146,10 @@ function entityToPlayingTrack(entity: PlayingTrackEntity): PlayingTrack {
     entity.duration,
     entity.isPaused,
     entity.playTimestamp,
-    entity.trackStartTime
+    entity.trackStartTime,
+    // Pre-revision documents read back as 0. The first write after this deploy bumps the session to 1, which
+    // every client sees as a change and resyncs once — a single harmless reseek, not a stuck state.
+    entity.revision ?? 0
   );
 }
 
@@ -140,5 +158,6 @@ function entityToSession(entity: SessionPlayingTrackEntity): SessionPlayingTrack
     sessionId: entity.id,
     currentTrack: entity.currentTrack ? entityToPlayingTrack(entity.currentTrack) : null,
     shortEffectTrack: entity.shortEffectTrack ? entityToPlayingTrack(entity.shortEffectTrack) : null,
+    revision: entity.revision ?? 0,
   };
 }

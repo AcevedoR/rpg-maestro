@@ -6,7 +6,12 @@ export class InMemoryTracksDatabase implements TracksDatabase {
   sessionDatabase: { [name: SessionID]: SessionPlayingTracks } = {};
 
   createSession(sessionId: SessionID): Promise<void> {
-    this.sessionDatabase[sessionId] = { sessionId: sessionId, currentTrack: null, shortEffectTrack: null };
+    this.sessionDatabase[sessionId] = {
+      sessionId: sessionId,
+      currentTrack: null,
+      shortEffectTrack: null,
+      revision: 0,
+    };
     return Promise.resolve();
   }
 
@@ -19,6 +24,7 @@ export class InMemoryTracksDatabase implements TracksDatabase {
       sessionId: sessionId,
       currentTrack: this.sessionDatabase[sessionId]?.currentTrack,
       shortEffectTrack: this.sessionDatabase[sessionId]?.shortEffectTrack ?? null,
+      revision: this.sessionDatabase[sessionId].revision,
     });
   }
 
@@ -33,21 +39,41 @@ export class InMemoryTracksDatabase implements TracksDatabase {
   }
 
   upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
+    const revision = this.nextRevision(sessionId);
+    const stampedTrack = withRevision(playingTrack, revision);
     if (!this.sessionDatabase[sessionId]) {
-      this.sessionDatabase[sessionId] = { sessionId: sessionId, currentTrack: playingTrack, shortEffectTrack: null };
+      this.sessionDatabase[sessionId] = {
+        sessionId: sessionId,
+        currentTrack: stampedTrack,
+        shortEffectTrack: null,
+        revision,
+      };
     } else {
-      this.sessionDatabase[sessionId].currentTrack = playingTrack;
+      this.sessionDatabase[sessionId].currentTrack = stampedTrack;
+      this.sessionDatabase[sessionId].revision = revision;
     }
-    return Promise.resolve(this.sessionDatabase[sessionId]);
+    return Promise.resolve(snapshot(this.sessionDatabase[sessionId]));
   }
 
   upsertShortEffectTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
+    const revision = this.nextRevision(sessionId);
+    const stampedTrack = withRevision(playingTrack, revision);
     if (!this.sessionDatabase[sessionId]) {
-      this.sessionDatabase[sessionId] = { sessionId: sessionId, currentTrack: null, shortEffectTrack: playingTrack };
+      this.sessionDatabase[sessionId] = {
+        sessionId: sessionId,
+        currentTrack: null,
+        shortEffectTrack: stampedTrack,
+        revision,
+      };
     } else {
-      this.sessionDatabase[sessionId].shortEffectTrack = playingTrack;
+      this.sessionDatabase[sessionId].shortEffectTrack = stampedTrack;
+      this.sessionDatabase[sessionId].revision = revision;
     }
-    return Promise.resolve(this.sessionDatabase[sessionId]);
+    return Promise.resolve(snapshot(this.sessionDatabase[sessionId]));
+  }
+
+  private nextRevision(sessionId: string): number {
+    return (this.sessionDatabase[sessionId]?.revision ?? 0) + 1;
   }
 
   getTrack(trackId: string): Promise<Track> {
@@ -63,3 +89,28 @@ export class InMemoryTracksDatabase implements TracksDatabase {
   }
 }
 
+/**
+ * Detach the returned session from the one this store keeps mutating. Without this the caller holds a live
+ * reference, and a later write silently rewrites a value they already read — which is not how the Firestore
+ * implementation behaves, so tests passing against one would not pass against the other.
+ */
+function snapshot(session: SessionPlayingTracks): SessionPlayingTracks {
+  return { ...session };
+}
+
+/**
+ * The caller builds the PlayingTrack before the store knows which revision it will get, so the revision is
+ * stamped on here rather than passed in. Returns a copy: callers keep their own reference to the argument.
+ */
+function withRevision(playingTrack: PlayingTrack, revision: number): PlayingTrack {
+  return new PlayingTrack(
+    playingTrack.id,
+    playingTrack.name,
+    playingTrack.url,
+    playingTrack.duration,
+    playingTrack.isPaused,
+    playingTrack.playTimestamp,
+    playingTrack.trackStartTime,
+    revision
+  );
+}

@@ -102,6 +102,8 @@ const sessions: SessionPlayingTracks[] = [
       now - 120000,
       22000
     ),
+    shortEffectTrack: null,
+    revision: 1,
   },
   {
     sessionId: 'session-beta',
@@ -114,10 +116,14 @@ const sessions: SessionPlayingTracks[] = [
       now - 60000,
       80000
     ),
+    shortEffectTrack: null,
+    revision: 1,
   },
   {
     sessionId: 'session-gamma',
     currentTrack: null,
+    shortEffectTrack: null,
+    revision: 0,
   },
   {
     sessionId: 'session-delta',
@@ -130,6 +136,8 @@ const sessions: SessionPlayingTracks[] = [
       now - 90000,
       15000
     ),
+    shortEffectTrack: null,
+    revision: 1,
   },
   {
     sessionId: 'session-epsilon',
@@ -142,6 +150,8 @@ const sessions: SessionPlayingTracks[] = [
       now - 30000,
       5000
     ),
+    shortEffectTrack: null,
+    revision: 1,
   },
 ];
 

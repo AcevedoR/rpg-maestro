@@ -1,5 +1,9 @@
 import { Controller, Get, HttpException, HttpStatus, Inject, Param } from '@nestjs/common';
-import { SessionPlayingTracks, Track } from '@rpg-maestro/rpg-maestro-api-contract';
+import {
+  SessionPlayingTracksResponse,
+  Track,
+  toSessionPlayingTracksResponse,
+} from '@rpg-maestro/rpg-maestro-api-contract';
 import { SessionsService } from './sessions/sessions.service';
 import { TrackService } from './maestro-api/TrackService';
 
@@ -18,11 +22,13 @@ export class PlayersController {
   }
 
   @Get('/sessions/:id/playing-tracks')
-  async getSessionTracks(@Param('id') sessionId: string): Promise<SessionPlayingTracks> {
+  async getSessionTracks(@Param('id') sessionId: string): Promise<SessionPlayingTracksResponse> {
     const dbValue = await this.sessionsService.getSessionPlayingTracks(sessionId);
     if (!dbValue) {
       throw new HttpException(`Session '${sessionId}' not found`, HttpStatus.NOT_FOUND);
     }
-    return dbValue;
+    // Resolved here, against the server clock, and never stored: players must not compute the playhead from
+    // their own Date.now(), which is off by their whole clock offset from ours.
+    return toSessionPlayingTracksResponse(dbValue);
   }
 }
