@@ -2,7 +2,7 @@ import { FakeJwtToken, TestUsersFixture } from '@rpg-maestro/test-utils';
 import { INestApplication } from '@nestjs/common';
 
 import request from 'supertest';
-import { BetaSignup, LandingVisitsDailyCount } from '@rpg-maestro/rpg-maestro-api-contract';
+import { LandingEventsDailyCount, LandingVisitsDailyCount, UpgradeInterest } from '@rpg-maestro/rpg-maestro-api-contract';
 
 describe('Landing API', () => {
   let app: INestApplication;
@@ -30,33 +30,69 @@ describe('Landing API', () => {
     A_MAESTRO_USER = users.a_maestro_user;
   });
 
-  it('anyone can sign up for the beta without authentication, and an Admin can read it back', async () => {
+  it('anyone can register upgrade interest without authentication, and an Admin can read it back', async () => {
     await request(app.getHttpServer())
-      .post('/beta-signups')
-      .send({ email: 'stranger@example.com', source: 'dmacademy-post', referrer: 'https://reddit.com' })
+      .post('/upgrade-interest')
+      .send({ email: 'stranger@example.com', source: 'dmacademy-post', referrer: 'https://reddit.com', had_session: true })
       .expect(201);
 
-    const signups = (
+    const upgradeInterests = (
       await request(app.getHttpServer())
-        .get('/beta-signups')
+        .get('/upgrade-interest')
         .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
         .expect(200)
-    ).body as BetaSignup[];
-    expect(signups).toHaveLength(1);
-    expect(signups[0]).toMatchObject({ email: 'stranger@example.com', source: 'dmacademy-post' });
+    ).body as UpgradeInterest[];
+    expect(upgradeInterests).toHaveLength(1);
+    expect(upgradeInterests[0]).toMatchObject({
+      email: 'stranger@example.com',
+      source: 'dmacademy-post',
+      had_session: true,
+    });
   }, 10000);
 
   it('rejects an invalid email with a 400', async () => {
-    await request(app.getHttpServer()).post('/beta-signups').send({ email: 'not-an-email' }).expect(400);
+    await request(app.getHttpServer()).post('/upgrade-interest').send({ email: 'not-an-email' }).expect(400);
   }, 10000);
 
-  it('an unauthenticated user cannot list beta signups', async () => {
-    await request(app.getHttpServer()).get('/beta-signups').expect(401);
+  it('an unauthenticated user cannot list upgrade interests', async () => {
+    await request(app.getHttpServer()).get('/upgrade-interest').expect(401);
   }, 10000);
 
-  it('a Maestro is forbidden to list beta signups', async () => {
+  it('a Maestro is forbidden to list upgrade interests', async () => {
     await request(app.getHttpServer())
-      .get('/beta-signups')
+      .get('/upgrade-interest')
+      .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
+      .expect(403);
+  }, 10000);
+
+  it('anyone can record funnel events, and an Admin can read daily counts per type and source', async () => {
+    await request(app.getHttpServer())
+      .post('/landing-events')
+      .send({ type: 'start_free_clicked', source: 'dmacademy-post' })
+      .expect(201);
+    await request(app.getHttpServer())
+      .post('/landing-events')
+      .send({ type: 'session_created', source: 'dmacademy-post' })
+      .expect(201);
+
+    const counts = (
+      await request(app.getHttpServer())
+        .get('/landing-events')
+        .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
+        .expect(200)
+    ).body as LandingEventsDailyCount[];
+    const byType = Object.fromEntries(counts.map((c) => [c.type, c.count]));
+    expect(byType['start_free_clicked']).toBe(1);
+    expect(byType['session_created']).toBe(1);
+  }, 10000);
+
+  it('rejects an unknown funnel event type with a 400', async () => {
+    await request(app.getHttpServer()).post('/landing-events').send({ type: 'not-an-event' }).expect(400);
+  }, 10000);
+
+  it('a Maestro is forbidden to list funnel events', async () => {
+    await request(app.getHttpServer())
+      .get('/landing-events')
       .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
       .expect(403);
   }, 10000);
@@ -75,13 +111,6 @@ describe('Landing API', () => {
     const bySource = Object.fromEntries(counts.map((c) => [c.source, c.count]));
     expect(bySource['dmacademy-post']).toBe(2);
     expect(bySource['direct']).toBe(1);
-  }, 10000);
-
-  it('a Maestro is forbidden to list landing visits', async () => {
-    await request(app.getHttpServer())
-      .get('/landing-visits')
-      .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
-      .expect(403);
   }, 10000);
 
   afterEach(async () => {

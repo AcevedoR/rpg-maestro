@@ -1,4 +1,9 @@
-import { CreateBetaSignupRequest, CreateLandingVisitRequest, parseAndValidateDto } from '@rpg-maestro/rpg-maestro-api-contract';
+import {
+  CreateLandingEventRequest,
+  CreateLandingVisitRequest,
+  CreateUpgradeInterestRequest,
+  parseAndValidateDto,
+} from '@rpg-maestro/rpg-maestro-api-contract';
 import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import { LandingService } from './landing.service';
 
@@ -11,46 +16,72 @@ describe('LandingService', () => {
     landingService = new LandingService(databases);
   });
 
-  describe('beta signups', () => {
-    it('persists a signup with its source and referrer', async () => {
-      await landingService.createBetaSignup(
-        new CreateBetaSignupRequest('gm@example.com', 'dmacademy-post', 'https://reddit.com/r/DMAcademy')
+  describe('upgrade interest', () => {
+    it('persists an upgrade interest with its source, referrer and had_session marker', async () => {
+      await landingService.createUpgradeInterest(
+        new CreateUpgradeInterestRequest('gm@example.com', 'dmacademy-post', 'https://reddit.com/r/DMAcademy', true)
       );
 
-      const signups = await databases.getBetaSignupsDB().getAll();
-      expect(signups).toHaveLength(1);
-      expect(signups[0].email).toBe('gm@example.com');
-      expect(signups[0].source).toBe('dmacademy-post');
-      expect(signups[0].referrer).toBe('https://reddit.com/r/DMAcademy');
-      expect(new Date(signups[0].created_at).getTime()).not.toBeNaN();
+      const upgradeInterests = await databases.getUpgradeInterestDB().getAll();
+      expect(upgradeInterests).toHaveLength(1);
+      expect(upgradeInterests[0].email).toBe('gm@example.com');
+      expect(upgradeInterests[0].source).toBe('dmacademy-post');
+      expect(upgradeInterests[0].referrer).toBe('https://reddit.com/r/DMAcademy');
+      expect(upgradeInterests[0].had_session).toBe(true);
+      expect(new Date(upgradeInterests[0].created_at).getTime()).not.toBeNaN();
     });
 
-    it('dedupes signups by email, keeping the first one', async () => {
-      await landingService.createBetaSignup(new CreateBetaSignupRequest('gm@example.com', 'first-source'));
-      await landingService.createBetaSignup(new CreateBetaSignupRequest('GM@example.com', 'second-source'));
+    it('defaults had_session to false when not provided', async () => {
+      await landingService.createUpgradeInterest(new CreateUpgradeInterestRequest('gm@example.com'));
 
-      const signups = await databases.getBetaSignupsDB().getAll();
-      expect(signups).toHaveLength(1);
-      expect(signups[0].source).toBe('first-source');
+      const upgradeInterests = await databases.getUpgradeInterestDB().getAll();
+      expect(upgradeInterests[0].had_session).toBe(false);
+    });
+
+    it('dedupes upgrade interests by email, keeping the first one', async () => {
+      await landingService.createUpgradeInterest(new CreateUpgradeInterestRequest('gm@example.com', 'first-source'));
+      await landingService.createUpgradeInterest(new CreateUpgradeInterestRequest('GM@example.com', 'second-source'));
+
+      const upgradeInterests = await databases.getUpgradeInterestDB().getAll();
+      expect(upgradeInterests).toHaveLength(1);
+      expect(upgradeInterests[0].source).toBe('first-source');
     });
 
     it('normalizes emails to lowercase', async () => {
-      await landingService.createBetaSignup(new CreateBetaSignupRequest('GM@Example.COM'));
+      await landingService.createUpgradeInterest(new CreateUpgradeInterestRequest('GM@Example.COM'));
 
-      const signups = await databases.getBetaSignupsDB().getAll();
-      expect(signups[0].email).toBe('gm@example.com');
+      const upgradeInterests = await databases.getUpgradeInterestDB().getAll();
+      expect(upgradeInterests[0].email).toBe('gm@example.com');
     });
 
     it('silently drops submissions with the honeypot field filled', async () => {
-      await landingService.createBetaSignup(
-        new CreateBetaSignupRequest('bot@example.com', undefined, undefined, 'https://spam.example.com')
+      await landingService.createUpgradeInterest(
+        new CreateUpgradeInterestRequest('bot@example.com', undefined, undefined, undefined, 'https://spam.example.com')
       );
 
-      expect(await databases.getBetaSignupsDB().getAll()).toHaveLength(0);
+      expect(await databases.getUpgradeInterestDB().getAll()).toHaveLength(0);
     });
 
     it('rejects an invalid email at DTO validation', async () => {
-      await expect(parseAndValidateDto(CreateBetaSignupRequest, { email: 'not-an-email' })).rejects.toBeDefined();
+      await expect(parseAndValidateDto(CreateUpgradeInterestRequest, { email: 'not-an-email' })).rejects.toBeDefined();
+    });
+  });
+
+  describe('landing events', () => {
+    it('increments a daily count per event type and source', async () => {
+      await landingService.recordLandingEvent(new CreateLandingEventRequest('start_free_clicked', 'dmacademy-post'));
+      await landingService.recordLandingEvent(new CreateLandingEventRequest('start_free_clicked', 'dmacademy-post'));
+      await landingService.recordLandingEvent(new CreateLandingEventRequest('session_created', 'dmacademy-post'));
+
+      const counts = await databases.getLandingEventsDB().getAll();
+      expect(counts).toHaveLength(2);
+      const byType = Object.fromEntries(counts.map((c) => [c.type, c.count]));
+      expect(byType['start_free_clicked']).toBe(2);
+      expect(byType['session_created']).toBe(1);
+    });
+
+    it('rejects an unknown event type at DTO validation', async () => {
+      await expect(parseAndValidateDto(CreateLandingEventRequest, { type: 'not-an-event' })).rejects.toBeDefined();
     });
   });
 
