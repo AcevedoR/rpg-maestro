@@ -15,10 +15,19 @@ import { Typography } from '@mui/material';
 
 export const SYNC_TRACK_INTERVAL_MS = 1000;
 
+/**
+ * How many consecutive 404s before we tell the player the session does not exist and stop polling.
+ * More than one, because a 404 does not always mean "no such session": an ingress can serve 404 for
+ * a few seconds during a rolling backend deploy, and a misconfigured API URL 404s every route. A
+ * single strike would turn those into a permanent, wrong, unrecoverable-without-reload error.
+ */
+export const CONSECUTIVE_NOT_FOUND_BEFORE_GIVING_UP = 3;
+
 export function PlayersUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
   const [shortEffectTrack, setShortEffectTrack] = useState<PlayingTrack | null>(null);
   const [sessionNotFound, setSessionNotFound] = useState(false);
+  const consecutiveNotFound = useRef(0);
   const audioPlayer = useRef<H5AudioPlayer>();
   const effectAudioRef = useRef<HTMLAudioElement>(null);
   const sessionId = useParams().sessionId ?? '';
@@ -29,6 +38,7 @@ export function PlayersUi() {
   // A new session id deserves a fresh attempt, even if the previous one did not exist.
   useEffect(() => {
     setSessionNotFound(false);
+    consecutiveNotFound.current = 0;
   }, [sessionId]);
 
   useEffect(() => {
@@ -37,6 +47,10 @@ export function PlayersUi() {
       return;
     }
 
+    // A request already in flight when this effect is torn down resolves against a stale sessionId.
+    // Without this guard, a 404 for the previous session could mark the new one as not found.
+    let outdated = false;
+
     async function resyncOnUi() {
       const syncResult = await resyncIfNeeded(
         sessionId,
@@ -44,14 +58,21 @@ export function PlayersUi() {
         currentTrack,
         shortEffectTrack,
       );
+      if (outdated) {
+        return;
+      }
       if (syncResult === 'AbortedRequestError') {
         return;
       }
       if (syncResult === 'SessionNotFoundError') {
-        // Flipping this re-runs the effect, whose cleanup clears the interval below.
-        setSessionNotFound(true);
+        consecutiveNotFound.current += 1;
+        if (consecutiveNotFound.current >= CONSECUTIVE_NOT_FOUND_BEFORE_GIVING_UP) {
+          // Flipping this re-runs the effect, whose cleanup clears the interval below.
+          setSessionNotFound(true);
+        }
         return;
       }
+      consecutiveNotFound.current = 0;
 
       // Handle current track sync
       const newerServerTrack = syncResult.currentTrack;
@@ -105,7 +126,10 @@ export function PlayersUi() {
     const id = setInterval(() => {
       resyncOnUi();
     }, SYNC_TRACK_INTERVAL_MS);
-    return () => clearInterval(id);
+    return () => {
+      outdated = true;
+      clearInterval(id);
+    };
   }, [currentTrack, shortEffectTrack, sessionId, sessionNotFound]);
 
   return (
@@ -138,7 +162,9 @@ export function PlayersUi() {
 
       {sessionNotFound ? (
         <div
-          role="alert"
+          // deliberately not role="alert": that role is how tests target react-toastify toasts, and
+          // a second match would break strict-mode locators. This is page content, not a toast.
+          role="status"
           style={{ textAlign: 'center', maxWidth: 800, margin: '2rem auto', color: 'var(--text-secondary)', lineHeight: 1.6 }}
         >
           <p style={{ margin: '1rem 0', fontSize: '1.1rem' }}>
