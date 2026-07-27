@@ -36,9 +36,31 @@ export function createCacheTiers<T>(namespace: string, ttl: number): CacheTier<T
 
 function redisStore<T>(name: string, url: string, namespace: string, ttl: number): Keyv<T> {
   logger.log(`using "${name}" as a cache backend for "${namespace}"`);
-  const store = new Keyv<T>({ store: new KeyvRedis(url), namespace, ttl });
+  const redis = new KeyvRedis(url);
+  // `useKeyPrefix: false` leaves the prefixing to KeyvRedis. Keyv would otherwise add its own on
+  // top, for keys shaped `<namespace>::<namespace>:<key>`.
+  const store = new Keyv<T>({ store: redis, namespace, ttl, useKeyPrefix: false });
+  assertNamespaceReachedRedis(redis, namespace);
   // Keyv surfaces connection problems as 'error' events; without a listener node would crash the
   // process. ResilientCache reacts to rejected operations, so logging is all that is needed here.
   store.on('error', (error) => logger.warn(`cache tier "${name}" emitted an error`, error));
   return store;
+}
+
+/**
+ * The namespace has to reach KeyvRedis itself, not just the Keyv wrapper: `KeyvRedis.clear()` scans
+ * `<namespace>::*` when it has a namespace, but falls back to `FLUSHDB` when it does not. Since
+ * {@link ResilientCache} clears a tier every time it recovers, an unset namespace would wipe every
+ * other namespace on the server — and anything else sharing it — on each recovery.
+ *
+ * Keyv propagates the namespace to its store today; this asserts it rather than trusting it, so an
+ * upstream change fails at boot instead of silently escalating a recovery into a full flush.
+ */
+function assertNamespaceReachedRedis(redis: KeyvRedis<unknown>, namespace: string): void {
+  if (redis.namespace !== namespace) {
+    throw new Error(
+      `cache namespace "${namespace}" did not reach the redis store (got "${redis.namespace}"), ` +
+        `refusing to start: clearing a recovered tier would FLUSHDB instead of scoping to the namespace`
+    );
+  }
 }
