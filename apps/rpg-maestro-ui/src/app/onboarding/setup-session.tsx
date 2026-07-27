@@ -10,8 +10,6 @@ import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import { StyledBox } from './styled-box';
 import { useNavigate } from 'react-router-dom';
 import { getUserAndForceRefresh } from '../cache/user.cache';
-import { markSessionCreated } from '../landing/landing-attribution';
-import { sendLandingEventBeacon } from '../landing/landing-api';
 
 export const getURLToShareToPlayers = (sessionId: string): string => {
   return `${window.location.origin}/${sessionId}`;
@@ -32,8 +30,6 @@ export function SetupSession() {
       if (newSession === 'UserAlreadyExistsError') {
         fetchMaestroInfos();
       } else {
-        markSessionCreated(newSession.sessionId);
-        sendLandingEventBeacon('session_created');
         setNewlyCreatedSession(newSession);
       }
       setOnboardRequestLoading(false);

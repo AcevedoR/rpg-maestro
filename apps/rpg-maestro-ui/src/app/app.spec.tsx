@@ -27,13 +27,13 @@ describe('App', () => {
     isAuthenticatedMock = false;
   });
 
-  it('should show the landing page hero as the title', () => {
+  it('should have a greeting as the title', () => {
     const { getByText } = render(
       <BrowserRouter>
         <App />
       </BrowserRouter>,
     );
-    expect(getByText(/Your players hear your music too/gi)).toBeTruthy();
+    expect(getByText(/Welcome to RPG-MAESTRO/gi)).toBeTruthy();
   });
 
   it('fetches the user when authenticated', async () => {

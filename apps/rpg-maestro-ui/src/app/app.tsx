@@ -9,7 +9,7 @@ import './audio-player-shared.css';
 import { Onboarding } from './onboarding/onboarding';
 import { FakeIDPLoginPage, getFakeToken } from './auth/FakeIDPLoginPage.fixture';
 import { SetupSession } from './onboarding/setup-session';
-import { LandingPage } from './landing/landing-page';
+import { WelcomePage } from './welcome-page';
 import { isDevModeEnabled } from '../FeaturesConfiguration';
 import { HealthStatus } from './misc/health-status';
 import { UserInfos } from './onboarding/user-infos';
@@ -53,7 +53,7 @@ export function App() {
             <Route path="/onboarding/setup-session" element={<SetupSession />} />
             {isDevModeEnabled && <Route path="/dev/fake-idp-login-page" element={<FakeIDPLoginPage />} />}
             <Route path=":sessionId" element={<PlayersUi />} />
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<WelcomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/maestro/infos" element={<UserInfos />} />
             <Route path="/maestro/:sessionId" element={<MaestroSoundboard />} />
