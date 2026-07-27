@@ -62,6 +62,11 @@ npx nx deploy rpg-maestro
 | `apps/audio-file-uploader/.env.e2e-tests` | E2E test runner |
 | `apps/rpg-maestro-ui/.env` | Vite dev server (create from `.env.example` if present) |
 
+**Cache backends** (backend, both optional): `CACHE_REDIS_URL` selects the primary Redis and
+`CACHE_FALLBACK_REDIS_URL` the managed service used while the primary is down. With neither set the
+cache stays in-process, which is what local dev and the e2e tests use. See
+[architecture.md](architecture.md) for the tier switching rules.
+
 ## Adding a New Feature — Checklist
 
 1. **Backend module** — create under `apps/rpg-maestro/src/app/<module>/`
