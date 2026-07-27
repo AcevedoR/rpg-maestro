@@ -1,23 +1,32 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ToastContainer } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import { CreateLandingVisitRequest } from '@rpg-maestro/rpg-maestro-api-contract';
 import DiscordInviteLink from '../ui-components/discord-invite-link/discord-invite-link';
 import GithubSourceCodeLink from '../ui-components/github-source-code-link/github-source-code-link';
-import { EmailCaptureForm } from './email-capture-form';
-import { getLandingReferrer, getLandingSource, sendLandingVisitBeacon } from './landing-api';
+import { UpgradeInterestModal } from './upgrade-interest-modal';
+import { getLandingReferrer, getLandingSource, persistLandingSource } from './landing-attribution';
+import { sendLandingEventBeacon, sendLandingVisitBeacon } from './landing-api';
 import './landing-page.css';
 
 export function LandingPage() {
-  const [signedUp, setSignedUp] = useState(false);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const visitBeaconSent = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (visitBeaconSent.current) {
       return;
     }
     visitBeaconSent.current = true;
+    persistLandingSource();
     sendLandingVisitBeacon(new CreateLandingVisitRequest(getLandingSource(), getLandingReferrer()));
   }, []);
+
+  const onStartFree = (): void => {
+    persistLandingSource();
+    sendLandingEventBeacon('start_free_clicked');
+    navigate('/onboarding');
+  };
 
   return (
     <div className="landing">
@@ -28,9 +37,11 @@ export function LandingPage() {
           or across the internet — perfectly in sync. No Discord audio duct tape. No screen-sharing a browser tab. No
           losing a play night to setup.
         </p>
-        <EmailCaptureForm signedUp={signedUp} onSignedUp={() => setSignedUp(true)} />
+        <button className="landing-cta-button landing-hero-cta" onClick={onStartFree}>
+          Start free →
+        </button>
         <p className="landing-price-line">
-          Free during early access · <strong>$4/month at launch</strong> · founding members keep $3/month forever
+          Free tier, no card · <strong>Maestro $4/month</strong> · founding members keep $3/month forever
         </p>
       </header>
 
@@ -69,7 +80,10 @@ export function LandingPage() {
             crossfades for the whole party — in the room or three time zones away.
           </li>
         </ol>
-        <p>Bring your own library (upload your files, tag them, build collections) — or use ours.</p>
+        <p>
+          Bring your own library (upload your files, tag them, build collections) — or use ours. Both work on the free
+          tier: <strong>test the sync with the music you already play.</strong>
+        </p>
       </section>
 
       <section>
@@ -84,22 +98,66 @@ export function LandingPage() {
       </section>
 
       <section className="landing-panel">
-        <h2>Early access</h2>
+        <h2>Pricing</h2>
+        <div className="landing-table-scroll">
+          <table className="landing-pricing-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Free</th>
+                <th>Maestro — $4/month</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Synced broadcast to every player</td>
+                <td>✅</td>
+                <td>✅</td>
+              </tr>
+              <tr>
+                <td>One link, no player accounts</td>
+                <td>✅</td>
+                <td>✅</td>
+              </tr>
+              <tr>
+                <td>Your own uploads</td>
+                <td>up to 30 tracks</td>
+                <td>up to 10 GB (~1,200 tracks)</td>
+              </tr>
+              <tr>
+                <td>Our original collections</td>
+                <td>2 starter collections</td>
+                <td>
+                  <strong>the whole library</strong>
+                </td>
+              </tr>
+              <tr>
+                <td>New tracks composed every month</td>
+                <td>—</td>
+                <td>✅ included</td>
+              </tr>
+              <tr>
+                <td>In-person + remote tables</td>
+                <td>✅</td>
+                <td>✅</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="landing-pricing-actions">
+          <button className="landing-cta-button" onClick={onStartFree}>
+            Start free →
+          </button>
+          <button className="landing-secondary-button" onClick={() => setUpgradeModalOpen(true)}>
+            Maestro $4/mo
+          </button>
+        </div>
+        <p className="landing-no-card-note">— no card, runs your next session.</p>
         <p>
-          We're opening the table to the first <strong>50 GMs</strong>:
+          <strong>Founding members:</strong> the first <strong>50 GMs</strong> who upgrade keep{' '}
+          <strong>$3/month, forever</strong>, even as the library grows.{' '}
+          <em>(Not a discount code — it's locked to your account.)</em>
         </p>
-        <ul className="landing-early-access-list">
-          <li>
-            <strong>Free while in beta</strong> — help shape it
-          </li>
-          <li>
-            <strong>$4/month at launch</strong> — less than one d20 set 🎲
-          </li>
-          <li>
-            Founding members: <strong>$3/month, forever</strong>
-          </li>
-        </ul>
-        <EmailCaptureForm signedUp={signedUp} onSignedUp={() => setSignedUp(true)} />
         <p className="landing-discord-alternative">or jump into the Discord and say hi</p>
         <DiscordInviteLink />
       </section>
@@ -112,7 +170,20 @@ export function LandingPage() {
           <h3>In-person tables?</h3>
           <p>Yes. Point the link at the TV or a tablet; your phone is the remote.</p>
           <h3>Can I upload my own music?</h3>
-          <p>Yes — your files, your tags, your collections.</p>
+          <p>
+            Yes, on the free tier too (up to 30 tracks) — your files, your tags, your collections. Maestro raises it to
+            10 GB, about 1,200 tracks.
+          </p>
+          <h3>What happens to my uploads?</h3>
+          <p>
+            They're re-encoded for smooth streaming to your players, kept private to your sessions, and never shared or
+            made public. Free-tier libraries may be cleared after long inactivity — we'll email you first.
+          </p>
+          <h3>What do I actually pay for?</h3>
+          <p>
+            The music. Sync, sharing and your own uploads stay free; Maestro buys the original collections I compose and
+            the new ones landing every month.
+          </p>
           <h3>Do I need my players to make accounts?</h3>
           <p>No. One link.</p>
           <h3>What about my existing Syrinscape/Tabletop Audio stuff?</h3>
@@ -123,7 +194,7 @@ export function LandingPage() {
       <footer className="landing-footer">
         <GithubSourceCodeLink />
       </footer>
-      <ToastContainer limit={5} />
+      <UpgradeInterestModal open={upgradeModalOpen} onClose={() => setUpgradeModalOpen(false)} />
     </div>
   );
 }
