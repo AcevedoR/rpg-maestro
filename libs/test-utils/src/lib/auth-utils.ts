@@ -13,7 +13,9 @@ export interface TestUsersFixture {
   a_new_user: FakeJwtToken;
 }
 
-let FAKE_JWK: { publicKKey: JWK; privateKKey: JWK } | undefined;
+// memoize the promise (not the value) so concurrent first callers share ONE keypair —
+// otherwise tokens can be signed with a key the JWKS endpoint never serves
+let FAKE_JWK_PROMISE: Promise<{ publicKKey: JWK; privateKKey: JWK }> | undefined;
 
 export async function initUsersFixture(host: string): Promise<TestUsersFixture> {
   try {
@@ -75,17 +77,16 @@ export async function generateFakeJwtToken(userId: string, fakeIdpConf: FakeIDPC
 }
 
 async function getGeneratedJwk(): Promise<{ publicKKey: JWK; privateKKey: JWK }> {
-  if (FAKE_JWK) {
-    return FAKE_JWK;
+  if (!FAKE_JWK_PROMISE) {
+    FAKE_JWK_PROMISE = (async () => {
+      const { publicKey, privateKey } = await generateKeyPair('RS256', { modulusLength: 2048, extractable: true });
+      return {
+        publicKKey: await exportJWK(publicKey),
+        privateKKey: await exportJWK(privateKey),
+      };
+    })();
   }
-  const { publicKey, privateKey } = await generateKeyPair('RS256', { modulusLength: 2048 , extractable: true});
-  const publicKKeytmp = await exportJWK(publicKey);
-  const privateKKeytmp = await exportJWK(privateKey);
-  FAKE_JWK = {
-    publicKKey: publicKKeytmp,
-    privateKKey: privateKKeytmp,
-  };
-  return FAKE_JWK;
+  return FAKE_JWK_PROMISE;
 }
 
 async function getSigningKeyJwk() {
