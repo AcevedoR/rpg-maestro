@@ -28,13 +28,13 @@ export function Onboarding() {
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
-        <h1 style={{ margin: 0 }}>Welcome to RPG-MAESTRO!</h1>
-        <h4>A web app to broadcast music to your players during your TTRPG sessions</h4>
+        <h1 style={{ margin: 0 }}>Your soundboard is one sign-in away</h1>
+        <h4>Sign in, and we'll create your session — with the one link your players open</h4>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <p>This app is currently in Beta and free to use.</p>
-        <p>You just need to authenticate with a Google account (@gmail) for now.</p>
-        <p>There is no ads, no tracking and no data collection.</p>
+        <p>The free tier needs no card — just a Google account (@gmail) to sign in.</p>
+        <p>Your players never need accounts: they just open your link.</p>
+        <p>No ads, no tracking, no data collection.</p>
       </div>
       <div>
         <GoogleButton onClick={goToLogin}>Sign in with your Google account</GoogleButton>
