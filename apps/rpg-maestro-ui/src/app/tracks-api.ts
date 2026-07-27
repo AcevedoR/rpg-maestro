@@ -1,6 +1,6 @@
 import { displayError } from './error-utils';
 import { PlayingTrack, SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
-import { AbortedRequestError } from './maestro-ui/maestro-api';
+import { AbortedRequestError, SessionNotFoundError } from './maestro-ui/maestro-api';
 
 const rpgmaestroapiurl = import.meta.env.VITE_RPG_MAESTRO_API_URL;
 console.info('using api: ' + rpgmaestroapiurl);
@@ -26,7 +26,7 @@ let ongoingRequest: OngoingRequest | null = null;
 export const getSessionPlayingTracks = async (
   sessionId: string,
   options?: { manuallyRequested?: boolean }
-): Promise<SessionPlayingTracks | AbortedRequestError> => {
+): Promise<SessionPlayingTracks | AbortedRequestError | SessionNotFoundError> => {
   // Abort previous request if any
   if (ongoingRequest) {
     if (options?.manuallyRequested) {
@@ -54,6 +54,12 @@ export const getSessionPlayingTracks = async (
         currentTrack: res.currentTrack ? deserializePlayingTrack(res.currentTrack) : null,
         shortEffectTrack: res.shortEffectTrack ? deserializePlayingTrack(res.shortEffectTrack) : null,
       };
+    } else if (response.status === 404) {
+      // Expected outcome for a mistyped or stale session link, not a transport failure: report it as
+      // a distinct result so the caller can stop polling, and skip the error toast that would
+      // otherwise fire on every sync tick.
+      ongoingRequest = null;
+      return 'SessionNotFoundError';
     } else {
       console.error(response.status, response.statusText);
       console.error(response);

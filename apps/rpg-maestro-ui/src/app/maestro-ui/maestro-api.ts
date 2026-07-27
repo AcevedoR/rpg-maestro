@@ -139,6 +139,12 @@ export const deleteTrackCollection = async (id: string): Promise<void> => {
 };
 
 export type AbortedRequestError = 'AbortedRequestError';
+
+/**
+ * The session does not exist. Unlike a fetch failure this is terminal: polling for it again will
+ * never succeed, so callers must stop their sync loop instead of retrying.
+ */
+export type SessionNotFoundError = 'SessionNotFoundError';
 interface OngoingSetTrackToPlayRequest {
   abortController: AbortController;
   startTimeMs: number;

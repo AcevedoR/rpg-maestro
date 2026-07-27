@@ -85,6 +85,46 @@ test('the Players UI shows a Discord help link in error toasts when the API fail
   });
 });
 
+test('the Players UI stops polling and explains itself when the session does not exist', async ({ page }) => {
+  const playingTracksUrl = '**/sessions/*/playing-tracks';
+  let requestCount = 0;
+
+  await test.step('make the session API report the session as missing, before the page loads', async () => {
+    await page.route(playingTracksUrl, (route) => {
+      requestCount++;
+      return route.fulfill({ status: 404, body: JSON.stringify({ message: 'Session not found' }) });
+    });
+  });
+
+  await test.step('navigate to a player page for a session that does not exist', async () => {
+    await page.goto('/session-that-does-not-exist');
+    await expect(page.locator('h1')).toContainText('RPG-Maestro player UI');
+  });
+
+  await test.step('the page explains that the session does not exist', async () => {
+    await expect(page.getByRole('alert')).toContainText(
+      "Session 'session-that-does-not-exist' does not exist. Double-check the link your Maestro shared with you."
+    );
+  });
+
+  await test.step('a missing session is not reported as a fetch failure', async () => {
+    await expect(page.getByRole('alert')).not.toContainText(/fetch current\/tracks error/i);
+  });
+
+  await test.step('the 1s sync loop is stopped, so no further request is made', async () => {
+    // Asserting the *absence* of a request needs a bounded wait: waitForRequest rejects on timeout,
+    // which is the assertion. 3s spans three would-be sync ticks (SYNC_TRACK_INTERVAL_MS = 1000).
+    const countAfterFirstFailure = requestCount;
+    const polledAgain = await page
+      .waitForRequest(playingTracksUrl, { timeout: 3000 })
+      .then(() => true)
+      .catch(() => false);
+
+    expect(polledAgain).toBe(false);
+    expect(requestCount).toBe(countAfterFirstFailure);
+  });
+});
+
 test('the Players UI updates the displayed track name when the Maestro changes the track', async ({ page }) => {
   let user: UserWithGeneratedSession;
   let firstTrackName: string;

@@ -1,6 +1,6 @@
 import { getSessionPlayingTracks } from '../tracks-api';
 import { PlayingTrack, SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
-import { AbortedRequestError } from '../maestro-ui/maestro-api';
+import { AbortedRequestError, SessionNotFoundError } from '../maestro-ui/maestro-api';
 
 export interface SyncResult {
   currentTrack: PlayingTrack | null;
@@ -19,9 +19,9 @@ export const resyncIfNeeded = async (
   currentTrackPlayTime: number | null,
   currentTrack: PlayingTrack | null,
   localShortEffectTrack: PlayingTrack | null,
-): Promise<SyncResult | AbortedRequestError> => {
+): Promise<SyncResult | AbortedRequestError | SessionNotFoundError> => {
   const serverState = await getSessionPlayingTracks(sessionId);
-  if (serverState === 'AbortedRequestError') {
+  if (serverState === 'AbortedRequestError' || serverState === 'SessionNotFoundError') {
     return serverState;
   }
 
