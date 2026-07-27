@@ -6,6 +6,7 @@ import { UsersDatabase } from '../users-management/users-database';
 import { FakeJwtToken, generateFakeJwtToken, getJWKS, TestUsersFixture } from '@rpg-maestro/test-utils';
 import { JWK } from 'jose';
 import * as process from 'node:process';
+import { v4 as uuidv4 } from 'uuid';
 
 
 @Controller('test-utils')
@@ -56,7 +57,8 @@ export class TestsUtilsController {
       'a.minstrel.user.fdslfSFLIJ23U4OE2323@rpgmaestro.app',
       'MINSTREL'
     );
-    const a_new_user = await this.generateToken('a.new.user.3333S43FLIJ23U4OE2323@rpgmaestro.app');
+    // unique per call so concurrent tests onboarding "a new user" never share state
+    const a_new_user = await this.generateToken(`a.new.user.${uuidv4().slice(0, 8)}@rpgmaestro.app`);
 
     return { an_admin_user, a_maestro_user, a_maestro_B_user, a_minstrel_user, a_new_user };
   }
