@@ -5,6 +5,7 @@ import { join } from 'path';
 import { AuthenticatedMaestroController } from './AuthenticatedMaestroController';
 import { PlayersController } from './PlayersController';
 import { DatabaseModule } from './infrastructure/database.module';
+import { ClockModule } from './infrastructure/clock/clock.module';
 import { MaestroApiModule } from './maestro-api/maestro-api.module';
 import { HealthModule } from './health.module';
 import { NetworkingConfiguration } from './NetworkingConfiguration';
@@ -22,6 +23,7 @@ import { TestsUtilsModule } from './test-utils/tests-utils.module';
       serveRoot: '/public',
       serveStaticOptions: { redirect: false },
     }),
+    ClockModule,
     DatabaseModule,
     MaestroApiModule,
     TrackCollectionModule,

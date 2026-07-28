@@ -209,3 +209,51 @@ test('the Players UI updates the displayed track name when the Maestro changes t
     await expect(page.getByText(firstTrackName)).not.toBeVisible();
   });
 });
+
+test('the Players UI is kept up to date by the push stream alone, with polling blocked', async ({ page }) => {
+  let user: UserWithGeneratedSession;
+  let firstTrackName: string;
+  let secondTrackName: string;
+  let secondTrackId: string;
+  let pollCount = 0;
+
+  await test.step('prepare data: two tracks, first one playing', async () => {
+    user = await generateNewSession(userFixture.a_maestro_user);
+
+    const first = await createTrackViaApi(user, user.sessionId, {
+      url: `${RPG_MAESTRO_URL}/public/race1.ogg`,
+      name: 'first-track-push-test',
+    });
+    firstTrackName = first.name;
+
+    const second = await createTrackViaApi(user, user.sessionId, {
+      url: `${RPG_MAESTRO_URL}/public/race1.ogg`,
+      name: 'second-track-push-test',
+    });
+    secondTrackName = second.name;
+    secondTrackId = second.id;
+
+    await setTrackToPlayViaApi(user, user.sessionId, first.id);
+  });
+
+  await test.step('cut the polling endpoint, leaving only the SSE stream', async () => {
+    // The glob stops at the path segment, so the stream route (…/playing-tracks/stream) is untouched:
+    // whatever the player displays from here on can only have been pushed.
+    await page.route('**/sessions/*/playing-tracks', (route) => {
+      pollCount++;
+      return route.abort();
+    });
+  });
+
+  await test.step('the stream alone gets the player playing the current track', async () => {
+    await page.goto(`/${user.sessionId}`);
+    await expect(page.getByText(firstTrackName)).toBeVisible();
+  });
+
+  await test.step('and the stream alone carries the Maestro next track change', async () => {
+    await setTrackToPlayViaApi(user, user.sessionId, secondTrackId);
+
+    await expect(page.getByText(secondTrackName)).toBeVisible();
+    expect(pollCount).toBeGreaterThan(0);
+  });
+});

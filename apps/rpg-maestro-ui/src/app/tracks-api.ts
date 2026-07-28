@@ -10,6 +10,18 @@ interface OngoingRequest {
   startTimeMs: number;
 }
 
+/**
+ * Rebuilds the class instances JSON cannot carry: `PlayingTrack.getCurrentPlayTime()` is behaviour,
+ * and the parsed payload is only data.
+ */
+export function deserializeSessionPlayingTracks(raw: SessionPlayingTracks): SessionPlayingTracks {
+  return {
+    sessionId: raw.sessionId,
+    currentTrack: raw.currentTrack ? deserializePlayingTrack(raw.currentTrack) : null,
+    shortEffectTrack: raw.shortEffectTrack ? deserializePlayingTrack(raw.shortEffectTrack) : null,
+  };
+}
+
 function deserializePlayingTrack(track: PlayingTrack): PlayingTrack {
   return new PlayingTrack(
     track.id,
@@ -49,11 +61,7 @@ export const getSessionPlayingTracks = async (
     if (response.ok) {
       const res = (await response.json()) as SessionPlayingTracks;
       ongoingRequest = null;
-      return {
-        sessionId: res.sessionId,
-        currentTrack: res.currentTrack ? deserializePlayingTrack(res.currentTrack) : null,
-        shortEffectTrack: res.shortEffectTrack ? deserializePlayingTrack(res.shortEffectTrack) : null,
-      };
+      return deserializeSessionPlayingTracks(res);
     } else if (response.status === 404) {
       // Expected outcome for a mistyped or stale session link, not a transport failure: report it as
       // a distinct result so the caller can stop polling, and skip the error toast that would

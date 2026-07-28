@@ -18,7 +18,7 @@ currently-playing track in real time via a public player page.
 │  │  Auth0 → JWT         │    │  No auth required                │   │
 │  └──────────┬───────────┘    └─────────────────┬────────────────┘   │
 └─────────────┼───────────────────────────────────┼───────────────────┘
-              │ PUT playing-tracks                 │ GET playing-tracks (poll)
+              │ PUT playing-tracks                 │ SSE playing-tracks/stream (+ fallback poll)
               ▼                                    ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                  rpg-maestro (NestJS, port 3000)                     │
@@ -71,13 +71,14 @@ currently-playing track in real time via a public player page.
 
 ```
 AppModule
+├── ClockModule             ServerClock — the clock playback timestamps are stamped in (global)
 ├── DatabaseModule          DB provider (in-memory | firestore)
 ├── MaestroApiModule        Track CRUD, YouTube uploads, playback state
 │   ├── TrackService
 │   ├── ManageCurrentlyPlayingTracks
 │   ├── OnboardingService
 │   └── TrackCreationFromYoutubeJobsWatcher
-├── SessionsModule          Session state
+├── SessionsModule          Session state + SessionEventsService (push fanout)
 ├── UsersManagementModule   User profiles + role management
 ├── TrackCollectionModule   Pre-built collections
 ├── AuthGuardsModule        JWT + RBAC
@@ -91,8 +92,8 @@ AppModule
 | Controller | Base path | Auth |
 |-----------|-----------|------|
 | `AuthenticatedMaestroController` | `/maestro` | JWT + Roles |
-| `PlayersController` | `/` | None |
-| `HealthController` | `/health` | None |
+| `PlayersController` | `/` — incl. `/server-time` and `/sessions/:id/playing-tracks/stream` (SSE) | None |
+| `HealthController` | `/health` — status, plus `playback` diagnostics (clock reference, offset, open streams) | None |
 | `TestsUtilsController` | `/test-utils` | None (dev only) |
 
 **Environment variables:**
@@ -184,6 +185,7 @@ Core types shared between backend and frontend:
 | `Track` | Track entity (id, sessionId, url, name, duration, tags, source) |
 | `PlayingTrack` | Track with playback state (isPaused, playTimestamp, trackStartTime) |
 | `SessionPlayingTracks` | Session state (currentTrack, shortEffectTrack) |
+| `ServerTime` | `{ serverTime }` — the clock `playTimestamp` is expressed in |
 | `User` | User entity (id, role, sessions) |
 | `TrackCollection` | Curated collection with tracks |
 | `TrackCreation` / `TrackUpdate` | Request DTOs |
@@ -319,17 +321,64 @@ Browser                       Backend
 
 ---
 
-## Real-Time Playback (Polling)
+## Real-Time Playback (SSE push, with polling as a safety net)
 
-No WebSockets. Audience pages poll `/sessions/:id/playing-tracks` every N seconds.
-Maestro writes state via `PUT /maestro/sessions/:sessionId/playing-tracks`.
+The Maestro writes state via `PUT /maestro/sessions/:sessionId/playing-tracks`. Listeners get it
+pushed over server-sent events, and poll only as a fallback.
 
 **`PlayingTrack` fields enable client-side sync:**
-- `playTimestamp` — wall-clock time when playback started
-- `trackStartTime` — position in seconds where playback began
+- `playTimestamp` — time on the **server clock** when playback started
+- `trackStartTime` — position in the track where playback began
 - `isPaused` — pause state
 
-Client reconstructs current position as `(Date.now() - playTimestamp) / 1000 + trackStartTime`.
+Client reconstructs the position as `(serverNow() - playTimestamp) + trackStartTime`, modulo the
+track duration.
+
+### Push channel
+
+```
+Maestro's write                                        Listener's browser
+      │                                                        │
+      ▼                                                        │  EventSource
+ SessionsService.upsertCurrentTrack                            │  GET /sessions/:id/playing-tracks/stream
+      │ writes DB + cache                                      ▼
+      └─► SessionEventsService.publish ──► broker ──► every instance ──► @Sse handler
+                                             │                            (snapshot, then changes,
+   CACHE_REDIS_URL set  → redis pub/sub ─────┘                             plus a 20s heartbeat)
+   nothing set          → in-process (single instance only)
+```
+
+- **SSE, not WebSocket**: everything flows server→client, and a plain GET needs no sticky sessions —
+  any instance can serve any listener because the fanout is in the broker.
+- **Fanout over Redis pub/sub** (`sessions/redis-session-events.broker.ts`), one channel for all
+  sessions, filtered by session id on receipt. Track changes are rare enough that per-session channels
+  would only add a subscribe/unsubscribe dance per stream.
+- **Events are whole snapshots**, so a dropped event costs nothing once the next one lands, and the
+  client runs the same `resolveSync` for pushed and polled state.
+- **The poll stays** at `SYNC_TRACK_FALLBACK_INTERVAL_MS` (15s) while the stream is up, and at
+  `SYNC_TRACK_INTERVAL_MS` (1s) while it is down. Losing the push path degrades latency, never
+  correctness — which is also why nothing in the publish path can fail a Maestro's write.
+- **Observability.** `GET /health` reports `playback.clockOffsetMs`, `playback.clockReference` and
+  `playback.openStreams`. Skew and stream load are otherwise invisible: neither raises an error, and
+  both are only noticed by a listener saying the music is out of sync. `openStreams` is the number to
+  watch against an instance's concurrency limit, since a stream holds its connection for as long as a
+  listener stays on the page.
+
+### Time authority
+
+`playTimestamp` is meaningless unless everyone agrees on the clock it was stamped in. Two skews had to
+be removed, and they need different answers:
+
+| Skew | Answer |
+|------|--------|
+| Between instances — a change stamped by pod A, the next by pod B | **Server-authoritative clock.** `ServerClock` (`infrastructure/clock/`) corrects the local clock against a single reference: Redis' `TIME`, NTP-style, best-of-5-samples, resynced every 30s. Every pod then stamps the same instant. |
+| Between server and browser — laptop clocks are routinely seconds off | **Client-negotiated offset.** The browser measures its offset against `GET /server-time` (same estimator, resynced every 5 min) and `serverNow()` returns the corrected clock. `getCurrentPlayTime(serverNowMs)` takes it as an argument, so no caller can silently reach for `Date.now()`. |
+
+Redis is the reference because it is already the piece every instance shares, and `TIME` costs no
+write — unlike a database server timestamp. With no Redis configured (local dev, e2e, single instance)
+the offset stays 0 and the local clock is the authority, which is correct there: there is only one
+clock in play. If the reference is unreachable the last known offset is kept, so playback drifts at
+worst rather than stopping.
 
 ---
 
@@ -365,7 +414,9 @@ Client reconstructs current position as `(Date.now() - playTimestamp) / 1000 + t
 | Pluggable DB (in-memory / Firestore) | Fast local dev without cloud deps |
 | Separate audio-file-uploader service | Isolates FFmpeg/ytdl complexity + heavy file I/O |
 | Shared API contracts in libs | Single source of truth, compile-time type safety |
-| Polling for real-time sync | Simpler than WebSockets; acceptable latency for RPG use case |
+| SSE push + slow fallback poll | Polling alone scales with the number of listeners; SSE needs no sticky sessions, and the poll left underneath means a cut stream costs latency, not correctness |
+| Redis `TIME` as the playback clock | Instance clocks drift apart, and that drift is audible. Redis is already shared by every instance and needs no write to be read, unlike a DB server timestamp |
+| Clients negotiate their own clock offset | Even one instance cannot fix a listener's own clock being seconds off, and that error lands straight on the playhead |
 | Fake IDP for dev | No Auth0 tenant required for local dev |
 | MUI dark theme | Fits the RPG atmosphere; consistent component library |
 | Role enum (MAESTRO/MINSTREL/ADMIN) | Granular access control without OAuth scopes |

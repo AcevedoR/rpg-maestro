@@ -20,11 +20,18 @@ describe('testing healthcheck respond ok and 200', () => {
   });
 
   it(`GET: /health`, () => {
+    const playback = {
+      status: 'up',
+      // no shared redis in tests, so the local clock is the authority and there is nothing to correct
+      clockReference: 'local',
+      clockOffsetMs: 0,
+      openStreams: 0,
+    };
     return request(app.getHttpServer()).get('/health').expect(200).expect({
       status: 'ok',
-      info: {},
+      info: { playback },
       error: {},
-      details: {},
+      details: { playback },
     });
   });
 

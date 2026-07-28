@@ -67,6 +67,10 @@ npx nx deploy rpg-maestro
 cache stays in-process, which is what local dev and the e2e tests use. See
 [architecture.md](architecture.md) for the tier switching rules.
 
+The same Redis (primary if set, else the fallback) is also the playback time reference and the pub/sub
+fanout for the SSE push channel. With neither set, the local clock is the time authority and session
+events stay in-process — correct for a single instance, and only for a single instance.
+
 ## Adding a New Feature — Checklist
 
 1. **Backend module** — create under `apps/rpg-maestro/src/app/<module>/`

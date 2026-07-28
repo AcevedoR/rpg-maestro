@@ -5,14 +5,17 @@ import {
   SessionPlayingTracks,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { SessionsService } from '../sessions/sessions.service';
+import { ServerClock } from '../infrastructure/clock/server-clock';
 
 export class ManageCurrentlyPlayingTracks {
   database: TracksDatabase;
   sessionsService: SessionsService;
+  serverClock: ServerClock;
 
-  constructor(database: TracksDatabase, sessionsService: SessionsService) {
+  constructor(database: TracksDatabase, sessionsService: SessionsService, serverClock: ServerClock) {
     this.database = database;
     this.sessionsService = sessionsService;
+    this.serverClock = serverClock;
   }
 
   async changeSessionPlayingTracks(
@@ -34,7 +37,7 @@ export class ManageCurrentlyPlayingTracks {
         track.url,
         track.duration,
         false,
-        Date.now(),
+        this.serverClock.now(),
         0
       );
       return this.sessionsService.upsertShortEffectTrack(sessionId, playingTrack);
@@ -51,7 +54,7 @@ export class ManageCurrentlyPlayingTracks {
       track.url,
       track.duration,
       changeSessionPlayingTracksRequest.currentTrack.paused ?? false,
-      Date.now(),
+      this.serverClock.now(),
       changeSessionPlayingTracksRequest.currentTrack.startTime ?? 0
     );
     return this.sessionsService.upsertCurrentTrack(sessionId, playingTrack);

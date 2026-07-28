@@ -6,6 +6,8 @@ import { resyncIfNeeded } from '../../track-sync/track-sync';
 import { displayError } from '../../error-utils';
 import './maestro-audio-player.css';
 import { AbortedRequestError } from '../maestro-api';
+import { serverNow, startServerTimeSync } from '../../utils/server-time';
+import { startPlayback } from '../../utils/start-playback';
 
 export interface MaestroAudioPlayerRef {
   dispatchTrackWasManuallyChanged: (newTracks: SessionPlayingTracks) => void;
@@ -57,7 +59,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
                 audioPlayer.current.audio.current.src = trackFromServer.url;
               }
               audioPlayer.current.audio.current.title = trackFromServer.name;
-              const currentPlayTime = trackFromServer.getCurrentPlayTime();
+              const currentPlayTime = trackFromServer.getCurrentPlayTime(serverNow());
               if (currentPlayTime) {
                 audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
               }
@@ -66,18 +68,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
                 audioPlayer.current.audio.current.pause();
               } else {
                 // playing
-                try {
-                  await audioPlayer.current.audio.current.play();
-                } catch (error) {
-                  if (error instanceof DOMException && error.name === 'NotAllowedError') {
-                    console.error(
-                      `Play failed: User interaction with the document is required first. Original error: ${error}`
-                    );
-                    displayError('This is your first time using the app, please accept autoplay by hitting play :)');
-                  } else {
-                    console.error('An unexpected error occurred:', error);
-                  }
-                }
+                await startPlayback(audioPlayer.current.audio.current);
               }
             } else {
               console.warn('audio player not available yet');
@@ -122,6 +113,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
         audioPlayer.current?.audio?.current?.currentTime ?? null,
         currentTrack,
         null,
+        serverNow()
       ).then((syncResult) => {
         if (syncResult === 'SessionNotFoundError') {
           // Not terminal for a Maestro: upsertCurrentTrack creates the session, so playing a track
@@ -141,6 +133,10 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
     const request = requestFunc();
     await request;
   }, [currentTrackEditRequested, sessionId, currentTrack, resyncCurrentTrackOnUi]);
+
+  // Playback positions are timestamps on the server's clock, so this browser's own clock is not a
+  // usable reference for them, see utils/server-time.ts.
+  useEffect(() => startServerTimeSync(), []);
 
   useEffect(() => {
     periodicallySyncCurrentTrack();
@@ -167,7 +163,7 @@ export const MaestroAudioPlayer = forwardRef((props: MaestroAudioPlayerProps, re
       if (currentTrack.isPaused !== newPausedStatus) {
         // trying to handle load edge cases
         console.info(`changePlayingStatus newPausedStatus: ${newPausedStatus}`);
-        const stoppedTime = currentTrack.getCurrentPlayTime();
+        const stoppedTime = currentTrack.getCurrentPlayTime(serverNow());
         currentTrack.trackStartTime = stoppedTime;
         currentTrack.isPaused = newPausedStatus;
         await requestCurrentTrackEdit({

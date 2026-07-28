@@ -38,6 +38,7 @@ import { Roles } from './auth/roles.decorator';
 import { Role } from './auth/role.enum';
 import { SessionsService } from './sessions/sessions.service';
 import { TrackCollectionService } from './track-collection/track-collection.service';
+import { ServerClock } from './infrastructure/clock/server-clock';
 
 @ApiCookieAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -51,11 +52,13 @@ export class AuthenticatedMaestroController {
     @Inject(TrackService) private trackService: TrackService,
     @Inject(OnboardingService) private onboardingService: OnboardingService,
     @Inject(UsersService) private userService: UsersService,
-    @Inject(TrackCollectionService) private trackCollectionService: TrackCollectionService
+    @Inject(TrackCollectionService) private trackCollectionService: TrackCollectionService,
+    @Inject(ServerClock) serverClock: ServerClock
   ) {
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(
       databaseWrapper.getTracksDB(),
-      sessionsService
+      sessionsService,
+      serverClock
     );
   }
 

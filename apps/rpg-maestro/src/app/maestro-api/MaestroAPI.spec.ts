@@ -11,6 +11,9 @@ import {
   TrackCreationFromYoutubeJobsWatcher
 } from '../track-creation-from-youtube-jobs-watcher/track-creation-from-youtube-jobs-watcher.service';
 import { SessionsService } from '../sessions/sessions.service';
+import { SessionEventsService } from '../sessions/session-events.service';
+import { InProcessSessionEventsBroker } from '../sessions/session-events.broker';
+import { ServerClock } from '../infrastructure/clock/server-clock';
 
 let createTrack: TrackService;
 let manageCurrentlyPlayingTracks: ManageCurrentlyPlayingTracks;
@@ -25,14 +28,14 @@ const CURRENT_DATE = Date.now();
 beforeAll(() => {
   const databases = new DatabaseWrapperConfiguration('in-memory');
   database = databases.getTracksDB();
-  const sessionsService = new SessionsService(databases);
+  const sessionsService = new SessionsService(databases, new SessionEventsService(new InProcessSessionEventsBroker()));
   createTrack = new TrackService(
     databases,
     new InMemoryTrackCreationFromYoutubeJobsStore(),
     null as TrackCreationFromYoutubeJobsWatcher,
     null as AudioFileUploaderClient
   );
-  manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(database, sessionsService);
+  manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(database, sessionsService, new ServerClock(null));
 
 
   app.use('/public', express.static(path.join(__dirname, '../../assets')));

@@ -13,28 +13,48 @@ export interface SyncResult {
  * @param currentTrackPlayTime the requested play time of the track
  * @param currentTrack the current track in the browser
  * @param localShortEffectTrack the current short effect track in the browser
+ * @param serverNowMs the current time on the server clock, see `utils/server-time.ts`
  */
 export const resyncIfNeeded = async (
   sessionId: string,
   currentTrackPlayTime: number | null,
   currentTrack: PlayingTrack | null,
   localShortEffectTrack: PlayingTrack | null,
+  serverNowMs: number
 ): Promise<SyncResult | AbortedRequestError | SessionNotFoundError> => {
   const serverState = await getSessionPlayingTracks(sessionId);
   if (serverState === 'AbortedRequestError' || serverState === 'SessionNotFoundError') {
     return serverState;
   }
 
-  const newCurrentTrack = resolveCurrentTrackSync(currentTrackPlayTime, currentTrack, serverState);
-  const newShortEffect = resolveShortEffectSync(localShortEffectTrack, serverState.shortEffectTrack);
-
-  return { currentTrack: newCurrentTrack, shortEffectTrack: newShortEffect };
+  return resolveSync(serverState, currentTrackPlayTime, currentTrack, localShortEffectTrack, serverNowMs);
 };
+
+/**
+ * What the browser has to change to match the server, given a state it already holds.
+ *
+ * Split out of the fetch above because that state now arrives two ways — pushed over the stream, or
+ * pulled by the fallback poll — and both have to decide identically. A pushed event taking a different
+ * path here would show up as playback that is right or wrong depending on how it was delivered.
+ */
+export function resolveSync(
+  serverState: SessionPlayingTracks,
+  currentTrackPlayTime: number | null,
+  currentTrack: PlayingTrack | null,
+  localShortEffectTrack: PlayingTrack | null,
+  serverNowMs: number
+): SyncResult {
+  return {
+    currentTrack: resolveCurrentTrackSync(currentTrackPlayTime, currentTrack, serverState, serverNowMs),
+    shortEffectTrack: resolveShortEffectSync(localShortEffectTrack, serverState.shortEffectTrack),
+  };
+}
 
 function resolveCurrentTrackSync(
   currentTrackPlayTime: number | null,
   currentTrack: PlayingTrack | null,
   serverState: SessionPlayingTracks,
+  serverNowMs: number
 ): PlayingTrack | null {
   const serverTrack = serverState.currentTrack;
   if (!serverTrack) {
@@ -45,7 +65,7 @@ function resolveCurrentTrackSync(
     currentTrackPlayTime === undefined ||
     !currentTrack ||
     isCurrentTrackOutOfDate(currentTrack, serverTrack) ||
-    isCurrentTrackTooMuchDesynchronizedFromServer(currentTrackPlayTime * 1000, serverTrack)
+    isCurrentTrackTooMuchDesynchronizedFromServer(currentTrackPlayTime * 1000, serverTrack, serverNowMs)
   ) {
     return serverTrack;
   }
@@ -54,7 +74,7 @@ function resolveCurrentTrackSync(
 
 function resolveShortEffectSync(
   localEffectTrack: PlayingTrack | null,
-  serverEffectTrack: PlayingTrack | null,
+  serverEffectTrack: PlayingTrack | null
 ): PlayingTrack | null {
   if (!serverEffectTrack) {
     return null;
@@ -67,9 +87,10 @@ function resolveShortEffectSync(
 
 export const isCurrentTrackTooMuchDesynchronizedFromServer = (
   currentTrackPlayTime: number,
-  serverTrack: PlayingTrack
+  serverTrack: PlayingTrack,
+  serverNowMs: number
 ): boolean => {
-  const serverPlayTime = serverTrack.getCurrentPlayTime();
+  const serverPlayTime = serverTrack.getCurrentPlayTime(serverNowMs);
   if (!serverPlayTime && serverPlayTime !== 0) {
     return false;
   }
