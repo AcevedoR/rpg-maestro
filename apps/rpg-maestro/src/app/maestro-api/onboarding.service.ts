@@ -15,6 +15,7 @@ import { TrackCollectionService } from '../track-collection/track-collection.ser
 import { ManageCurrentlyPlayingTracks } from './ManageCurrentlyPlayingTracks';
 import { UsersService } from '../users-management/users.service';
 import { SessionsService } from '../sessions/sessions.service';
+import { ServerClock } from '../infrastructure/clock/server-clock';
 
 @Injectable()
 export class OnboardingService {
@@ -25,11 +26,13 @@ export class OnboardingService {
     @Inject(SessionsService) private sessionsService: SessionsService,
     @Inject(TrackService) private trackService: TrackService,
     @Inject(TrackCollectionService) private trackCollectionService: TrackCollectionService,
-    @Inject(UsersService) private usersService: UsersService
+    @Inject(UsersService) private usersService: UsersService,
+    @Inject(ServerClock) serverClock: ServerClock
   ) {
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(
       databaseWrapper.getTracksDB(),
-      sessionsService
+      sessionsService,
+      serverClock
     );
   }
 

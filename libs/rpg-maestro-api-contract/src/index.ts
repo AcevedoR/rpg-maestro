@@ -7,6 +7,7 @@ export * from './lib/TracksFromDirectoryCreation';
 export * from './lib/TrackToPlay';
 export * from './lib/Tag';
 export * from './lib/SessionPlayingTracks';
+export * from './lib/ServerTime';
 export * from './lib/ChangeSessionPlayingTracksRequest';
 export * from './lib/upload-track-from-youtube/UploadAndCreateTracksFromYoutubeRequest';
 export * from './lib/upload-track-from-youtube/UploadAndCreateTracksFromYoutubeResponse';

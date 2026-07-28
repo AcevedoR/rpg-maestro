@@ -10,6 +10,9 @@ import { AudioFileUploaderClient } from '../track-creation-from-youtube-jobs-wat
 import { TrackCollectionService } from '../track-collection/track-collection.service';
 import { UsersService } from '../users-management/users.service';
 import { SessionsService } from '../sessions/sessions.service';
+import { SessionEventsService } from '../sessions/session-events.service';
+import { InProcessSessionEventsBroker } from '../sessions/session-events.broker';
+import { ServerClock } from '../infrastructure/clock/server-clock';
 
 let onboardingService: OnboardingService;
 let databases: DatabaseWrapperConfiguration;
@@ -26,7 +29,7 @@ beforeAll(async () => {
 });
 beforeEach(() => {
   databases = new DatabaseWrapperConfiguration('in-memory');
-  const sessionsService = new SessionsService(databases);
+  const sessionsService = new SessionsService(databases, new SessionEventsService(new InProcessSessionEventsBroker()));
   onboardingService = new OnboardingService(
     databases,
     sessionsService,
@@ -37,7 +40,8 @@ beforeEach(() => {
       null as AudioFileUploaderClient
     ),
     new TrackCollectionService(databases, sessionsService),
-    new UsersService(databases)
+    new UsersService(databases),
+    new ServerClock(null)
   );
 });
 
