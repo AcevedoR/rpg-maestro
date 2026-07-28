@@ -3,13 +3,17 @@ import { DatabaseWrapperConfiguration } from '../DatabaseWrapperConfiguration';
 import { PlayingTrack, SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
 import { TracksDatabase } from '../maestro-api/TracksDatabase';
 import { SessionsCache } from './sessions.cache';
+import { SessionEventsService } from './session-events.service';
 
 @Injectable()
 export class SessionsService {
   private tracksDatabase: TracksDatabase;
   private cache = new SessionsCache();
 
-  constructor(@Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration) {
+  constructor(
+    @Inject(DatabaseWrapperConfiguration) databaseWrapper: DatabaseWrapperConfiguration,
+    @Inject(SessionEventsService) private readonly sessionEvents: SessionEventsService
+  ) {
     this.tracksDatabase = databaseWrapper.getTracksDB();
   }
 
@@ -43,12 +47,15 @@ export class SessionsService {
   async upsertCurrentTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
     const updatedSession = await this.tracksDatabase.upsertCurrentTrack(sessionId, playingTrack);
     await this.cache.set(updatedSession);
+    // After the cache, so that a listener woken up by the event reads the new state and not the old one.
+    await this.sessionEvents.publish(updatedSession);
     return updatedSession;
   }
 
   async upsertShortEffectTrack(sessionId: string, playingTrack: PlayingTrack): Promise<SessionPlayingTracks> {
     const updatedSession = await this.tracksDatabase.upsertShortEffectTrack(sessionId, playingTrack);
     await this.cache.set(updatedSession);
+    await this.sessionEvents.publish(updatedSession);
     return updatedSession;
   }
 
