@@ -24,6 +24,14 @@ export const FAILURE_THRESHOLD = 3;
 /** How long a tier stays out of rotation before the next operation probes it again. */
 export const PROBE_INTERVAL_MS = ms('30s');
 
+/**
+ * Longest a single tier operation may take before it counts as a failure. This is a cache: a hit
+ * slower than the database is worthless. It also guards against a backend that neither answers nor
+ * fails — node-redis queues commands while its connection is down, so an unreachable Redis leaves
+ * every operation pending forever instead of rejecting.
+ */
+export const TIER_OPERATION_TIMEOUT_MS = ms('300ms');
+
 interface TierState {
   consecutiveFailures: number;
   /** Epoch ms before which the tier must not be called. `null` means the tier is healthy. */
@@ -61,7 +69,7 @@ export class ResilientCache<T> {
       return undefined;
     }
     try {
-      const value = await tier.store.get(key);
+      const value = await this.withTimeout(tier, () => tier.store.get(key));
       this.stateOf(tier).consecutiveFailures = 0;
       return value;
     } catch (error) {
@@ -109,7 +117,7 @@ export class ResilientCache<T> {
       // `clear` doubles as the connectivity probe and as the wipe of data that went stale while the
       // tier was missing invalidations.
       try {
-        await tier.store.clear();
+        await this.withTimeout(tier, () => tier.store.clear());
         this.logger.log(`cache tier "${tier.name}" recovered, its namespace was cleared`);
         state.consecutiveFailures = 0;
         state.unhealthyUntil = null;
@@ -123,10 +131,32 @@ export class ResilientCache<T> {
 
   private async run(tier: CacheTier<T>, operation: () => Promise<unknown>): Promise<void> {
     try {
-      await operation();
+      await this.withTimeout(tier, operation);
       this.stateOf(tier).consecutiveFailures = 0;
     } catch (error) {
       this.recordFailure(tier, error);
+    }
+  }
+
+  /**
+   * Rejects if `operation` has not settled within {@link TIER_OPERATION_TIMEOUT_MS}, so a backend
+   * that hangs is recorded as failing and ends up out of rotation like one that rejects. The
+   * abandoned operation keeps running, but the race already handles its outcome either way.
+   */
+  private async withTimeout<R>(tier: CacheTier<T>, operation: () => Promise<R>): Promise<R> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        operation(),
+        new Promise<never>((_resolve, reject) => {
+          timer = setTimeout(
+            () => reject(new Error(`cache tier "${tier.name}" did not answer within ${TIER_OPERATION_TIMEOUT_MS}ms`)),
+            TIER_OPERATION_TIMEOUT_MS
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
     }
   }
 

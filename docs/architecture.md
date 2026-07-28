@@ -270,6 +270,12 @@ the database absorbs the traffic until a tier comes back.
 `PROBE_INTERVAL_MS`; after that the next operation probes it. Without this, an outage that lasts
 hours would cost a connection timeout on every single request.
 
+**Every tier operation is bounded by `TIER_OPERATION_TIMEOUT_MS`, and a timeout counts as a
+failure.** This is what makes the degradation above real: an unreachable Redis does not reject, it
+*queues* commands in node-redis until the connection is back, so without a deadline nothing ever
+fails, no tier is ever taken out of rotation, and callers wait instead of reaching the database. The
+deadline is short on purpose — a cache hit slower than Firestore is worthless.
+
 **Two rules keep a dormant tier from waking up with stale data**, given that writes only ever reach
 the active tier:
 

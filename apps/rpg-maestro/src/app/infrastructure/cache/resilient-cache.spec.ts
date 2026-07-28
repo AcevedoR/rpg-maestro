@@ -1,38 +1,54 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CacheStore, CacheTier, FAILURE_THRESHOLD, PROBE_INTERVAL_MS, ResilientCache } from './resilient-cache';
+import {
+  CacheStore,
+  CacheTier,
+  FAILURE_THRESHOLD,
+  PROBE_INTERVAL_MS,
+  ResilientCache,
+  TIER_OPERATION_TIMEOUT_MS,
+} from './resilient-cache';
 
 class FakeStore implements CacheStore<string> {
   readonly entries = new Map<string, string>();
   /** When true every operation rejects, as a real backend would while it is unreachable. */
   down = false;
+  /**
+   * When true no operation ever settles, the way node-redis queues commands while its connection is
+   * down. This, not `down`, is how an unreachable Redis actually behaves.
+   */
+  hangs = false;
   readonly calls: string[] = [];
 
   async get(key: string): Promise<string | undefined> {
-    this.record('get');
+    await this.record('get');
     return this.entries.get(key);
   }
 
   async set(key: string, value: string): Promise<unknown> {
-    this.record('set');
+    await this.record('set');
     return this.entries.set(key, value);
   }
 
   async delete(key: string): Promise<unknown> {
-    this.record('delete');
+    await this.record('delete');
     return this.entries.delete(key);
   }
 
   async clear(): Promise<unknown> {
-    this.record('clear');
+    await this.record('clear');
     this.entries.clear();
     return undefined;
   }
 
-  private record(operation: string): void {
+  private record(operation: string): Promise<void> {
     this.calls.push(operation);
     if (this.down) {
       throw new Error(`backend is down, cannot ${operation}`);
     }
+    if (this.hangs) {
+      return new Promise<void>(() => undefined);
+    }
+    return Promise.resolve();
   }
 }
 
@@ -40,6 +56,12 @@ describe('ResilientCache', () => {
   let primary: FakeStore;
   let fallback: FakeStore;
   let cache: ResilientCache<string>;
+
+  /** Lets the operation timeout fire, which is the only thing a hanging tier ever waits for. */
+  const pastTheTimeout = async <R>(pending: Promise<R>): Promise<R> => {
+    await vi.advanceTimersByTimeAsync(TIER_OPERATION_TIMEOUT_MS);
+    return pending;
+  };
 
   const knockOutPrimary = async (): Promise<void> => {
     primary.down = true;
@@ -171,6 +193,69 @@ describe('ResilientCache', () => {
 
     expect(primary.entries.has('session-1')).toBe(false);
     expect(fallback.entries.has('session-1')).toBe(false);
+  });
+
+  describe('when a tier hangs instead of failing', () => {
+    const hangPrimary = async (): Promise<void> => {
+      primary.hangs = true;
+      for (let i = 0; i < FAILURE_THRESHOLD; i++) {
+        await pastTheTimeout(cache.get('any-key'));
+      }
+    };
+
+    it('answers a read with a miss instead of waiting for the tier', async () => {
+      primary.hangs = true;
+
+      await expect(pastTheTimeout(cache.get('session-1'))).resolves.toBeUndefined();
+    });
+
+    it('lets a write through instead of waiting for the tier', async () => {
+      primary.hangs = true;
+
+      await expect(pastTheTimeout(cache.set('session-1', 'tavern'))).resolves.toBeUndefined();
+    });
+
+    it('takes the tier out of rotation, so the fallback serves the next calls', async () => {
+      await hangPrimary();
+
+      await cache.set('session-1', 'tavern');
+
+      expect(fallback.entries.get('session-1')).toBe('tavern');
+      await expect(cache.get('session-1')).resolves.toBe('tavern');
+    });
+
+    it('stops calling the hanging tier once it is out of rotation', async () => {
+      await hangPrimary();
+      const callsWhenKnockedOut = primary.calls.length;
+
+      await cache.get('session-1');
+      await cache.set('session-1', 'tavern');
+
+      expect(primary.calls.length).toBe(callsWhenKnockedOut);
+    });
+
+    it('keeps the tier out of rotation when its recovery probe hangs', async () => {
+      await hangPrimary();
+
+      vi.advanceTimersByTime(PROBE_INTERVAL_MS);
+      await pastTheTimeout(cache.set('session-1', 'tavern'));
+
+      expect(fallback.entries.get('session-1')).toBe('tavern');
+      expect(primary.entries.size).toBe(0);
+    });
+
+    it('degrades to no cache at all when every tier hangs', async () => {
+      await hangPrimary();
+      fallback.hangs = true;
+      for (let i = 0; i < FAILURE_THRESHOLD; i++) {
+        await pastTheTimeout(cache.get('any-key'));
+      }
+      const callsWhenAllDown = primary.calls.length + fallback.calls.length;
+
+      await expect(cache.set('session-1', 'tavern')).resolves.toBeUndefined();
+      await expect(cache.get('session-1')).resolves.toBeUndefined();
+      expect(primary.calls.length + fallback.calls.length).toBe(callsWhenAllDown);
+    });
   });
 
   it('behaves like a plain cache when a single tier is configured', async () => {
