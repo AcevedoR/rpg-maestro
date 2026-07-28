@@ -1,10 +1,14 @@
 import AudioPlayer from 'react-h5-audio-player';
 import H5AudioPlayer from 'react-h5-audio-player';
 import { ToastContainer } from 'react-toastify';
-import React, { LegacyRef, useEffect, useRef, useState } from 'react';
-import { resyncIfNeeded } from '../track-sync/track-sync';
+import React, { LegacyRef, useCallback, useEffect, useRef, useState } from 'react';
+import { resolveSync } from '../track-sync/track-sync';
+import { subscribeToSessionPlayingTracks } from '../track-sync/session-stream';
 import { displayError } from '../error-utils';
-import { PlayingTrack } from '@rpg-maestro/rpg-maestro-api-contract';
+import { PlayingTrack, SessionPlayingTracks } from '@rpg-maestro/rpg-maestro-api-contract';
+import { getSessionPlayingTracks } from '../tracks-api';
+import { serverNow, startServerTimeSync } from '../utils/server-time';
+import { startPlayback } from '../utils/start-playback';
 import GithubSourceCodeLink from '../ui-components/github-source-code-link/github-source-code-link';
 import './audio-player-readonly.css';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
@@ -13,7 +17,16 @@ import SpatialAudioOffIcon from '@mui/icons-material/SpatialAudioOff';
 import { useParams } from 'react-router';
 import { Typography } from '@mui/material';
 
+/** How often the session is polled while the push stream is down. */
 export const SYNC_TRACK_INTERVAL_MS = 1000;
+
+/**
+ * How often the session is polled while the push stream *is* up. The stream carries every change, so
+ * this is only there to close the gap the stream cannot: an event dropped by a proxy, or a fanout that
+ * did not reach this instance. Rare enough that a slow poll is the right price — which is the whole
+ * point of the stream, since a room of listeners polling every second scales with the room.
+ */
+export const SYNC_TRACK_FALLBACK_INTERVAL_MS = 15000;
 
 /**
  * How many consecutive 404s before we tell the player the session does not exist and stop polling.
@@ -25,13 +38,18 @@ export const CONSECUTIVE_NOT_FOUND_BEFORE_GIVING_UP = 3;
 
 export function PlayersUi() {
   const [currentTrack, setCurrentTrack] = useState<PlayingTrack | null>(null);
-  const [shortEffectTrack, setShortEffectTrack] = useState<PlayingTrack | null>(null);
   const [sessionNotFound, setSessionNotFound] = useState(false);
+  const [streamConnected, setStreamConnected] = useState(false);
   const consecutiveNotFound = useRef(0);
   const audioPlayer = useRef<H5AudioPlayer>();
   const effectAudioRef = useRef<HTMLAudioElement>(null);
   const sessionId = useParams().sessionId ?? '';
   const latestSessionId = useRef(sessionId);
+  // What is playing here right now, as a ref and not just as state: the stream's handler is registered
+  // once per session and would otherwise keep comparing against whatever was playing when it was
+  // registered.
+  const localCurrentTrack = useRef<PlayingTrack | null>(null);
+  const localShortEffectTrack = useRef<PlayingTrack | null>(null);
   if (sessionId === '') {
     displayError('no session found in URL (it should be https://{URL}/session/{sessionId})');
   }
@@ -43,6 +61,78 @@ export function PlayersUi() {
     consecutiveNotFound.current = 0;
   }, [sessionId]);
 
+  // Playback positions are timestamps on the server's clock, so this browser's own clock is not a
+  // usable reference for them, see utils/server-time.ts.
+  useEffect(() => startServerTimeSync(), []);
+
+  /**
+   * Brings the audio in line with a state the server reported — whether it was pushed over the stream
+   * or fetched by the fallback poll below. Both go through here so that a change sounds the same
+   * whichever way it arrived.
+   */
+  const applyServerState = useCallback(async (serverState: SessionPlayingTracks) => {
+    const syncResult = resolveSync(
+      serverState,
+      audioPlayer.current?.audio?.current?.currentTime ?? null,
+      localCurrentTrack.current,
+      localShortEffectTrack.current,
+      serverNow()
+    );
+
+    // Handle current track sync
+    const newerServerTrack = syncResult.currentTrack;
+    if (newerServerTrack) {
+      console.info('synchronizing track');
+      localCurrentTrack.current = newerServerTrack;
+      setCurrentTrack(newerServerTrack);
+      if (audioPlayer.current?.audio?.current) {
+        if (audioPlayer.current.audio.current.src !== newerServerTrack.url) {
+          audioPlayer.current.audio.current.src = newerServerTrack.url;
+        }
+        audioPlayer.current.audio.current.title = newerServerTrack.name;
+        const currentPlayTime = newerServerTrack.getCurrentPlayTime(serverNow());
+        audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
+        if (newerServerTrack.isPaused) {
+          audioPlayer.current.audio.current.pause();
+        } else {
+          await startPlayback(audioPlayer.current.audio.current);
+        }
+      } else {
+        console.warn('audio player not available yet');
+      }
+    }
+
+    // Handle short effect track
+    const newEffect = syncResult.shortEffectTrack;
+    if (newEffect && effectAudioRef.current) {
+      console.info('playing short effect track:', newEffect.name);
+      localShortEffectTrack.current = newEffect;
+      effectAudioRef.current.src = newEffect.url;
+      effectAudioRef.current.currentTime = 0;
+      try {
+        await effectAudioRef.current.play();
+      } catch (error) {
+        console.error('Failed to play short effect track:', error);
+      }
+    }
+  }, []);
+
+  // The push channel: one connection per listener, fed by the Maestro's writes wherever they landed.
+  useEffect(() => {
+    // A session that does not exist has nothing to push, and its stream would only 404 in a loop.
+    if (sessionNotFound) {
+      return;
+    }
+    return subscribeToSessionPlayingTracks(sessionId, {
+      onTracks: (tracks) => {
+        // Pushed state cannot tell us a session is missing — that is what the poll's 404s are for — so
+        // the strike counter is left alone here.
+        applyServerState(tracks);
+      },
+      onStatusChange: (status) => setStreamConnected(status === 'connected'),
+    });
+  }, [sessionId, sessionNotFound, applyServerState]);
+
   useEffect(() => {
     // Polling a session that does not exist can never succeed, so no interval is set up at all.
     if (sessionNotFound) {
@@ -50,86 +140,35 @@ export function PlayersUi() {
     }
 
     async function resyncOnUi() {
-      // Keyed on the session the request was issued for, not on effect teardown: this effect re-runs
-      // whenever the playing track changes, and dropping a response on every re-run could starve
-      // the consecutive-404 counter below and leave a missing session undetected forever.
+      // Keyed on the session the request was issued for, not on effect teardown: dropping a response
+      // on every re-run could starve the consecutive-404 counter below and leave a missing session
+      // undetected forever.
       const requestedFor = sessionId;
-      const syncResult = await resyncIfNeeded(
-        sessionId,
-        audioPlayer.current?.audio?.current?.currentTime ?? null,
-        currentTrack,
-        shortEffectTrack,
-      );
+      const serverState = await getSessionPlayingTracks(sessionId);
       if (requestedFor !== latestSessionId.current) {
         return;
       }
-      if (syncResult === 'AbortedRequestError') {
+      if (serverState === 'AbortedRequestError') {
         return;
       }
-      if (syncResult === 'SessionNotFoundError') {
+      if (serverState === 'SessionNotFoundError') {
         consecutiveNotFound.current += 1;
         if (consecutiveNotFound.current >= CONSECUTIVE_NOT_FOUND_BEFORE_GIVING_UP) {
-          // Flipping this re-runs the effect, whose cleanup clears the interval below.
+          // Flipping this re-runs both effects, whose cleanups stop the interval and the stream.
           setSessionNotFound(true);
         }
         return;
       }
       consecutiveNotFound.current = 0;
-
-      // Handle current track sync
-      const newerServerTrack = syncResult.currentTrack;
-      if (newerServerTrack) {
-        console.info('synchronizing track');
-        setCurrentTrack(newerServerTrack);
-        if (audioPlayer.current?.audio?.current) {
-          if (audioPlayer.current.audio.current.src !== newerServerTrack.url) {
-            audioPlayer.current.audio.current.src = newerServerTrack.url;
-          }
-          audioPlayer.current.audio.current.title = newerServerTrack.name;
-          const currentPlayTime = newerServerTrack.getCurrentPlayTime();
-          audioPlayer.current.audio.current.currentTime = currentPlayTime / 1000;
-          if (newerServerTrack.isPaused) {
-            audioPlayer.current.audio.current.pause();
-          } else {
-            try {
-              await audioPlayer.current.audio.current.play();
-            } catch (error) {
-              if (error instanceof DOMException && error.name === 'NotAllowedError') {
-                console.error(
-                  `Play failed: User interaction with the document is required first. Original error: ${error}`
-                );
-                displayError('This is your first time using the app, please accept autoplay by hitting play :)');
-              } else {
-                console.error('An unexpected error occurred:', error);
-              }
-            }
-          }
-        } else {
-          console.warn('audio player not available yet');
-        }
-      }
-
-      // Handle short effect track
-      const newEffect = syncResult.shortEffectTrack;
-      if (newEffect && effectAudioRef.current) {
-        console.info('playing short effect track:', newEffect.name);
-        setShortEffectTrack(newEffect);
-        effectAudioRef.current.src = newEffect.url;
-        effectAudioRef.current.currentTime = 0;
-        try {
-          await effectAudioRef.current.play();
-        } catch (error) {
-          console.error('Failed to play short effect track:', error);
-        }
-      }
+      await applyServerState(serverState);
     }
 
     resyncOnUi();
     const id = setInterval(() => {
       resyncOnUi();
-    }, SYNC_TRACK_INTERVAL_MS);
+    }, streamConnected ? SYNC_TRACK_FALLBACK_INTERVAL_MS : SYNC_TRACK_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [currentTrack, shortEffectTrack, sessionId, sessionNotFound]);
+  }, [sessionId, sessionNotFound, streamConnected, applyServerState]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>
