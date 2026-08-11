@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import {
   TrackCreationFromYoutubeJob,
-  TrackCreationFromYoutubeJobsStore
+  TrackCreationFromYoutubeJobsStore,
 } from '../maestro-api/TrackCreationFromYoutubeJobsStore';
 import { UploadAudioFromYoutubeJobDto } from '@rpg-maestro/audio-file-uploader-api-contract';
 import { AudioFileUploaderClient } from './audio-file-uploader-client';
@@ -71,7 +71,9 @@ export class TrackCreationFromYoutubeJobsWatcher {
       for (const trackCreationJob of trackCreationJobs) {
         for (const uploadJob of uploadJobFromExternalApp) {
           if (
-            uploadJob.youtubeURL === trackCreationJob.youtubeUrlToUpload && // TODO improve this, this is weak, better pass a rpg-maestro-request-uuid at upload and condition on it
+            // TODO: correlate on an id generated at upload time (in UploadAudioFromYoutubeRequest)
+            // instead of the URL — two sessions importing the same video match each other's job.
+            uploadJob.youtubeURL === trackCreationJob.youtubeUrlToUpload &&
             uploadJob.updatedDate >= trackCreationJob.updatedDate.getTime()
           ) {
             if (uploadJob.status === 'success') {

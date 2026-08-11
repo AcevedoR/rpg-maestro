@@ -43,11 +43,9 @@ export function App() {
     !authReady ? null : (
       <div style={{ fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif', height: '100vh' }}>
         <ThemeProvider theme={theme}>
-          {/* START: routes */}
-          {/* These routes and navigation have been generated for you */}
-          {/* Feel free to move and update them to fit your needs */}
+          {/* Each "/maestro" page guards itself with Auth0's withAuthenticationRequired;
+              the other routes are public on purpose. */}
           <Routes>
-            {/*TODO add secured routes*/}
             <Route path="/health" element={<HealthStatus />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/onboarding/setup-session" element={<SetupSession />} />
@@ -64,7 +62,6 @@ export function App() {
             <Route path="/maestro/admin" element={<AdminBoard />} />
             <Route path="/admin" element={<Navigate to="/maestro" replace />} />
           </Routes>
-          {/* END: routes */}
         </ThemeProvider>
       </div>
     )

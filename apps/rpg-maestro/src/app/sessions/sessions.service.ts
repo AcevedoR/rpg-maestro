@@ -22,8 +22,8 @@ export class SessionsService {
   }
 
   async get(sessionId: string): Promise<SessionPlayingTracks | null> {
-    // TODO fix this hack forbidding having more than one instance
-    // this was done to avoid reaching Firestore quotas
+    // Read-through cache, to keep playing-session reads inside the database quotas.
+    // Safe with multiple instances: the cache tier is shared (see createCacheTiers).
     const cachedSession = await this.cache.get(sessionId);
     if (cachedSession) {
       return cachedSession;
