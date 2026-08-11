@@ -9,10 +9,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+  // The browser posts to `/upload/audio` directly, so CORS must allow the UI's origin.
+  // TODO: narrow it to that origin, the way rpg-maestro does from NetworkingConfiguration.
   app.enableCors({
     origin: '*',
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
-  }); // TODO fix this
+  });
   const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(`🚀 Application audio-file-uploader is running on: http://localhost:${port}/${globalPrefix}`);
