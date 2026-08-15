@@ -61,9 +61,11 @@ export class RedisSessionListenersPresence implements SessionListenersPresence {
       const totals: Record<SessionID, number> = {};
       for await (const keys of this.client.scanIterator({ MATCH: `${LISTENERS_PRESENCE_KEY_PREFIX}*`, COUNT: 100 })) {
         for (const key of keys) {
-          const report = await this.client.get(key);
+          // node-redis reply typings degrade to `string | {}` here; both are strings on this client
+          const keyName = String(key);
+          const report = await this.client.get(keyName);
           if (report) {
-            this.addCounts(totals, key, report);
+            this.addCounts(totals, keyName, String(report));
           }
         }
       }
