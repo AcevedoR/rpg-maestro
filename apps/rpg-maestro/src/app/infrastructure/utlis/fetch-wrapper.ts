@@ -6,11 +6,13 @@ import { HttpStatus, Logger } from '@nestjs/common';
  * @param url
  * @param method
  * @param body
+ * @param headers additional headers merged on top of the JSON defaults
  */
 export async function jsonFetch(
   method: 'POST' | 'GET' | 'PUT',
   url: string,
-  body?: UploadAudioFromYoutubeRequest
+  body?: UploadAudioFromYoutubeRequest,
+  headers?: Record<string, string>
 ): Promise<any> {
   try {
     const options = {
@@ -18,6 +20,7 @@ export async function jsonFetch(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...headers,
       },
     };
     if (body) {

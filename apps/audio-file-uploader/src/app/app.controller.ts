@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
@@ -8,6 +8,7 @@ import {
   UploadAudioFromYoutubeRequest,
 } from '@rpg-maestro/audio-file-uploader-api-contract';
 import { UploadFromYoutubeService } from './fileUpload/fromYoutube/UploadFromYoutubeService';
+import { UploaderAuthGuard } from './auth/uploader-auth.guard';
 
 @Controller()
 export class AppController {
@@ -25,18 +26,21 @@ export class AppController {
   }
 
   @Post('/upload/audio')
+  @UseGuards(UploaderAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   uploadAudio(@UploadedFile() file: Express.Multer.File) {
     return this.fileUploadService.handleFileUpload(file);
   }
 
   @Post('/upload/audio/from-youtube')
+  @UseGuards(UploaderAuthGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   async uploadAudioFromYoutube(@Body() uploadRequest: UploadAudioFromYoutubeRequest): Promise<void> {
     await this.uploadFromYoutubeService.uploadAudioFromYoutube(uploadRequest);
   }
 
   @Get('/upload/audio/from-youtube')
+  @UseGuards(UploaderAuthGuard)
   async getAudioFromYoutubeUploadJobs(): Promise<UploadAudioFromYoutubeJobDto[]> {
     return (await this.uploadFromYoutubeService.getAudioFromYoutubeUploadJobs()).map(
       (x) =>

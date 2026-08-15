@@ -21,6 +21,7 @@ describe('Players API', () => {
   beforeAll(async () => {
     process.env.AUTH_ISSUER = `${BASE_URL}/test-utils/fake-idp`;
     process.env.AUTH_JWT_AUDIENCE = BASE_URL;
+    process.env.AUDIO_FILE_UPLOADER_SERVICE_TOKEN = 'unit-tests-service-token';
     const { bootstrap } = await import('./../app-bootstrap');
     app = await bootstrap();
     const users = await request(app.getHttpServer())
