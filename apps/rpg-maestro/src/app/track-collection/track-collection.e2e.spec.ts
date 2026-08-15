@@ -45,6 +45,7 @@ describe('TrackCollection', () => {
     process.env.DEFAULT_FRONTEND_DOMAIN = 'http://localhost:4300/not-used-in-this-test';
     process.env.AUTH_ISSUER = 'http://localhost:3014/test-utils/fake-idp';
     process.env.AUTH_JWT_AUDIENCE = 'http://localhost:3014';
+    process.env.AUDIO_FILE_UPLOADER_SERVICE_TOKEN = 'unit-tests-service-token';
     process.env.PORT = '3014';
     process.env.NODE_ENV = 'unit-tests';
     process.env.CONFIGURATION_ENV = 'unit-tests';

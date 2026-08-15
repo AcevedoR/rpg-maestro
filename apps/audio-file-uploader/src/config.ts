@@ -4,16 +4,7 @@ import { Logger } from '@nestjs/common';
 export function checkValidConfig() {
   Logger.log(`Configuration:`);
   let invalidConfErrors: string[] = [];
-  invalidConfErrors = [
-    ...invalidConfErrors,
-    ...check('process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL', process.env.DEFAULT_AUDIO_FILE_UPLOADER_API_URL),
-  ];
-  invalidConfErrors = [
-    ...invalidConfErrors,
-    ...check('process.env.DEFAULT_FRONTEND_DOMAIN', process.env.DEFAULT_FRONTEND_DOMAIN),
-  ];
   invalidConfErrors = [...invalidConfErrors, ...check('process.env.AUTH_ISSUER', process.env.AUTH_ISSUER)];
-  invalidConfErrors = [...invalidConfErrors, ...check('process.env.AUTH_JWT_AUDIENCE', process.env.AUTH_JWT_AUDIENCE)];
   invalidConfErrors = [
     ...invalidConfErrors,
     ...checkSecret('process.env.AUDIO_FILE_UPLOADER_SERVICE_TOKEN', process.env.AUDIO_FILE_UPLOADER_SERVICE_TOKEN),

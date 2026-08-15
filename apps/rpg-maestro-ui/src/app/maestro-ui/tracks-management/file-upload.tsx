@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
 import axios, { AxiosRequestConfig } from 'axios';
+import { getAccessToken } from '../../utils/authenticated-fetch';
 
 const audioFileUploaderAPI = import.meta.env.VITE_AUDIO_FILE_UPLOADER_API_URL;
 
@@ -26,7 +27,7 @@ export function FileUpload(props: FileUploadProps) {
   const { onFileUploaded } = props;
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const onFileUploadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileUploadChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       event.preventDefault();
       if (event.target.files.length > 1) {
@@ -39,6 +40,7 @@ export function FileUpload(props: FileUploadProps) {
       const config: AxiosRequestConfig = {
         headers: {
           'content-type': 'multipart/form-data',
+          Authorization: `Bearer ${await getAccessToken()}`,
         },
         onUploadProgress: function (progressEvent) {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total ?? 0));

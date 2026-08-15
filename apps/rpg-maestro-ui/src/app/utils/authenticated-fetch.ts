@@ -9,6 +9,13 @@ export function initAuthRequirements(getAccessTokenSilentlyFunctionParam: () => 
   getAccessTokenSilentlyFunction = getAccessTokenSilentlyFunctionParam;
 }
 
+export async function getAccessToken(): Promise<string> {
+  if (!getAccessTokenSilentlyFunction) {
+    throw new Error('Unhandled error, getAccessTokenSilentlyFunction not available yet');
+  }
+  return getAccessTokenSilentlyFunction();
+}
+
 export async function authenticatedFetch<T = unknown>(url: string, options: FetchClientOptions = {}): Promise<T> {
   const { method = 'GET', headers = {}, body, credentials, signal } = options;
   if (getAccessTokenSilentlyFunction) {

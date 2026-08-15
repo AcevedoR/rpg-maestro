@@ -12,13 +12,24 @@ Logger.log(`using DEFAULT_AUDIO_FILE_UPLOADER_API_URL=${DEFAULT_AUDIO_FILE_UPLOA
 @Injectable()
 export class AudioFileUploaderHttpClient implements AudioFileUploaderClient {
   async uploadAudioFromYoutube(request: UploadAudioFromYoutubeRequest): Promise<void> {
-    await jsonFetch('POST', `${DEFAULT_AUDIO_FILE_UPLOADER_API_URL}/upload/audio/from-youtube`, request);
+    await jsonFetch(
+      'POST',
+      `${DEFAULT_AUDIO_FILE_UPLOADER_API_URL}/upload/audio/from-youtube`,
+      request,
+      serviceAuthHeaders()
+    );
   }
 
   async getCurrentUploads(): Promise<UploadAudioFromYoutubeJobDto[]> {
     return (await jsonFetch(
       'GET',
-      `${DEFAULT_AUDIO_FILE_UPLOADER_API_URL}/upload/audio/from-youtube`
+      `${DEFAULT_AUDIO_FILE_UPLOADER_API_URL}/upload/audio/from-youtube`,
+      undefined,
+      serviceAuthHeaders()
     )) as UploadAudioFromYoutubeJobDto[];
   }
+}
+
+function serviceAuthHeaders(): Record<string, string> {
+  return { Authorization: `Bearer ${process.env.AUDIO_FILE_UPLOADER_SERVICE_TOKEN}` };
 }

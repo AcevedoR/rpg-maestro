@@ -15,6 +15,7 @@ describe('testing healthcheck respond ok and 200', () => {
   beforeAll(async () => {
     process.env.AUTH_ISSUER = 'http://localhost:3014/test-utils/fake-idp';
     process.env.AUTH_JWT_AUDIENCE = 'http://localhost:3014';
+    process.env.AUDIO_FILE_UPLOADER_SERVICE_TOKEN = 'unit-tests-service-token';
     const { bootstrap } = await import('../app-bootstrap');
     app = await bootstrap();
   });
