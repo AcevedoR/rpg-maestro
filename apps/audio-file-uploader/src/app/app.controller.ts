@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, UploadedFile, UseGua
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
-import { FileUploadService } from './fileUpload/FileUploadService';
+import { FileUploadResult, FileUploadService } from './fileUpload/FileUploadService';
 import {
   UploadAudioFromYoutubeJobDto,
   UploadAudioFromYoutubeRequest,
@@ -28,7 +28,7 @@ export class AppController {
   @Post('/upload/audio')
   @UseGuards(UploaderAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  uploadAudio(@UploadedFile() file: Express.Multer.File) {
+  async uploadAudio(@UploadedFile() file: Express.Multer.File): Promise<FileUploadResult> {
     return this.fileUploadService.handleFileUpload(file);
   }
 
