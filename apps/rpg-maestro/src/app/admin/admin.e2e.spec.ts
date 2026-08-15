@@ -2,7 +2,12 @@ import { FakeJwtToken, TestUsersFixture } from '@rpg-maestro/test-utils';
 import { INestApplication } from '@nestjs/common';
 
 import request from 'supertest';
-import { parseAndValidateDto, User } from '@rpg-maestro/rpg-maestro-api-contract';
+import {
+  AdminSessionOverview,
+  parseAndValidateDto,
+  SessionPlayingTracks,
+  User,
+} from '@rpg-maestro/rpg-maestro-api-contract';
 import { UpdateUserRole } from '@rpg-maestro/rpg-maestro-api-contract';
 import { Role } from '../auth/role.enum';
 
@@ -44,6 +49,33 @@ describe('Admin API', () => {
   it('a Maestro is forbidden to get all sessions', async () => {
     await request(app.getHttpServer())
       .get('/maestro/admin/sessions')
+      .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
+      .expect(403);
+  }, 10000);
+
+  it('an Admin can see the sessions overview with each session GMs and listener count', async () => {
+    const session = (
+      await request(app.getHttpServer())
+        .post('/maestro/sessions')
+        .send({})
+        .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
+        .expect(201)
+    ).body as SessionPlayingTracks;
+    const overview = (
+      await request(app.getHttpServer())
+        .get('/maestro/admin/sessions/overview')
+        .set('Authorization', `Bearer ${AN_ADMIN_USER.token}`)
+        .expect(200)
+    ).body as AdminSessionOverview[];
+    const sessionOverview = overview.find((s) => s.sessionId === session.sessionId);
+    expect(sessionOverview).toBeDefined();
+    expect(sessionOverview?.gms).toEqual([A_MAESTRO_USER.email]);
+    expect(sessionOverview?.connectedPlayers).toBe(0);
+    expect(sessionOverview?.currentTrack).toBeNull();
+  }, 10000);
+  it('a Maestro is forbidden to get the sessions overview', async () => {
+    await request(app.getHttpServer())
+      .get('/maestro/admin/sessions/overview')
       .set('Authorization', `Bearer ${A_MAESTRO_USER.token}`)
       .expect(403);
   }, 10000);
