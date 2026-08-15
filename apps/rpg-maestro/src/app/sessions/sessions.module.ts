@@ -6,6 +6,12 @@ import { InProcessSessionEventsBroker, SessionEventsBroker } from './session-eve
 import { RedisSessionEventsBroker } from './redis-session-events.broker';
 import { sharedRedisUrl } from '../infrastructure/redis/redis-connection';
 import { SessionStreamsRegistry } from './session-streams.registry';
+import {
+  InProcessSessionListenersPresence,
+  SESSION_LISTENERS_PRESENCE,
+  SessionListenersPresence,
+} from './session-listeners-presence';
+import { RedisSessionListenersPresence } from './redis-session-listeners-presence';
 
 const logger = new Logger('SessionModule');
 
@@ -18,6 +24,15 @@ export function createSessionEventsBroker(): SessionEventsBroker {
   return new RedisSessionEventsBroker(url);
 }
 
+export function createSessionListenersPresence(registry: SessionStreamsRegistry): SessionListenersPresence {
+  const url = sharedRedisUrl();
+  if (!url) {
+    return new InProcessSessionListenersPresence(registry);
+  }
+  logger.log('listener presence is tracked in redis across instances');
+  return new RedisSessionListenersPresence(url, registry);
+}
+
 @Module({
   imports: [DatabaseModule],
   providers: [
@@ -25,7 +40,12 @@ export function createSessionEventsBroker(): SessionEventsBroker {
     SessionEventsService,
     SessionStreamsRegistry,
     { provide: SESSION_EVENTS_BROKER, useFactory: createSessionEventsBroker },
+    {
+      provide: SESSION_LISTENERS_PRESENCE,
+      useFactory: createSessionListenersPresence,
+      inject: [SessionStreamsRegistry],
+    },
   ],
-  exports: [SessionsService, SessionEventsService, SessionStreamsRegistry],
+  exports: [SessionsService, SessionEventsService, SessionStreamsRegistry, SESSION_LISTENERS_PRESENCE],
 })
 export class SessionModule {}

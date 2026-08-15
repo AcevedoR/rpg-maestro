@@ -1,6 +1,18 @@
-import { SessionPlayingTracks, User } from '@rpg-maestro/rpg-maestro-api-contract';
+import { AdminSessionOverview, SessionPlayingTracks, User } from '@rpg-maestro/rpg-maestro-api-contract';
 import { authenticatedFetch } from '../utils/authenticated-fetch';
 import { rpgMaestroApiUrl } from '../utils/api-config';
+
+export async function getSessionsOverview(): Promise<AdminSessionOverview[]> {
+  try {
+    const response = await authenticatedFetch(`${rpgMaestroApiUrl}/maestro/admin/sessions/overview`, {
+      credentials: 'include',
+    });
+    return response as AdminSessionOverview[];
+  } catch (error) {
+    console.error(error);
+    return Promise.reject();
+  }
+}
 
 export async function getAllSessions(): Promise<SessionPlayingTracks[]> {
   try {

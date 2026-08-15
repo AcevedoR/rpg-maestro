@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import {
+  AdminSessionOverview,
   SessionAccess,
   SessionAccessLevel,
   SessionPlayingTracks,
@@ -13,13 +14,37 @@ import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '../theme';
 import { clearUserFromSessionStorage } from '../cache/session-storage.service';
 import { getUser } from '../cache/user.cache';
-import { getAllSessions, getAllUsers } from './admin-api';
+import { getAllSessions, getAllUsers, getSessionsOverview } from './admin-api';
 import { formatTodayDate } from '../utils/time';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { Loading } from '../auth/Loading';
 import { isDevModeEnabled } from '../../FeaturesConfiguration';
 import { TextLinkWithIconWrapper } from '../ui-components/text-link-with-icon-wrapper';
 import CollectionsBookmarkTwoTone from '@mui/icons-material/CollectionsBookmarkTwoTone';
+
+export const OVERVIEW_REFRESH_INTERVAL_MS = 5_000;
+
+export const overviewGridColumns: GridColDef[] = [
+  { field: 'sessionId', width: 200 },
+  {
+    field: 'status',
+    width: 100,
+    valueGetter: (_value, row) => (row.currentTrack ? (row.currentTrack.isPaused ? 'paused' : 'playing') : 'idle'),
+  },
+  {
+    field: 'currentTrack',
+    headerName: 'current track',
+    width: 350,
+    valueGetter: (_value, row) => row.currentTrack?.name,
+  },
+  {
+    field: 'gms',
+    headerName: 'GMs',
+    width: 450,
+    valueGetter: (value: UserID[]) => (value ?? []).join(', '),
+  },
+  { field: 'connectedPlayers', headerName: 'players listening', type: 'number', width: 180 },
+];
 
 export const usersGridColumns: GridColDef[] = [
   { field: 'id', width: 450 },
@@ -64,12 +89,13 @@ const paginationModel = { page: 0, pageSize: 10 };
 
 interface AdminBoardViewProps {
   user: User | null | undefined;
+  overview: AdminSessionOverview[] | undefined;
   sessions: SessionPlayingTracks[] | undefined;
   users: User[] | undefined;
   usersSortModel?: GridSortModel;
 }
 
-export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminBoardViewProps) {
+export function AdminBoardView({ user, overview, sessions, users, usersSortModel }: AdminBoardViewProps) {
   const [activeTab, setActiveTab] = useState(0);
   const usersInitialState = usersSortModel
     ? { pagination: { paginationModel }, sorting: { sortModel: usersSortModel } }
@@ -114,6 +140,7 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
             textColor="inherit"
             indicatorColor="secondary"
           >
+            <Tab label="Overview" />
             <Tab label="Users" />
             <Tab label="Access" />
             <Tab label="Sessions" />
@@ -123,6 +150,30 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
               flex: 1,
               minHeight: 0,
               display: activeTab === 0 ? 'flex' : 'none',
+              flexDirection: 'column',
+            }}
+          >
+            <span style={{ opacity: 0.7, fontSize: '0.8rem' }}>
+              live view of running sessions — refreshes every {OVERVIEW_REFRESH_INTERVAL_MS / 1000}s
+            </span>
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <DataGrid
+                rows={overview?.map((x) => ({ ...x, id: x.sessionId })) ?? []}
+                columns={overviewGridColumns}
+                initialState={{
+                  pagination: { paginationModel },
+                  sorting: { sortModel: [{ field: 'connectedPlayers', sort: 'desc' }] },
+                }}
+                pageSizeOptions={[10, 25, 50]}
+                sx={{ border: 0, height: '100%' }}
+              />
+            </div>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: activeTab === 1 ? 'flex' : 'none',
               flexDirection: 'column',
             }}
           >
@@ -136,7 +187,7 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
               />
             </div>
           </div>
-          <div style={{ flex: 1, minHeight: 0, display: activeTab === 1 ? 'flex' : 'none', flexDirection: 'column' }}>
+          <div style={{ flex: 1, minHeight: 0, display: activeTab === 2 ? 'flex' : 'none', flexDirection: 'column' }}>
             <div style={{ flex: 1, minHeight: 0 }}>
               <DataGrid
                 rows={getSessionsAccess(users ?? [])}
@@ -147,7 +198,7 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
               />
             </div>
           </div>
-          <div style={{ flex: 1, minHeight: 0, display: activeTab === 2 ? 'flex' : 'none', flexDirection: 'column' }}>
+          <div style={{ flex: 1, minHeight: 0, display: activeTab === 3 ? 'flex' : 'none', flexDirection: 'column' }}>
             <div style={{ flex: 1, minHeight: 0 }}>
               <DataGrid
                 rows={
@@ -171,6 +222,7 @@ export function AdminBoardView({ user, sessions, users, usersSortModel }: AdminB
 
 function AdminBoardComponent() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [overview, setOverview] = useState<AdminSessionOverview[] | undefined>(undefined);
   const [sessions, setSessions] = useState<SessionPlayingTracks[] | undefined>(undefined);
   const [users, setUsers] = useState<User[] | undefined>(undefined);
   const fetchUser = async () => {
@@ -185,15 +237,23 @@ function AdminBoardComponent() {
     const users = await getAllUsers();
     setUsers(users);
   };
+  // swallow transient failures: the next tick refreshes anyway, and stale rows beat a blank grid
+  const fetchOverview = () =>
+    getSessionsOverview()
+      .then(setOverview)
+      .catch(() => undefined);
 
   useEffect(() => {
     clearUserFromSessionStorage();
     fetchUser();
     fetchAllSessions();
     fetchAllUsers();
+    fetchOverview();
+    const overviewRefresh = setInterval(fetchOverview, OVERVIEW_REFRESH_INTERVAL_MS);
+    return () => clearInterval(overviewRefresh);
   }, []);
 
-  return <AdminBoardView user={user} sessions={sessions} users={users} />;
+  return <AdminBoardView user={user} overview={overview} sessions={sessions} users={users} />;
 }
 
 export const AdminBoard = isDevModeEnabled

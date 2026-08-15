@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { AdminBoardView } from './admin-board';
-import { PlayingTrack, SessionPlayingTracks, User } from '@rpg-maestro/rpg-maestro-api-contract';
+import { AdminSessionOverview, PlayingTrack, SessionPlayingTracks, User } from '@rpg-maestro/rpg-maestro-api-contract';
 
 const meta: Meta<typeof AdminBoardView> = {
   title: 'Admin/AdminBoard',
@@ -145,11 +145,19 @@ const sessions: SessionPlayingTracks[] = [
   },
 ];
 
+const overview: AdminSessionOverview[] = sessions.map((session, index) => ({
+  sessionId: session.sessionId,
+  gms: users.filter((u) => u.sessions && u.sessions[session.sessionId]).map((u) => u.id),
+  connectedPlayers: session.currentTrack && !session.currentTrack.isPaused ? (index + 1) * 2 : 0,
+  currentTrack: session.currentTrack,
+}));
+
 export const Default: Story = {
   args: {
     user: users[0],
     users,
     sessions,
+    overview,
     usersSortModel: [{ field: 'updated_at', sort: 'asc' }],
   },
 };
