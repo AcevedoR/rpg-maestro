@@ -9,7 +9,6 @@
   "private": true,
   "dependencies": {
     "@auth0/auth0-react": "^2.5.0",
-    "@distube/ytdl-core": "^4.16.10",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@keyv/redis": "^5.1.6",
