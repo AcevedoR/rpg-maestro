@@ -28,13 +28,17 @@ test('admin board sorts updated_at with March dates', async ({ page }) => {
   await page.goto(`${storybookUrl}/?path=/story/admin-adminboard--default`);
 
   const frame = page.frameLocator('#storybook-preview-iframe');
-  const updatedHeader = frame.locator('[role="columnheader"][data-field="updated_at"]');
+  // the board opens on the Overview tab; the users grid lives behind the Users tab
+  await frame.getByRole('tab', { name: 'Users' }).click();
+  // every tab's grid stays mounted (hidden), so locators must be scoped to the visible one
+  const grid = frame.locator('.MuiDataGrid-root').filter({ visible: true });
+  const updatedHeader = grid.locator('[role="columnheader"][data-field="updated_at"]');
   await expect(updatedHeader).toBeVisible({ timeout: 30000 });
   await expect(updatedHeader).toHaveAttribute('aria-sort', 'ascending');
 
-  const rows = frame.locator('.MuiDataGrid-row[data-id]');
-  const march9Row = frame.locator('.MuiDataGrid-row[data-id="minstrel|005"]');
-  const march13Row = frame.locator('.MuiDataGrid-row[data-id="maestro|004"]');
+  const rows = grid.locator('.MuiDataGrid-row[data-id]');
+  const march9Row = grid.locator('.MuiDataGrid-row[data-id="minstrel|005"]');
+  const march13Row = grid.locator('.MuiDataGrid-row[data-id="maestro|004"]');
 
   await expect(rows.first()).toBeVisible();
   await expect(march9Row).toContainText('9 March');
@@ -50,4 +54,29 @@ test('admin board sorts updated_at with March dates', async ({ page }) => {
       return march9Index < march13Index;
     })
     .toBe(true);
+});
+
+test('admin board opens on a live overview of sessions, GMs and listeners', async ({ page }) => {
+  // the full-viewport story URL: docked in the manager, the grid body is too short to render rows
+  await page.goto(`${storybookUrl}/iframe.html?id=admin-adminboard--default&viewMode=story`);
+
+  await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+
+  // the Sessions tab's hidden grid reuses the same session ids, so scope to the visible grid
+  const grid = page.locator('.MuiDataGrid-root').filter({ visible: true });
+  // most-listened session first: the grid default-sorts on listener count, descending
+  const listenersHeader = grid.locator('[role="columnheader"][data-field="connectedPlayers"]');
+  await expect(listenersHeader).toBeVisible({ timeout: 30000 });
+  await expect(listenersHeader).toHaveAttribute('aria-sort', 'descending');
+
+  const epsilonRow = grid.locator('.MuiDataGrid-row[data-id="session-epsilon"]');
+  await expect(epsilonRow).toHaveAttribute('data-rowindex', '0');
+  await expect(epsilonRow).toContainText('playing');
+  await expect(epsilonRow).toContainText('Smoldering Ruins');
+  await expect(epsilonRow).toContainText('admin|008');
+  await expect(epsilonRow).toContainText('10');
+
+  const idleRow = grid.locator('.MuiDataGrid-row[data-id="session-gamma"]');
+  await expect(idleRow).toContainText('idle');
+  await expect(idleRow).toContainText('maestro|002');
 });
