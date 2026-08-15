@@ -1,10 +1,21 @@
 /**
  * RPG Maestro load benchmark — simulates full sessions: 1 GM + N players each.
  *
+ * Two modes:
+ *
+ *  - Self-provisioning (dev/e2e only): each GM onboards as a fresh user
+ *    (`POST /maestro/onboard`), which seeds a throwaway session with the `default`
+ *    track collection. Needs the `/test-utils` fake IDP, which is disabled in prod.
+ *
+ *  - Existing-session (prod-safe): pass `--session-id` (repeatable) and `--token`
+ *    (or `--auth-header`). The benchmark then runs against YOUR sessions and only
+ *    ever issues reads plus `PUT /maestro/sessions/:id/playing-tracks` — it never
+ *    creates, renames or deletes tracks, sessions or users, and it restores the
+ *    playing state each session had before the run.
+ *
  * Per session:
- *  - the GM onboards as a fresh user (`POST /maestro/onboard`), which seeds the session
- *    with the `default` track collection, then randomly changes the current track or
- *    pauses/resumes it, like a real maestro during a game;
+ *  - the GM randomly changes the current track (among the tracks the session already
+ *    has) or pauses/resumes it at the current playhead, like a real maestro;
  *  - each player syncs the server clock (`GET /server-time`) and listens on the real
  *    SSE push channel (`GET /sessions/:id/playing-tracks/stream`), like the player UI.
  *
@@ -17,12 +28,11 @@
  * Zero dependencies — plain Node >= 20 (global fetch + web streams).
  *
  * Usage:
- *   node devtools/benchmark/bench.mjs --sessions 5            # one scenario
- *   node devtools/benchmark/bench.mjs --all                   # 1, then 5, then 20
- *   node devtools/benchmark/bench.mjs --sessions 20 --duration 120
- *
- * The target backend must run in a non-production env (the benchmark uses the
- * /test-utils fake IDP): `npx nx run rpg-maestro:dev-e2e` (port 8099).
+ *   node devtools/benchmark/bench.mjs --sessions 5            # dev/e2e, one scenario
+ *   node devtools/benchmark/bench.mjs --all                   # dev/e2e: 1, then 5, then 20
+ *   node devtools/benchmark/bench.mjs \
+ *     --base-url https://rpgmaestro.app/api \
+ *     --session-id I7tyU8i --token <maestro JWT>              # prod-safe
  */
 
 const DEFAULTS = {
@@ -41,7 +51,7 @@ const SCENARIOS = [1, 5, 20];
 // CLI
 
 function parseArgs(argv) {
-  const args = { ...DEFAULTS, sessions: undefined, all: false };
+  const args = { ...DEFAULTS, sessions: undefined, all: false, sessionIds: [], token: undefined, authHeader: undefined };
   for (let i = 2; i < argv.length; i++) {
     const next = () => argv[++i];
     switch (argv[i]) {
@@ -57,12 +67,22 @@ function parseArgs(argv) {
       case '--base-url':
         args.baseUrl = next();
         break;
+      case '--session-id':
+        args.sessionIds.push(...next().split(','));
+        break;
+      case '--token':
+        args.token = next();
+        break;
+      case '--auth-header':
+        args.authHeader = next();
+        break;
       case '--all':
         args.all = true;
         break;
       case '--help':
         console.info(
-          'Usage: bench.mjs [--sessions N | --all] [--players N] [--duration seconds] [--base-url URL]'
+          'Usage: bench.mjs [--sessions N | --all] [--players N] [--duration seconds] [--base-url URL]\n' +
+            '       bench.mjs --session-id ID[,ID...] (--token JWT | --auth-header VALUE) [--players N] [--duration s]'
         );
         process.exit(0);
         break;
@@ -70,7 +90,16 @@ function parseArgs(argv) {
         throw new Error(`Unknown argument: ${argv[i]}`);
     }
   }
-  if (!args.all && !args.sessions) args.sessions = 1;
+  if (args.sessionIds.length > 0) {
+    if (args.all || args.sessions) {
+      throw new Error('--session-id sets the session count itself; do not combine it with --sessions or --all');
+    }
+    if (!args.token && !args.authHeader) {
+      throw new Error('existing-session mode needs --token (Bearer JWT) or --auth-header (verbatim Authorization value)');
+    }
+  } else if (!args.all && !args.sessions) {
+    args.sessions = 1;
+  }
   return args;
 }
 
@@ -144,38 +173,76 @@ async function consumeSse(url, { signal, onEvent }) {
 }
 
 // ---------------------------------------------------------------------------
-// Session actors
+// Session provisioning
 
-/** Onboards a fresh GM user and returns { token, sessionId, tracks }. */
-async function setUpSession(baseUrl) {
+/** Dev/e2e only: onboards a fresh throwaway GM user with its own seeded session. */
+async function provisionThrowawaySession(baseUrl) {
   // Each call issues a unique `a_new_user` token, so every benchmark session gets its own GM.
-  const fixtures = await fetchJsonOrThrow(`${baseUrl}/test-utils/create-test-users-fixtures`, { method: 'POST' });
-  const token = fixtures.a_new_user.token;
-  const authHeaders = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
-
-  const session = await fetchJsonOrThrow(`${baseUrl}/maestro/onboard`, { method: 'POST', headers: authHeaders });
-  const sessionId = session.sessionId;
-
-  const tracks = await fetchJsonOrThrow(`${baseUrl}/maestro/sessions/${sessionId}/tracks`, { headers: authHeaders });
-  if (tracks.length === 0) {
-    throw new Error(`Session ${sessionId} has no tracks — is the 'default' collection seeded?`);
+  let fixtures;
+  try {
+    fixtures = await fetchJsonOrThrow(`${baseUrl}/test-utils/create-test-users-fixtures`, { method: 'POST' });
+  } catch (error) {
+    throw new Error(
+      `could not self-provision a session (${error.message}). Against a production backend, ` +
+        `use the prod-safe mode instead: --session-id <yourSession> --token <maestro JWT>`
+    );
   }
-  return { authHeaders, sessionId, tracks };
+  const authHeaders = { authorization: `Bearer ${fixtures.a_new_user.token}`, 'content-type': 'application/json' };
+  const session = await fetchJsonOrThrow(`${baseUrl}/maestro/onboard`, { method: 'POST', headers: authHeaders });
+  return { authHeaders, sessionId: session.sessionId, restoreStateAfterRun: false };
 }
 
+/** Prod-safe: attaches to a session that already exists and belongs to the token's user. */
+async function attachToExistingSession(baseUrl, sessionId, args) {
+  const authHeaders = {
+    authorization: args.authHeader ?? `Bearer ${args.token}`,
+    'content-type': 'application/json',
+  };
+  return { authHeaders, sessionId, restoreStateAfterRun: true };
+}
+
+// ---------------------------------------------------------------------------
+// GM playhead math
+
+/** Estimate of "now" on the server clock, from one /server-time sample. */
+async function measureServerClock(baseUrl) {
+  const before = Date.now();
+  const { serverTime } = await fetchJsonOrThrow(`${baseUrl}/server-time`);
+  const offset = serverTime - (before + (Date.now() - before) / 2);
+  return () => Date.now() + offset;
+}
+
+/** Where the playhead of a PlayingTrack (as served by the API) is right now. */
+function currentPlayhead(playingTrack, serverNowMs) {
+  if (playingTrack.isPaused) return playingTrack.trackStartTime;
+  const elapsed = Math.max(0, serverNowMs - playingTrack.playTimestamp);
+  return (playingTrack.trackStartTime + elapsed) % playingTrack.duration;
+}
+
+// ---------------------------------------------------------------------------
+// One benchmark session
+
 /**
- * One benchmark session: starts the players, waits for their snapshots, then runs the
- * GM action loop until the deadline. Returns the raw measurements.
+ * Starts the players, waits for their snapshots, then runs the GM action loop until
+ * the deadline. The ONLY write it performs is PUT /maestro/sessions/:id/playing-tracks.
  */
-async function runSession({ baseUrl, playersPerSession, durationSec, ...gmOpts }, metrics) {
-  const { authHeaders, sessionId, tracks } = await setUpSession(baseUrl);
+async function runSession(provision, config, metrics) {
+  const { baseUrl, playersPerSession, durationSec } = config;
+  const { authHeaders, sessionId, restoreStateAfterRun } = await provision();
+
+  // Read-only: the tracks the session already has, and what is playing right now.
+  const tracks = await fetchJsonOrThrow(`${baseUrl}/maestro/sessions/${sessionId}/tracks`, { headers: authHeaders });
+  if (tracks.length === 0) {
+    throw new Error(`Session ${sessionId} has no tracks to play — add some before benchmarking it`);
+  }
+  const initialState = await fetchJsonOrThrow(`${baseUrl}/sessions/${sessionId}/playing-tracks`);
+  const serverNow = await measureServerClock(baseUrl);
 
   // Ordered log of GM commands; SSE events are ordered per stream, so the Nth change
   // event a player receives (after its snapshot) matches the Nth command. Approximate —
   // good enough to spot propagation degradation across scenario sizes.
   const commands = [];
   const abort = new AbortController();
-  let isPaused = false;
 
   const players = Array.from({ length: playersPerSession }, async (_, playerIndex) => {
     // Players sync the server clock first, like the real UI.
@@ -208,24 +275,30 @@ async function runSession({ baseUrl, playersPerSession, durationSec, ...gmOpts }
   // Give players a moment to receive their opening snapshot before the GM starts acting.
   await sleep(1000);
 
-  const deadline = Date.now() + durationSec * 1000;
-  while (Date.now() < deadline) {
-    await sleep(randomBetween(gmOpts.gmActionMinMs, gmOpts.gmActionMaxMs));
-    const changeTrack = Math.random() < gmOpts.changeTrackProbability;
-    const body = changeTrack
-      ? { currentTrack: { trackId: tracks[Math.floor(Math.random() * tracks.length)].id, startTime: 0 } }
-      : { currentTrack: { trackId: tracks[0].id, paused: (isPaused = !isPaused) } };
-
+  const putPlayingTracks = async (trackToPlay) => {
     const sentAt = Date.now();
     commands.push({ sentAt });
+    const state = await fetchJsonOrThrow(`${baseUrl}/maestro/sessions/${sessionId}/playing-tracks`, {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify({ currentTrack: trackToPlay }),
+    });
+    metrics.gmPutMs.push(Date.now() - sentAt);
+    metrics.gmActions++;
+    return state;
+  };
+
+  let playing = initialState.currentTrack; // PlayingTrack | null, refreshed from each PUT response
+  const deadline = Date.now() + durationSec * 1000;
+  while (Date.now() < deadline) {
+    await sleep(randomBetween(config.gmActionMinMs, config.gmActionMaxMs));
+    // Pause/resume needs a track to already be playing; otherwise change track first.
+    const changeTrack = playing === null || Math.random() < config.changeTrackProbability;
+    const action = changeTrack
+      ? { trackId: tracks[Math.floor(Math.random() * tracks.length)].id, startTime: 0 }
+      : { trackId: playing.id, startTime: currentPlayhead(playing, serverNow()), paused: !playing.isPaused };
     try {
-      await fetchJsonOrThrow(`${baseUrl}/maestro/sessions/${sessionId}/playing-tracks`, {
-        method: 'PUT',
-        headers: authHeaders,
-        body: JSON.stringify(body),
-      });
-      metrics.gmPutMs.push(Date.now() - sentAt);
-      metrics.gmActions++;
+      playing = (await putPlayingTracks(action)).currentTrack;
     } catch (error) {
       metrics.httpErrors++;
       console.warn(`  [${sessionId}] GM PUT failed: ${error.message}`);
@@ -236,15 +309,32 @@ async function runSession({ baseUrl, playersPerSession, durationSec, ...gmOpts }
   await sleep(1500);
   abort.abort();
   await Promise.allSettled(players);
+
+  // On a real session, put back what was playing before the run (best effort, not measured).
+  if (restoreStateAfterRun && initialState.currentTrack) {
+    const original = initialState.currentTrack;
+    try {
+      await fetchJsonOrThrow(`${baseUrl}/maestro/sessions/${sessionId}/playing-tracks`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify({
+          currentTrack: { trackId: original.id, startTime: original.trackStartTime, paused: original.isPaused },
+        }),
+      });
+      console.info(`  [${sessionId}] restored the pre-run playing state`);
+    } catch (error) {
+      console.warn(`  [${sessionId}] could not restore the pre-run playing state: ${error.message}`);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Scenario runner
 
-async function runScenario(config) {
-  const { sessions, playersPerSession, durationSec, baseUrl } = config;
+async function runScenario(config, provisioners) {
+  const { playersPerSession, durationSec, baseUrl } = config;
   console.info(
-    `\n=== Scenario: ${sessions} session(s) x (1 GM + ${playersPerSession} players), ${durationSec}s, target ${baseUrl} ===`
+    `\n=== Scenario: ${provisioners.length} session(s) x (1 GM + ${playersPerSession} players), ${durationSec}s, target ${baseUrl} ===`
   );
 
   const metrics = {
@@ -258,9 +348,9 @@ async function runScenario(config) {
 
   const startedAt = Date.now();
   const runs = [];
-  for (let i = 0; i < sessions; i++) {
+  for (const [i, provision] of provisioners.entries()) {
     runs.push(
-      runSession(config, metrics).catch((error) => {
+      runSession(provision, config, metrics).catch((error) => {
         metrics.httpErrors++;
         console.error(`  session ${i} failed: ${error.message}`);
       })
@@ -270,7 +360,7 @@ async function runScenario(config) {
   await Promise.all(runs);
 
   const result = {
-    sessions,
+    sessions: provisioners.length,
     gmPut: summarize(metrics.gmPutMs),
     propagation: summarize(metrics.propagationMs),
     snapshot: summarize(metrics.snapshotMs),
@@ -323,10 +413,20 @@ async function main() {
     process.exit(1);
   }
 
-  const scenarios = args.all ? SCENARIOS : [args.sessions];
   const results = [];
-  for (const sessions of scenarios) {
-    results.push(await runScenario({ ...args, sessions }));
+  if (args.sessionIds.length > 0) {
+    console.info(
+      `Existing-session mode (prod-safe): benchmarking ${args.sessionIds.length} session(s) you own. ` +
+        `Only playback state is touched, and it is restored after the run.`
+    );
+    const provisioners = args.sessionIds.map((id) => () => attachToExistingSession(args.baseUrl, id, args));
+    results.push(await runScenario(args, provisioners));
+  } else {
+    const scenarios = args.all ? SCENARIOS : [args.sessions];
+    for (const sessions of scenarios) {
+      const provisioners = Array.from({ length: sessions }, () => () => provisionThrowawaySession(args.baseUrl));
+      results.push(await runScenario(args, provisioners));
+    }
   }
   if (results.length > 1) printComparison(results);
 }
