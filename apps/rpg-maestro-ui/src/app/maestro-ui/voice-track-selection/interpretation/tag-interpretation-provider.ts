@@ -1,13 +1,13 @@
-import { Tag } from '@rpg-maestro/rpg-maestro-api-contract';
+import { InterpretedTagCandidate, Tag } from '@rpg-maestro/rpg-maestro-api-contract';
 
 /**
  * Provider-agnostic contract for turning a spoken transcript into a list of track tags
  * to play, given the tags actually available in the current session.
  *
- * The first concrete implementation is a deterministic keyword matcher
- * ({@link PatternMatchingInterpretationProvider}) standing in for a real LLM. Future
- * providers (e.g. an actual LLM call built from {@link buildTagInterpretationPrompt})
- * implement the same interface and can be swapped in via the registry.
+ * The production implementation is {@link TypesafeAiInterpretationProvider}, which asks the
+ * backend for a primary and a secondary tag and keeps the ones the model is confident about.
+ * {@link PatternMatchingInterpretationProvider} is the LLM-free keyword matcher used as a
+ * fallback when the AI interpreter is unavailable.
  */
 
 export interface TagInterpretationInput {
@@ -15,6 +15,8 @@ export interface TagInterpretationInput {
   transcript: string;
   /** Every tag that exists across the session's tracks — the allowed output vocabulary. */
   availableTags: Tag[];
+  /** Allows the caller to cancel an in-flight interpretation (e.g. on unmount). */
+  signal?: AbortSignal;
 }
 
 export interface TagInterpretationResult {
@@ -22,6 +24,10 @@ export interface TagInterpretationResult {
   tags: Tag[];
   /** Name of the provider that produced this result. */
   provider: string;
+  /** Best match with its confidence, when the provider reports one. */
+  primary?: InterpretedTagCandidate | null;
+  /** Runner-up with its confidence, when the provider reports one. */
+  secondary?: InterpretedTagCandidate | null;
 }
 
 export interface TagInterpretationProvider {

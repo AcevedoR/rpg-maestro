@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   ForbiddenException,
@@ -20,6 +21,9 @@ import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayi
 import {
   ChangeSessionPlayingTracksRequest,
   CreateSession,
+  InterpretTranscriptTagsRequest,
+  InterpretTranscriptTagsResponse,
+  parseAndValidateDto,
   SessionPlayingTracks,
   Track,
   TrackCreation,
@@ -39,6 +43,7 @@ import { Role } from './auth/role.enum';
 import { SessionsService } from './sessions/sessions.service';
 import { TrackCollectionService } from './track-collection/track-collection.service';
 import { ServerClock } from './infrastructure/clock/server-clock';
+import { VoiceTagInterpretationService } from './maestro-api/voice-tag-interpretation/voice-tag-interpretation.service';
 
 @ApiCookieAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -53,6 +58,7 @@ export class AuthenticatedMaestroController {
     @Inject(OnboardingService) private onboardingService: OnboardingService,
     @Inject(UsersService) private userService: UsersService,
     @Inject(TrackCollectionService) private trackCollectionService: TrackCollectionService,
+    @Inject(VoiceTagInterpretationService) private voiceTagInterpretationService: VoiceTagInterpretationService,
     @Inject(ServerClock) serverClock: ServerClock
   ) {
     this.manageCurrentlyPlayingTracks = new ManageCurrentlyPlayingTracks(
@@ -185,6 +191,22 @@ export class AuthenticatedMaestroController {
   @Post('/maestro/onboard')
   async createSession(@Request() req: { user: AuthenticatedUser }): Promise<SessionPlayingTracks> {
     return await this.onboardingService.createNewUserWithSession(req.user.id);
+  }
+
+  /**
+   * Turns a spoken transcript into the tags to play. The AI call lives here rather than in the
+   * browser so the provider credentials never leave the server.
+   */
+  @Post('/maestro/voice/interpret-tags')
+  @HttpCode(HttpStatus.OK)
+  @Roles([Role.MAESTRO, Role.MINSTREL])
+  async interpretVoiceTags(
+    @Body() request: InterpretTranscriptTagsRequest
+  ): Promise<InterpretTranscriptTagsResponse> {
+    const validated = await parseAndValidateDto(InterpretTranscriptTagsRequest, request).catch((errors) => {
+      throw new BadRequestException(`invalid interpret-tags request: ${JSON.stringify(errors)}`);
+    });
+    return this.voiceTagInterpretationService.interpret(validated);
   }
 
   async checkAccessOnSession(reqUser: AuthenticatedUser, sessionId: string) {

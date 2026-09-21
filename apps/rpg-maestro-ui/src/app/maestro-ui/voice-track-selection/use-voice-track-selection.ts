@@ -104,6 +104,7 @@ export function useVoiceTrackSelection({
       const { tags } = await interpretationProvider.interpret({
         transcript,
         availableTags: availableTagsRef.current,
+        signal: abortController.signal,
       });
       onResultRef.current({ tags, transcript });
     };

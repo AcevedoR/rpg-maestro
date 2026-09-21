@@ -7,6 +7,7 @@ import { PlayersController } from './PlayersController';
 import { DatabaseModule } from './infrastructure/database.module';
 import { ClockModule } from './infrastructure/clock/clock.module';
 import { MaestroApiModule } from './maestro-api/maestro-api.module';
+import { VoiceTagInterpretationModule } from './maestro-api/voice-tag-interpretation/voice-tag-interpretation.module';
 import { HealthModule } from './health.module';
 import { NetworkingConfiguration } from './NetworkingConfiguration';
 import { isDevOrTestEnv } from './config';
@@ -26,6 +27,7 @@ import { TestsUtilsModule } from './test-utils/tests-utils.module';
     ClockModule,
     DatabaseModule,
     MaestroApiModule,
+    VoiceTagInterpretationModule,
     TrackCollectionModule,
     SessionModule,
     AdminModule,

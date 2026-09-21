@@ -18,3 +18,5 @@ export * from './lib/admin-api/admin-api-dtos';
 
 export * from './lib/type-utils';
 export * from './lib/AppVersion';
+export * from './lib/maestro-api/voice-tag-interpretation-dtos';
+
