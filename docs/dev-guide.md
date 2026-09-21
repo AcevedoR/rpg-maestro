@@ -67,6 +67,11 @@ npx nx deploy rpg-maestro
 cache stays in-process, which is what local dev and the e2e tests use. See
 [architecture.md](architecture.md) for the tier switching rules.
 
+**Voice track selection** (backend, optional): `TYPESAFE_API_KEY` enables the TypeSafe AI interpreter
+behind `POST /maestro/voice/interpret-tags`; `TYPESAFE_DEFAULT_MODEL` overrides the model and
+`TYPESAFE_TAG_CONFIDENCE_THRESHOLD` (0–1, default `0.6`) sets how sure the model must be before a tag
+is played. Without a key the endpoint answers 503 and the UI falls back to its local keyword matcher.
+
 The same Redis (primary if set, else the fallback) is also the playback time reference and the pub/sub
 fanout for the SSE push channel. With neither set, the local clock is the time authority and session
 events stay in-process — correct for a single instance, and only for a single instance.
