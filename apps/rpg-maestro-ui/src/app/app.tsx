@@ -12,6 +12,7 @@ import { SetupSession } from './onboarding/setup-session';
 import { WelcomePage } from './welcome-page';
 import { isDevModeEnabled } from '../FeaturesConfiguration';
 import { HealthStatus } from './misc/health-status';
+import { BuildVersionBadge } from './misc/build-version-badge';
 import { UserInfos } from './onboarding/user-infos';
 import { ThemeProvider } from '@mui/material/styles';
 import { AdminBoard } from './admin-ui/admin-board';
@@ -62,6 +63,7 @@ export function App() {
             <Route path="/maestro/admin" element={<AdminBoard />} />
             <Route path="/admin" element={<Navigate to="/maestro" replace />} />
           </Routes>
+          <BuildVersionBadge />
         </ThemeProvider>
       </div>
     )

@@ -7,6 +7,16 @@ export interface RPGMaestroHealthStatus {
   status: string;
 }
 
+// Silent variant for the always-visible build badge: no toast when the API is unreachable.
+export const getVersionQuietly = async (): Promise<AppVersion | null> => {
+  try {
+    const response = await fetch(rpgMaestroApiUrl + `/health/version`, { credentials: 'include' });
+    return response.ok ? ((await response.json()) as AppVersion) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const getVersion = async (): Promise<AppVersion> => {
   try {
     const response = await fetch(rpgMaestroApiUrl + `/health/version`, {
