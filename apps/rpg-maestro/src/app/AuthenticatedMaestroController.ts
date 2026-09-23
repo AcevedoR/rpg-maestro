@@ -20,6 +20,7 @@ import { OnboardingService } from './maestro-api/onboarding.service';
 import { ManageCurrentlyPlayingTracks } from './maestro-api/ManageCurrentlyPlayingTracks';
 import {
   ChangeSessionPlayingTracksRequest,
+  ClientConfig,
   CreateSession,
   InterpretTranscriptTagsRequest,
   InterpretTranscriptTagsResponse,
@@ -207,6 +208,17 @@ export class AuthenticatedMaestroController {
       throw new BadRequestException(`invalid interpret-tags request: ${JSON.stringify(errors)}`);
     });
     return this.voiceTagInterpretationService.interpret(validated);
+  }
+
+  /**
+   * What this server is configured to do, for UI that needs to say so rather than guess.
+   * Authenticated: which AI provider a deployment runs, and whether it holds credentials
+   * for it, is operational detail and not something to hand to anonymous callers.
+   */
+  @Get('/config')
+  @Roles([Role.MAESTRO, Role.MINSTREL])
+  getConfig(): ClientConfig {
+    return { voiceInterpretation: this.voiceTagInterpretationService.getConfig() };
   }
 
   async checkAccessOnSession(reqUser: AuthenticatedUser, sessionId: string) {

@@ -20,3 +20,4 @@ export * from './lib/type-utils';
 export * from './lib/AppVersion';
 export * from './lib/maestro-api/voice-tag-interpretation-dtos';
 
+export * from './lib/maestro-api/client-config-dtos';

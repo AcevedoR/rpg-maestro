@@ -34,6 +34,11 @@ export interface TagChooser {
   readonly name: string;
   /** Whether the chooser has everything it needs to run (credentials, etc.). */
   isConfigured(): boolean;
+  /**
+   * Model this chooser is configured to ask, or null when it leaves the choice to the
+   * provider's own default. Reported to clients so an operator can see what is answering.
+   */
+  configuredModel(): string | null;
   /** Rank the labels for one transcript, best and second best. */
   choose(question: TagChoiceQuestion): Promise<TagChoices>;
 }

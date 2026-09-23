@@ -35,6 +35,16 @@ export class TypesafeAiTagChooser implements TagChooser {
     return (process.env.TYPESAFE_API_KEY ?? '').trim() !== '';
   }
 
+  /**
+   * Read from the environment rather than from the client, because building the client
+   * requires an API key — this has to answer on a server that has none. Null means the SDK
+   * picks, and the model that actually answered is logged per request in {@link choose}.
+   */
+  configuredModel(): string | null {
+    const model = (process.env.TYPESAFE_DEFAULT_MODEL ?? '').trim();
+    return model === '' ? null : model;
+  }
+
   async choose({ transcript, labels, noneLabel }: TagChoiceQuestion): Promise<TagChoices> {
     const criteria = buildCriteria(labels, noneLabel);
     const { answers, model, usage } = await this.getClient().systemOne({
