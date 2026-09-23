@@ -4,6 +4,7 @@ import {
   InterpretTranscriptTagsRequest,
   InterpretTranscriptTagsResponse,
   Tag,
+  VoiceInterpretationConfig,
 } from '@rpg-maestro/rpg-maestro-api-contract';
 import { TagChoice, TAG_CHOOSER, TagChooser } from './tag-chooser';
 
@@ -30,6 +31,19 @@ export class VoiceTagInterpretationService {
   /** Whether the configured chooser can run — the controller turns this into a 503. */
   isAvailable(): boolean {
     return this.tagChooser.isConfigured();
+  }
+
+  /**
+   * What this server will do with a transcript. Clients show it so nobody has to guess whether
+   * the AI or the local keyword fallback is answering — the two are indistinguishable otherwise.
+   */
+  getConfig(): VoiceInterpretationConfig {
+    return {
+      provider: this.tagChooser.name,
+      isAvailable: this.isAvailable(),
+      model: this.tagChooser.configuredModel(),
+      confidenceThreshold: getConfidenceThreshold(),
+    };
   }
 
   async interpret({

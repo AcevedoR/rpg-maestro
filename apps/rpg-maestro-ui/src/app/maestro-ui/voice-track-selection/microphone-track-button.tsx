@@ -5,6 +5,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import MicIcon from '@mui/icons-material/Mic';
 import { Tag } from '@rpg-maestro/rpg-maestro-api-contract';
 import { useVoiceTrackSelection, VoiceSelectionResult } from './use-voice-track-selection';
+import { useInterpretationConfig } from './interpretation/use-interpretation-config';
+import { describeInterpretationProvider } from './interpretation/provider-label';
 
 export interface MicrophoneTrackButtonProps {
   /** Tags available in the session — the interpreter's allowed output vocabulary. */
@@ -40,6 +42,8 @@ export function MicrophoneTrackButton({
     onResult,
     listeningDurationMs,
   });
+  // Only admins ever see the button, so only they need the config fetched.
+  const interpretationConfig = useInterpretationConfig(isAdmin);
 
   if (!isAdmin) {
     return null;
@@ -52,10 +56,12 @@ export function MicrophoneTrackButton({
     ? 'Your browser does not support speech recognition (try Chrome or Edge)'
     : '';
 
-  const tooltipTitle =
-    status === 'listening' && partialTranscript !== ''
-      ? partialTranscript
-      : disabledReason || 'Listen and pick a track that matches the scene';
+  // While listening, the live transcript is the only thing worth the space.
+  const providerLabel = describeInterpretationProvider(interpretationConfig);
+  const idleTitle = [disabledReason || 'Listen and pick a track that matches the scene', providerLabel]
+    .filter((part) => part !== null && part !== '')
+    .join(' — ');
+  const tooltipTitle = status === 'listening' && partialTranscript !== '' ? partialTranscript : idleTitle;
 
   return (
     <Tooltip title={tooltipTitle} placement="top" arrow>

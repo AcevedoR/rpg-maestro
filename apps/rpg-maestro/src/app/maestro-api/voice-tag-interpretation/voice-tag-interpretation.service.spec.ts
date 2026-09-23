@@ -6,11 +6,16 @@ class FakeTagChooser implements TagChooser {
   readonly name = 'fake';
   lastQuestion: TagChoiceQuestion | null = null;
   configured = true;
+  model: string | null = null;
 
   constructor(private readonly answers: TagChoices) {}
 
   isConfigured(): boolean {
     return this.configured;
+  }
+
+  configuredModel(): string | null {
+    return this.model;
   }
 
   choose(question: TagChoiceQuestion): Promise<TagChoices> {
@@ -167,5 +172,42 @@ describe('VoiceTagInterpretationService', () => {
 
     expect(service.isAvailable()).toBe(false);
     await expect(service.interpret(request())).rejects.toThrow('not configured');
+  });
+
+  describe('getConfig', () => {
+    const chooser = (): FakeTagChooser =>
+      new FakeTagChooser({
+        primary: { label: 'combat', confidence: 0.9 },
+        secondary: { label: NONE, confidence: 0.9 },
+      });
+
+    it('reports the provider, its availability and the threshold in force', () => {
+      const configured = chooser();
+      configured.model = 'jev-1.13.0';
+
+      expect(new VoiceTagInterpretationService(configured).getConfig()).toEqual({
+        provider: 'fake',
+        isAvailable: true,
+        model: 'jev-1.13.0',
+        confidenceThreshold: DEFAULT_CONFIDENCE_THRESHOLD,
+      });
+    });
+
+    it('reports a null model when the provider picks it', () => {
+      expect(new VoiceTagInterpretationService(chooser()).getConfig().model).toBeNull();
+    });
+
+    it('reports unavailable when the server holds no credentials', () => {
+      const unconfigured = chooser();
+      unconfigured.configured = false;
+
+      expect(new VoiceTagInterpretationService(unconfigured).getConfig().isAvailable).toBe(false);
+    });
+
+    it('reflects a custom threshold', () => {
+      process.env.TYPESAFE_TAG_CONFIDENCE_THRESHOLD = '0.8';
+
+      expect(new VoiceTagInterpretationService(chooser()).getConfig().confidenceThreshold).toBe(0.8);
+    });
   });
 });

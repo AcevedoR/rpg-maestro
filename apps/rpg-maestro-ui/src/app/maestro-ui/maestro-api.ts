@@ -1,6 +1,7 @@
 import { displayError } from '../error-utils';
 import {
   ChangeSessionPlayingTracksRequest,
+  ClientConfig,
   PlayingTrack,
   SessionPlayingTracks,
   Track,
@@ -355,5 +356,19 @@ export const getUserFromAPI = async (): Promise<User> => {
   } catch (error) {
     console.error(error);
     return Promise.reject();
+  }
+};
+
+/**
+ * Server-side configuration the UI has to surface rather than assume — notably which voice
+ * interpreter is actually answering. Returns null on failure: this only decorates a tooltip,
+ * so it must never block or error a feature that works fine without it.
+ */
+export const getClientConfig = async (): Promise<ClientConfig | null> => {
+  try {
+    return (await authenticatedFetch(`${rpgMaestroApiUrl}/config`, { credentials: 'include' })) as ClientConfig;
+  } catch (error) {
+    console.warn('could not read the server config', error);
+    return null;
   }
 };
