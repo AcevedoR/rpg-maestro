@@ -4,7 +4,8 @@ import { toastError, toastInfo } from '../../ui-components/toast-popup';
 import { resolveTranscriptionProvider } from './transcription/transcription-provider-registry';
 import { resolveInterpretationProvider } from './interpretation/interpretation-provider-registry';
 
-export const DEFAULT_LISTENING_DURATION_MS = 15_000;
+/** Upper bound on a single listen — a safety cap for a button held (or stuck) down. */
+export const DEFAULT_LISTENING_DURATION_MS = 60_000;
 
 export type VoiceSelectionStatus = 'idle' | 'listening' | 'interpreting';
 
@@ -18,7 +19,7 @@ export interface UseVoiceTrackSelectionParams {
   availableTags: Tag[];
   /** Called once tags have been derived from the spoken transcript. */
   onResult: (result: VoiceSelectionResult) => void;
-  /** How long to listen to the microphone. Defaults to {@link DEFAULT_LISTENING_DURATION_MS}. */
+  /** Longest the microphone may listen before stopping on its own. Defaults to {@link DEFAULT_LISTENING_DURATION_MS}. */
   listeningDurationMs?: number;
 }
 
@@ -28,8 +29,10 @@ export interface UseVoiceTrackSelection {
   partialTranscript: string;
   /** Whether a supported transcription provider exists in this environment. */
   isSupported: boolean;
-  /** Begin the listen → interpret → onResult flow. No-op if already running. */
-  start: () => void;
+  /** Begin the listen → interpret → onResult flow. Returns false (no-op) if a run is already in progress or unsupported. */
+  start: () => boolean;
+  /** Stop listening `delayMs` from now and interpret what was heard so far. Replaces any previously scheduled stop. */
+  stopAfter: (delayMs: number) => void;
 }
 
 /**
@@ -56,27 +59,38 @@ export function useVoiceTrackSelection({
   onResultRef.current = onResult;
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const stopControllerRef = useRef<AbortController | null>(null);
+  const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearStopTimer = (): void => {
+    if (stopTimerRef.current) {
+      clearTimeout(stopTimerRef.current);
+      stopTimerRef.current = null;
+    }
+  };
   const isMountedRef = useRef(true);
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
+      clearStopTimer();
       abortControllerRef.current?.abort();
     };
   }, []);
 
   const isSupported = transcriptionProvider !== null;
 
-  const start = useCallback((): void => {
+  const start = useCallback((): boolean => {
     if (!transcriptionProvider) {
       toastError('Voice track selection is not supported in this browser.', 5000);
-      return;
+      return false;
     }
     if (abortControllerRef.current) {
-      return; // a run is already in progress
+      return false; // a run is already in progress
     }
 
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
+    const stopController = new AbortController();
+    stopControllerRef.current = stopController;
     setPartialTranscript('');
     setStatus('listening');
 
@@ -84,6 +98,7 @@ export function useVoiceTrackSelection({
       const { transcript } = await transcriptionProvider.listen({
         durationMs: listeningDurationMs,
         signal: abortController.signal,
+        stopSignal: stopController.signal,
         onPartialTranscript: (partial) => {
           if (isMountedRef.current) {
             setPartialTranscript(partial);
@@ -118,13 +133,28 @@ export function useVoiceTrackSelection({
         toastError('Could not select a track from your voice. Please try again.', 5000);
       })
       .finally(() => {
+        clearStopTimer();
         abortControllerRef.current = null;
+        stopControllerRef.current = null;
         if (isMountedRef.current) {
           setStatus('idle');
           setPartialTranscript('');
         }
       });
+    return true;
   }, [transcriptionProvider, interpretationProvider, listeningDurationMs]);
 
-  return { status, partialTranscript, isSupported, start };
+  const stopAfter = useCallback((delayMs: number): void => {
+    const stopController = stopControllerRef.current;
+    if (!stopController) {
+      return; // nothing is listening
+    }
+    clearStopTimer();
+    stopTimerRef.current = setTimeout(() => {
+      stopTimerRef.current = null;
+      stopController.abort();
+    }, Math.max(0, delayMs));
+  }, []);
+
+  return { status, partialTranscript, isSupported, start, stopAfter };
 }
