@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -15,9 +15,14 @@ export interface MicrophoneTrackButtonProps {
   onResult: (result: VoiceSelectionResult) => void;
   /** The feature is admin-only; the button renders nothing unless this is true. */
   isAdmin: boolean;
-  /** Overrides how long the microphone listens. */
-  listeningDurationMs?: number;
 }
+
+/** A plain click listens for this long, counted from the press. */
+export const TAP_LISTENING_MS = 6_000;
+/** A press held at least this long is a hold rather than a click. */
+export const HOLD_THRESHOLD_MS = 400;
+/** After a hold is released, keep listening a bit so the last word is not cut off. */
+export const HOLD_RELEASE_TAIL_MS = 500;
 
 const BUTTON_LABEL: Record<'idle' | 'listening' | 'interpreting', string> = {
   idle: 'listen',
@@ -27,7 +32,8 @@ const BUTTON_LABEL: Record<'idle' | 'listening' | 'interpreting', string> = {
 
 /**
  * Microphone button that listens to the maestro, transcribes what is said, and asks
- * the interpretation layer which tags to play. The feature is admin-only: for non-admin
+ * the interpretation layer which tags to play. A click listens for {@link TAP_LISTENING_MS};
+ * press-and-hold listens while held plus {@link HOLD_RELEASE_TAIL_MS}. The feature is admin-only: for non-admin
  * users the button is not rendered at all. When visible it is enabled as long as a
  * transcription provider is available; otherwise it is disabled with an explanatory tooltip.
  */
@@ -35,13 +41,13 @@ export function MicrophoneTrackButton({
   availableTags,
   onResult,
   isAdmin,
-  listeningDurationMs,
 }: MicrophoneTrackButtonProps) {
-  const { status, partialTranscript, isSupported, start } = useVoiceTrackSelection({
+  const { status, partialTranscript, isSupported, start, stopAfter } = useVoiceTrackSelection({
     availableTags,
     onResult,
-    listeningDurationMs,
   });
+  // When the current press began, while the button is held down; null otherwise.
+  const pressStartedAtRef = useRef<number | null>(null);
   // Only admins ever see the button, so only they need the config fetched.
   const interpretationConfig = useInterpretationConfig(isAdmin);
 
@@ -49,8 +55,33 @@ export function MicrophoneTrackButton({
     return null;
   }
 
-  const isBusy = status !== 'idle';
-  const enabled = isSupported && !isBusy;
+  // Stays enabled while listening: a disabled button would swallow the release of a hold.
+  const enabled = isSupported && status !== 'interpreting';
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>): void => {
+    if (event.button > 0 || !start()) {
+      return; // not the primary button, or a run is already in progress
+    }
+    pressStartedAtRef.current = Date.now();
+    // Keep receiving the release even if the pointer slides off the button.
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerRelease = (): void => {
+    if (pressStartedAtRef.current === null) {
+      return;
+    }
+    const heldMs = Date.now() - pressStartedAtRef.current;
+    pressStartedAtRef.current = null;
+    stopAfter(heldMs < HOLD_THRESHOLD_MS ? TAP_LISTENING_MS - heldMs : HOLD_RELEASE_TAIL_MS);
+  };
+
+  // Keyboard activation (Enter/Space) has no pointer events: treat it as a click.
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    if (event.detail === 0 && start()) {
+      stopAfter(TAP_LISTENING_MS);
+    }
+  };
 
   const disabledReason = !isSupported
     ? 'Your browser does not support speech recognition (try Chrome or Edge)'
@@ -58,7 +89,7 @@ export function MicrophoneTrackButton({
 
   // While listening, the live transcript is the only thing worth the space.
   const providerLabel = describeInterpretationProvider(interpretationConfig);
-  const idleTitle = [disabledReason || 'Listen and pick a track that matches the scene', providerLabel]
+  const idleTitle = [disabledReason || 'Click to listen for a few seconds, or hold while you talk, to pick a track that matches the scene', providerLabel]
     .filter((part) => part !== null && part !== '')
     .join(' — ');
   const tooltipTitle = status === 'listening' && partialTranscript !== '' ? partialTranscript : idleTitle;
@@ -68,7 +99,11 @@ export function MicrophoneTrackButton({
       {/* span wrapper keeps the tooltip working while the button is disabled */}
       <span>
         <Button
-          onClick={start}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerRelease}
+          onPointerCancel={handlePointerRelease}
+          onClick={handleClick}
+          onContextMenu={(event) => event.preventDefault()}
           disabled={!enabled}
           aria-label="Listen and pick a matching track"
           sx={{
@@ -82,6 +117,10 @@ export function MicrophoneTrackButton({
             fontSize: '11px',
             fontWeight: '500',
             backgroundColor: 'rgba(57,57,57,0.15)',
+            // A long press on touch screens must not scroll, select text or open a menu.
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitTouchCallout: 'none',
             '@keyframes voice-pulse': {
               '0%': { transform: 'scale(1)', opacity: 1 },
               '50%': { transform: 'scale(1.15)', opacity: 0.6 },

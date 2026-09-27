@@ -18,7 +18,7 @@ export class WebSpeechTranscriptionProvider implements TranscriptionProvider {
     return getSpeechRecognitionCtor() !== undefined;
   }
 
-  listen({ durationMs, onPartialTranscript, signal }: TranscriptionListenOptions): Promise<TranscriptionResult> {
+  listen({ durationMs, onPartialTranscript, signal, stopSignal }: TranscriptionListenOptions): Promise<TranscriptionResult> {
     const SpeechRecognitionCtor = getSpeechRecognitionCtor();
     if (!SpeechRecognitionCtor) {
       return Promise.reject(new Error('SpeechRecognition is not supported in this browser'));
@@ -39,6 +39,7 @@ export class WebSpeechTranscriptionProvider implements TranscriptionProvider {
           clearTimeout(timers.stop);
         }
         signal?.removeEventListener('abort', onAbort);
+        stopSignal?.removeEventListener('abort', stopListening);
         recognition.onresult = null;
         recognition.onerror = null;
         recognition.onend = null;
@@ -69,6 +70,15 @@ export class WebSpeechTranscriptionProvider implements TranscriptionProvider {
           // ignore — we are tearing down anyway
         }
         rejectOnce(new DOMException('Transcription aborted', 'AbortError'));
+      };
+
+      // Graceful stop: the recogniser finalises pending speech, then `onend` resolves.
+      const stopListening = (): void => {
+        try {
+          recognition.stop();
+        } catch {
+          // `onend` will still fire and resolve the promise
+        }
       };
 
       recognition.onresult = (event): void => {
@@ -110,13 +120,12 @@ export class WebSpeechTranscriptionProvider implements TranscriptionProvider {
         return;
       }
 
-      timers.stop = setTimeout(() => {
-        try {
-          recognition.stop();
-        } catch {
-          // `onend` will still fire and resolve the promise
-        }
-      }, durationMs);
+      if (stopSignal?.aborted) {
+        stopListening();
+        return;
+      }
+      stopSignal?.addEventListener('abort', stopListening);
+      timers.stop = setTimeout(stopListening, durationMs);
     });
   }
 }

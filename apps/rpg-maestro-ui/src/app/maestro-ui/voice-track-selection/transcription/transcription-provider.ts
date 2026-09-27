@@ -19,8 +19,10 @@ export interface TranscriptionListenOptions {
   durationMs: number;
   /** Called with the best-so-far transcript while listening, for live UI feedback. */
   onPartialTranscript?: (partialTranscript: string) => void;
-  /** Allows the caller to cancel listening early (e.g. on unmount). */
+  /** Allows the caller to cancel listening early (e.g. on unmount). Rejects with an `AbortError`. */
   signal?: AbortSignal;
+  /** Ends listening early but still resolves with whatever was heard (e.g. the maestro let go of the button). */
+  stopSignal?: AbortSignal;
 }
 
 export interface TranscriptionProvider {
@@ -28,6 +30,6 @@ export interface TranscriptionProvider {
   readonly name: string;
   /** Whether this provider can run in the current environment. */
   isSupported(): boolean;
-  /** Listen to the microphone for `durationMs`, then resolve with the transcript. */
+  /** Listen to the microphone for `durationMs` (or until `stopSignal`), then resolve with the transcript. */
   listen(options: TranscriptionListenOptions): Promise<TranscriptionResult>;
 }
