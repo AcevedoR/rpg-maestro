@@ -3,7 +3,7 @@ FROM node:22-alpine
 # yt-dlp is installed via pip to get the latest release at every image build —
 # youtube changes break download tooling regularly, so freshness matters
 RUN apk add --no-cache ffmpeg python3 py3-pip \
-    && pip3 install --no-cache-dir --break-system-packages yt-dlp
+    && pip3 install --no-cache-dir --break-system-packages "yt-dlp[default]"
 
 # Use production node environment by default.
 ENV NODE_ENV production

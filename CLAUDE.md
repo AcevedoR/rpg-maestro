@@ -65,7 +65,7 @@ Swagger docs at `/api`. FFmpeg is available for audio processing.
 
 ### Backend: audio-file-uploader
 
-NestJS app handling multipart file uploads (Multer) and YouTube download/conversion (ytdl-core). Exposes a job store for tracking async uploads. Serves uploaded files as static assets.
+NestJS app handling multipart file uploads (Multer) and YouTube download/conversion (the `yt-dlp` binary, spawned as a child process — installed in the Docker image via `pip install "yt-dlp[default]"`; the `[default]` extra brings `yt-dlp-ejs`, needed for YouTube JS challenges). Exposes a job store for tracking async uploads. Serves uploaded files as static assets.
 
 ### Frontend: rpg-maestro-ui
 
