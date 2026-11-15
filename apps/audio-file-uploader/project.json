@@ -36,14 +36,14 @@
     "docker-build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "([ -e ./apps/audio-file-uploader/app_version.txt ] && docker build . -f ./apps/audio-file-uploader/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/audio-file-uploader/app_version.txt) -t acevedor/$NX_TASK_TARGET_PROJECT:latest --platform linux/amd64) || echo 'no new version, skipping task'"
+        "command": "bash devtools/release/docker-release.sh build audio-file-uploader"
       },
       "dependsOn": ["build", "semantic-release"]
     },
     "deploy": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "([ -e ./apps/audio-file-uploader/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT --all-tags) || echo 'no new version, skipping task'"
+        "command": "bash devtools/release/docker-release.sh push audio-file-uploader"
       },
       "dependsOn": ["docker-build"]
     },

@@ -39,7 +39,18 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: npx nx affected -t lint test deploy --no-cloud --parallel=false
+      - name: Release
+        id: release
+        continue-on-error: true
+        run: npx nx affected -t lint test deploy --no-cloud --parallel=false
+
+      # semantic-release pushes the release tag, then refs/notes/semantic-release as its very last
+      # step; GitHub sometimes rejects that notes push when several apps release seconds apart.
+      # docker-build/deploy read the version from the tag on HEAD (devtools/release/docker-release.sh),
+      # so a second pass finishes such a release. A real lint/test/build failure fails here again.
+      - name: Release (retry)
+        if: steps.release.outcome == 'failure'
+        run: npx nx affected -t lint test deploy --no-cloud --parallel=false
 
   trigger-deploy:
     runs-on: ubuntu-latest

@@ -70,14 +70,14 @@
     "docker-build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "([ -e ./apps/rpg-maestro/app_version.txt ] && docker build . -f ./apps/rpg-maestro/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/rpg-maestro/app_version.txt) -t acevedor/$NX_TASK_TARGET_PROJECT:latest --platform linux/amd64 --build-arg APP_VERSION=$(cat ./apps/rpg-maestro/app_version.txt) --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)) || echo 'no new version, skipping task'"
+        "command": "bash devtools/release/docker-release.sh build rpg-maestro"
       },
       "dependsOn": ["build", "semantic-release"]
     },
     "deploy": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "([ -e ./apps/rpg-maestro/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT --all-tags) || echo 'no new version, skipping task'"
+        "command": "bash devtools/release/docker-release.sh push rpg-maestro"
       },
       "dependsOn": ["docker-build"]
     },
