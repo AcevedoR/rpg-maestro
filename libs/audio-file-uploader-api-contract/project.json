@@ -20,7 +20,7 @@
       "configFile": "libs/audio-file-uploader-api-contract/vite.config.mts",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "reportsDirectory": "../../coverage/libs/audio-file-uploader-api-contract"
+        "reportsDirectory": "{projectRoot}/../../coverage/libs/audio-file-uploader-api-contract"
       }
     }
   }

@@ -38,27 +38,21 @@
       "options": {
         "command": "([ -e ./apps/audio-file-uploader/app_version.txt ] && docker build . -f ./apps/audio-file-uploader/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:$(cat ./apps/audio-file-uploader/app_version.txt) -t acevedor/$NX_TASK_TARGET_PROJECT:latest --platform linux/amd64) || echo 'no new version, skipping task'"
       },
-      "dependsOn": [
-        "build", "semantic-release"
-      ]
+      "dependsOn": ["build", "semantic-release"]
     },
     "deploy": {
       "executor": "nx:run-commands",
       "options": {
         "command": "([ -e ./apps/audio-file-uploader/app_version.txt ] && docker push acevedor/$NX_TASK_TARGET_PROJECT --all-tags) || echo 'no new version, skipping task'"
       },
-      "dependsOn": [
-        "docker-build"
-      ]
+      "dependsOn": ["docker-build"]
     },
     "docker-build-preview": {
       "executor": "nx:run-commands",
       "options": {
         "command": "docker build . -f ./apps/audio-file-uploader/Dockerfile -t acevedor/$NX_TASK_TARGET_PROJECT:preview --platform linux/amd64"
       },
-      "dependsOn": [
-        "build", "test"
-      ]
+      "dependsOn": ["build", "test"]
     },
     "deploy-preview": {
       "executor": "nx:run-commands",
@@ -72,7 +66,7 @@
       "configFile": "apps/audio-file-uploader/vite.config.mts",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "reportsDirectory": "../../coverage/apps/audio-file-uploader"
+        "reportsDirectory": "{projectRoot}/../../coverage/apps/audio-file-uploader"
       }
     }
   }
